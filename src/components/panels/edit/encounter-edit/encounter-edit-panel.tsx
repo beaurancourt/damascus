@@ -1,4 +1,4 @@
-import { Alert, Button, Divider, Flex, Popover, Select, Space, Tabs } from 'antd';
+import { Alert, Button, Divider, Flex, Popover, Select, Space } from 'antd';
 import { CaretDownOutlined, CaretUpOutlined, CheckCircleOutlined, CloseCircleOutlined, CopyOutlined, EditFilled, EditOutlined, EllipsisOutlined, FilterFilled, FilterOutlined, InfoCircleOutlined, PlusOutlined, ToolFilled, ToolOutlined } from '@ant-design/icons';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDraggable, useDroppable } from '@dnd-kit/core';
 import { Encounter, EncounterGroup, EncounterObjective, TerrainSlot } from '@/models/encounter';
@@ -18,7 +18,6 @@ import { EncounterDifficultyLogic } from '@/logic/encounter-difficulty-logic';
 import { EncounterDifficultyPanel } from '@/components/panels/encounter-difficulty/encounter-difficulty-panel';
 import { EncounterLogic } from '@/logic/encounter-logic';
 import { EncounterObjectiveData } from '@/data/encounter-objective-data';
-import { EncounterPanel } from '@/components/panels/elements/encounter-panel/encounter-panel';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { Expander } from '@/components/controls/expander/expander';
 import { FactoryLogic } from '@/logic/factory-logic';
@@ -57,8 +56,6 @@ interface Props {
 
 export const EncounterEditPanel = (props: Props) => {
 	const [ encounter, setEncounter ] = useState<Encounter>(props.encounter);
-	const [ activeLeftTabKey, setActiveLeftTabKey ] = useState<string>('encounter');
-	const [ activeRightTabKey, setActiveRightTabKey ] = useState<string>('preview');
 	const [ filterVisible, setFilterVisible ] = useState<boolean>(false);
 	const [ monsterFilter, setMonsterFilter ] = useState<MonsterFilter>(FactoryLogic.createMonsterFilter());
 	const [ terrainFilter, setTerrainFilter ] = useState<TerrainFilter>(FactoryLogic.createTerrainFilter());
@@ -66,30 +63,6 @@ export const EncounterEditPanel = (props: Props) => {
 	const [ draggedTerrain, setDraggedTerrain ] = useState<Terrain | null>(null);
 	const options = useOptions();
 	const heroes = useHeroes();
-
-	const switchLeftTab = (key: string) => {
-		setActiveLeftTabKey(key);
-		switch (key) {
-			case 'monsters':
-				setActiveRightTabKey('monsters');
-				break;
-			case 'terrain':
-				setActiveRightTabKey('terrain');
-				break;
-		}
-	};
-
-	const switchRightTab = (key: string) => {
-		setActiveRightTabKey(key);
-		switch (key) {
-			case 'monsters':
-				setActiveLeftTabKey('monsters');
-				break;
-			case 'terrain':
-				setActiveLeftTabKey('terrain');
-				break;
-		}
-	};
 
 	const addMonster = (monster: Monster, encounterGroupID: string | null) => {
 		const copy = Utils.copy(encounter);
@@ -282,15 +255,11 @@ export const EncounterEditPanel = (props: Props) => {
 		}
 
 		return (
-			<Space orientation='vertical' style={{ width: '100%', padding: '0 5px' }}>
+			<Space orientation='vertical' style={{ width: '100%' }}>
 				{warnings}
-				<HeaderText
-					extra={
-						<Button type='text' icon={<PlusOutlined />} onClick={addGroup} />
-					}
-				>
-					Monsters
-				</HeaderText>
+				<Flex justify='flex-end'>
+					<Button icon={<PlusOutlined />} onClick={addGroup}>Add group</Button>
+				</Flex>
 				{
 					encounter.groups.map((group, n) => (
 						<SelectablePanel key={group.id}>
@@ -311,7 +280,7 @@ export const EncounterEditPanel = (props: Props) => {
 				}
 				{
 					encounter.groups.length === 0 ?
-						<div className='ds-text dimmed-text centered-text'>Add a monster from the list on the right.</div>
+						<div className='ds-text dimmed-text centered-text'>No monsters yet — pick one below.</div>
 						: null
 				}
 			</Space>
@@ -357,8 +326,7 @@ export const EncounterEditPanel = (props: Props) => {
 		};
 
 		return (
-			<Space orientation='vertical' style={{ width: '100%', padding: '0 5px' }}>
-				<HeaderText>Terrain</HeaderText>
+			<Space orientation='vertical' style={{ width: '100%' }}>
 				<SelectablePanel style={{ paddingTop: '20px' }}>
 					<div className='encounter-terrain-panel'>
 						<TerrainDropTarget
@@ -727,78 +695,51 @@ ${value.victories}`
 					onDragCancel={onDragCancel}
 					onDragEnd={onDragEnd}
 				>
-					<div className='encounter-workspace-column'>
-						<Tabs
-							items={[
-								{
-									key: 'encounter',
-									label: 'Encounter',
-									children: getNameAndDescriptionSection()
-								},
-								{
-									key: 'monsters',
-									label: 'Monsters',
-									children: getMonstersSection()
-								},
-								{
-									key: 'terrain',
-									label: 'Terrain',
-									children: getTerrainSection()
-								},
-								{
-									key: 'notes',
-									label: 'Notes',
-									children: getNotesSection()
-								},
-								{
-									key: 'malice',
-									label: 'Malice',
-									children: getMaliceSection()
-								}
-							]}
-							activeKey={activeLeftTabKey}
-							onChange={switchLeftTab}
-						/>
-					</div>
-					<div className='encounter-list-column'>
+					<div className='encounter-edit-stream'>
 						{getDifficultySection()}
-						<Tabs
-							style={{ flex: '1 1 0', overflowY: 'auto' }}
-							items={[
-								{
-									key: 'preview',
-									label: 'Preview',
-									children: (
-										<SelectablePanel>
-											<EncounterPanel encounter={encounter} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
-										</SelectablePanel>
-									)
-								},
-								{
-									key: 'monsters',
-									label: 'Monsters',
-									children: getMonsterListSection()
-								},
-								{
-									key: 'terrain',
-									label: 'Terrain',
-									children: getTerrainListSection()
-								}
-							]}
-							activeKey={activeRightTabKey}
-							onChange={switchRightTab}
-							tabBarExtraContent={
-								<Button
-									className='filter-button'
-									type='text'
-									icon={filterVisible ? <FilterFilled style={{ color: 'rgb(22, 119, 255)' }} /> : <FilterOutlined />}
-									onClick={() => setFilterVisible(!filterVisible)}
-								>
-									Search
-								</Button>
-							}
-						/>
 
+						<section className='encounter-section'>
+							<HeaderText>Encounter</HeaderText>
+							{getNameAndDescriptionSection()}
+						</section>
+
+						<section className='encounter-section'>
+							<HeaderText
+								extra={
+									<Button
+										type='text'
+										icon={filterVisible ? <FilterFilled style={{ color: 'rgb(22, 119, 255)' }} /> : <FilterOutlined />}
+										onClick={() => setFilterVisible(!filterVisible)}
+									>
+										Filter
+									</Button>
+								}
+							>
+								Monsters
+							</HeaderText>
+							{getMonstersSection()}
+							<Divider />
+							<HeaderText level={3}>Add a monster</HeaderText>
+							{getMonsterListSection()}
+						</section>
+
+						<section className='encounter-section'>
+							<HeaderText>Terrain</HeaderText>
+							{getTerrainSection()}
+							<Divider />
+							<HeaderText level={3}>Add terrain</HeaderText>
+							{getTerrainListSection()}
+						</section>
+
+						<section className='encounter-section'>
+							<HeaderText>Notes</HeaderText>
+							{getNotesSection()}
+						</section>
+
+						<section className='encounter-section'>
+							<HeaderText>Malice</HeaderText>
+							{getMaliceSection()}
+						</section>
 					</div>
 					<DragOverlay>
 						{draggedMonster ? <MonsterListItem monster={draggedMonster} /> : null}

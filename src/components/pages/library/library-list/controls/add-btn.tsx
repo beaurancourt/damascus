@@ -125,23 +125,17 @@ export const AddBtn = (props: Props) => {
 			case 'encounter':
 				return [
 					props.showEncounterImport ? (
-						<Expander key='yaml-import' title='Import from YAML (Claude / LLM)'>
-							<div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-								<div style={{ fontSize: '0.85em', opacity: 0.75 }}>
-									Paste a YAML encounter (e.g. one produced by the <code>encounter-builder</code> Claude skill). Save it to the library, run it live in the director, or generate a printable PDF.
-								</div>
-								<Button
-									block={true}
-									icon={<CodeOutlined />}
-									onClick={() => {
-										setPopoverOpen(false);
-										props.showEncounterImport!();
-									}}
-								>
-									Open YAML importer
-								</Button>
-							</div>
-						</Expander>
+						<Button
+							key='yaml-import'
+							block={true}
+							icon={<CodeOutlined />}
+							onClick={() => {
+								setPopoverOpen(false);
+								props.showEncounterImport!();
+							}}
+						>
+							Paste YAML (from Claude)
+						</Button>
 					) : null,
 					<Expander key='premade' title='Use a premade example'>
 						<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px' }}>
