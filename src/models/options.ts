@@ -1,10 +1,6 @@
-import { PanelWidth } from '@/enums/panel-width';
-import { SheetPageSize } from '@/enums/sheet-page-size';
-
 export interface Options {
 	// App
 	cookieConsent: boolean;
-	showDataSource: boolean;
 	// Hero
 	shownStandardAbilities: string[];
 	xpPerLevel: number;
@@ -13,22 +9,6 @@ export interface Options {
 	showSkillsInGroups: boolean;
 	showSources: boolean;
 	compactView: boolean;
-	abilityWidth: PanelWidth;
-	// Hero: Classic Sheet
-	includePlayState: boolean;
-	classicSheetPageSize: SheetPageSize;
-	colorSheet: boolean;
-	colorScheme: 'community' | 'classic';
-	showPowerRollCalculation: boolean;
-	sheetTextColor: 'light' | 'default' | 'dark';
-	featuresInclude: 'minimal' | 'no-basic' | 'all';
-	pageOrientation: 'portrait' | 'landscape';
-	debugClassicSheet: boolean;
-	// Monster Builder
-	similarLevel: boolean;
-	similarRole: boolean;
-	similarOrganization: boolean;
-	similarSize: boolean;
 	// Encounter
 	party: string;
 	// Encounter: Running

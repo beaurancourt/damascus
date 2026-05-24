@@ -1,5 +1,6 @@
 import { Alert, Button, Flex, Popover, Segmented, Space, Tag, Tooltip } from 'antd';
-import { DownOutlined, EllipsisOutlined, HeartFilled, PlusOutlined } from '@ant-design/icons';
+import { CaretDownOutlined, CaretUpOutlined, DownOutlined, EllipsisOutlined, HeartFilled, PlusOutlined } from '@ant-design/icons';
+import { HeroHealthPanel, MonsterHealthPanel } from '@/components/panels/health/health-panel';
 import { Encounter, EncounterGroup } from '@/models/encounter';
 import { HeroInfo, MonsterInfo, TerrainInfo } from '@/components/panels/token/token';
 import { Characteristic } from '@/enums/characteristic';
@@ -41,10 +42,12 @@ interface EncounterGroupHeroProps {
 	onRemoveSquad: (hero: Hero, slotID: string) => void;
 	onAddMonsterToSquad: (hero: Hero, slotID: string) => void;
 	onDelete: (hero: Hero) => void;
+	onHeroChange?: (hero: Hero) => void;
 }
 
 export const EncounterGroupHero = (props: EncounterGroupHeroProps) => {
 	const [ setRef, size ] = useDimensions();
+	const [ expanded, setExpanded ] = useState(false);
 
 	const showStamina = size.width >= (widthBase + widthStaminaColumn);
 	const showCharacteristics = size.width >= (widthBase + widthStaminaColumn + widthCharacteristicsColumn);
@@ -103,9 +106,25 @@ export const EncounterGroupHero = (props: EncounterGroupHeroProps) => {
 				</div>
 				<div className='encounter-slots'>
 					<div className='encounter-slot' ref={setRef}>
-						<div className={props.hero.state.defeated ? 'encounter-slot-row defeated' : 'encounter-slot-row'} onClick={() => props.onSelect(props.hero)}>
+						<div
+							className={props.hero.state.defeated ? 'encounter-slot-row defeated' : 'encounter-slot-row'}
+							onClick={() => {
+								if (props.onHeroChange) {
+									setExpanded(!expanded);
+								} else {
+									props.onSelect(props.hero);
+								}
+							}}
+						>
 							<div className='name-column'>
 								<HeroInfo hero={props.hero} />
+								{
+									props.onHeroChange && (
+										<span className='inline-expand-indicator'>
+											{expanded ? <CaretUpOutlined /> : <CaretDownOutlined />}
+										</span>
+									)
+								}
 							</div>
 							{
 								showStamina ?
@@ -230,6 +249,17 @@ export const EncounterGroupHero = (props: EncounterGroupHeroProps) => {
 							}
 						</div>
 						{
+							props.onHeroChange && expanded ? (
+								<div className='encounter-slot-inline-health' onClick={e => e.stopPropagation()}>
+									<HeroHealthPanel
+										hero={props.hero}
+										showEncounterControls={true}
+										onChange={props.onHeroChange}
+									/>
+								</div>
+							) : null
+						}
+						{
 							props.hero.state.controlledSlots.map(slot => (
 								<div key={slot.id} className='encounter-slot controlled-slot'>
 									<Flex align='center' style={{ paddingLeft: '5px' }}>
@@ -266,6 +296,7 @@ interface EncounterGroupMonsterProps {
 	onSetState: (group: EncounterGroup, value: 'ready' | 'current' | 'finished') => void;
 	onDuplicate: (group: EncounterGroup) => void;
 	onDelete: (group: EncounterGroup) => void;
+	onMonsterChange?: (monster: Monster) => void;
 }
 
 export const EncounterGroupMonster = (props: EncounterGroupMonsterProps) => {
@@ -324,6 +355,7 @@ export const EncounterGroupMonster = (props: EncounterGroupMonsterProps) => {
 								sourcebooks={props.sourcebooks}
 								onSelectMonster={props.onSelectMonster}
 								onSelectMinionSlot={props.onSelectMinionSlot}
+								onMonsterChange={props.onMonsterChange}
 							/>
 						))
 					}
@@ -339,10 +371,21 @@ interface MonsterSlotProps {
 	sourcebooks: Sourcebook[];
 	onSelectMonster: (monster: Monster, monsterGroupID: string) => void;
 	onSelectMinionSlot: (slot: EncounterSlot) => void;
+	onMonsterChange?: (monster: Monster) => void;
 }
 
 export const MonsterSlot = (props: MonsterSlotProps) => {
 	const [ setRef, size ] = useDimensions();
+	const [ expandedIds, setExpandedIds ] = useState<Set<string>>(new Set());
+
+	const toggleExpand = (id: string) => {
+		setExpandedIds(prev => {
+			const next = new Set(prev);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+	};
 
 	const showStamina = size.width >= (widthBase + widthStaminaColumn);
 	const showCharacteristics = size.width >= (widthBase + widthStaminaColumn + widthCharacteristicsColumn);
@@ -484,72 +527,96 @@ export const MonsterSlot = (props: MonsterSlotProps) => {
 				{
 					showMonsters ?
 						props.slot.monsters.map(monster => (
-							<div
-								key={monster.id}
-								className={props.slot.state.defeated || monster.state.defeated ? 'encounter-slot-row defeated' : 'encounter-slot-row'}
-								onClick={() => props.onSelectMonster(monster, monsterGroup ? monsterGroup.id : '')}
-							>
-								<div className='name-column'>
-									<MonsterInfo monster={monster} />
+							<div key={monster.id}>
+								<div
+									className={props.slot.state.defeated || monster.state.defeated ? 'encounter-slot-row defeated' : 'encounter-slot-row'}
+									onClick={() => {
+										if (props.onMonsterChange) {
+											toggleExpand(monster.id);
+										} else {
+											props.onSelectMonster(monster, monsterGroup ? monsterGroup.id : '');
+										}
+									}}
+								>
+									<div className='name-column'>
+										<MonsterInfo monster={monster} />
+										{
+											props.onMonsterChange && (
+												<span className='inline-expand-indicator'>
+													{expandedIds.has(monster.id) ? <CaretUpOutlined /> : <CaretDownOutlined />}
+												</span>
+											)
+										}
+									</div>
+									{
+										showStamina ?
+											isMinionSlot ?
+												<div className='stamina-column' />
+												:
+												<div className='stamina-column'>
+													{MonsterLogic.getStaminaDescription(monster)}
+													<HeartFilled style={{ color: 'rgb(200, 0, 0)' }} />
+												</div>
+											: null
+									}
+									{
+										showCharacteristics ?
+											<div className='characteristics-column'>
+												<div className='characteristics-column-item'>
+													<div>M</div>
+													<div>{MonsterLogic.getCharacteristic(monster, Characteristic.Might)}</div>
+												</div>
+												<div className='characteristics-column-item'>
+													<div>A</div>
+													<div>{MonsterLogic.getCharacteristic(monster, Characteristic.Agility)}</div>
+												</div>
+												<div className='characteristics-column-item'>
+													<div>R</div>
+													<div>{MonsterLogic.getCharacteristic(monster, Characteristic.Reason)}</div>
+												</div>
+												<div className='characteristics-column-item'>
+													<div>I</div>
+													<div>{MonsterLogic.getCharacteristic(monster, Characteristic.Intuition)}</div>
+												</div>
+												<div className='characteristics-column-item'>
+													<div>P</div>
+													<div>{MonsterLogic.getCharacteristic(monster, Characteristic.Presence)}</div>
+												</div>
+											</div>
+											: null
+									}
+									{
+										showStats ?
+											<div className='stats-column'>
+												<div className='stats-column-item'>
+													<div>Spd</div>
+													<div>{MonsterLogic.getSpeed(monster).value}</div>
+												</div>
+												<div className='stats-column-item'>
+													<div>Stab</div>
+													<div>{monster.stability}</div>
+												</div>
+											</div>
+											: null
+									}
+									<div className='conditions-column'>
+										<Flex gap={3}>
+											{[ 'healthy', 'injured' ].includes(MonsterLogic.getCombatState(monster)) ? null : <Tag variant='outlined'>{Format.capitalize(MonsterLogic.getCombatState(monster))}</Tag>}
+											{monster.state.hidden ? <Tag variant='outlined'>Hidden</Tag> : null}
+											{monster.state.conditions.map(c => <Tooltip title={ConditionLogic.getDescription(c.type)}><Tag key={c.id} variant='outlined'>{ConditionLogic.getFullDescription(c)}</Tag></Tooltip>)}
+										</Flex>
+									</div>
 								</div>
 								{
-									showStamina ?
-										isMinionSlot ?
-											<div className='stamina-column' />
-											:
-											<div className='stamina-column'>
-												{MonsterLogic.getStaminaDescription(monster)}
-												<HeartFilled style={{ color: 'rgb(200, 0, 0)' }} />
-											</div>
-										: null
-								}
-								{
-									showCharacteristics ?
-										<div className='characteristics-column'>
-											<div className='characteristics-column-item'>
-												<div>M</div>
-												<div>{MonsterLogic.getCharacteristic(monster, Characteristic.Might)}</div>
-											</div>
-											<div className='characteristics-column-item'>
-												<div>A</div>
-												<div>{MonsterLogic.getCharacteristic(monster, Characteristic.Agility)}</div>
-											</div>
-											<div className='characteristics-column-item'>
-												<div>R</div>
-												<div>{MonsterLogic.getCharacteristic(monster, Characteristic.Reason)}</div>
-											</div>
-											<div className='characteristics-column-item'>
-												<div>I</div>
-												<div>{MonsterLogic.getCharacteristic(monster, Characteristic.Intuition)}</div>
-											</div>
-											<div className='characteristics-column-item'>
-												<div>P</div>
-												<div>{MonsterLogic.getCharacteristic(monster, Characteristic.Presence)}</div>
-											</div>
+									props.onMonsterChange && expandedIds.has(monster.id) ? (
+										<div className='encounter-slot-inline-health' onClick={e => e.stopPropagation()}>
+											<MonsterHealthPanel
+												monster={monster}
+												onChange={props.onMonsterChange}
+											/>
 										</div>
-										: null
+									) : null
 								}
-								{
-									showStats ?
-										<div className='stats-column'>
-											<div className='stats-column-item'>
-												<div>Spd</div>
-												<div>{MonsterLogic.getSpeed(monster).value}</div>
-											</div>
-											<div className='stats-column-item'>
-												<div>Stab</div>
-												<div>{monster.stability}</div>
-											</div>
-										</div>
-										: null
-								}
-								<div className='conditions-column'>
-									<Flex gap={3}>
-										{[ 'healthy', 'injured' ].includes(MonsterLogic.getCombatState(monster)) ? null : <Tag variant='outlined'>{Format.capitalize(MonsterLogic.getCombatState(monster))}</Tag>}
-										{monster.state.hidden ? <Tag variant='outlined'>Hidden</Tag> : null}
-										{monster.state.conditions.map(c => <Tooltip title={ConditionLogic.getDescription(c.type)}><Tag key={c.id} variant='outlined'>{ConditionLogic.getFullDescription(c)}</Tag></Tooltip>)}
-									</Flex>
-								</div>
 							</div>
 						))
 						: null

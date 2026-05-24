@@ -16,7 +16,6 @@ import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { PanelMode } from '@/enums/panel-mode';
 import { Project } from '@/models/project';
 import { ProjectEditPanel } from '@/components/panels/edit/project-edit/project-edit';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -311,7 +310,7 @@ export const ProjectPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='project-panel' id={SheetFormatter.getPageId('project', props.project.id)}>
+			<div className='project-panel'>
 				<HeaderText
 					level={1}
 					tags={tags}

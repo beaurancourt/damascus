@@ -19,7 +19,6 @@ import { PanelMode } from '@/enums/panel-mode';
 import { PlusOutlined } from '@ant-design/icons';
 import { ProjectPanel } from '@/components/panels/elements/project-panel/project-panel';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -315,7 +314,7 @@ export const ItemPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='item-panel' id={SheetFormatter.getPageId('item', item.id)} style={props.style}>
+			<div className='item-panel' style={props.style}>
 				<HeaderText level={1} tags={tags}>
 					{item.name || 'Unnamed Item'}
 				</HeaderText>

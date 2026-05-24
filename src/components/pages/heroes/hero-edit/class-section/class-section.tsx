@@ -1,24 +1,18 @@
-import { Button, Drawer, Flex, Select, Space } from 'antd';
-import { CloseOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { ReactNode, useState } from 'react';
+import { Button, Select, Space } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import { Characteristic } from '@/enums/characteristic';
-import { CheckIcon } from '@/components/controls/check-icon/check-icon';
 import { ClassPanel } from '@/components/panels/elements/class-panel/class-panel';
 import { Collections } from '@/utils/collections';
 import { Element } from '@/models/element';
-import { Empty } from '@/components/controls/empty/empty';
 import { EmptyMessage } from '@/components/pages/heroes/hero-edit/empty-message/empty-message';
-import { Expander } from '@/components/controls/expander/expander';
-import { FeatureConfigPanel } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { FeatureData } from '@/models/feature';
-import { FeatureLogic } from '@/logic/feature-logic';
 import { Field } from '@/components/controls/field/field';
 import { Format } from '@/utils/format';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { HeroClass } from '@/models/class';
 import { HeroLogic } from '@/logic/hero-logic';
-import { Modal } from '@/components/modals/modal/modal';
+import { Markdown } from '@/components/controls/markdown/markdown';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { PanelMode } from '@/enums/panel-mode';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
@@ -26,13 +20,12 @@ import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { StatsRow } from '@/components/panels/stats-row/stats-row';
 import { SubClass } from '@/models/subclass';
-import { SubClassSelectModal } from '@/components/modals/select/subclass-select/subclass-select-modal';
-import { SubclassPanel } from '@/components/panels/elements/subclass-panel/subclass-panel';
 import { Utils } from '@/utils/utils';
-import { useIsSmall } from '@/hooks/use-is-small';
+import { useState } from 'react';
 import { useOptions } from '@/contexts/data-context';
 
 import './class-section.scss';
+import '@/components/features/feature-data/choice.scss';
 
 const matchElement = (element: Element, searchTerm: string) => {
 	const name = element.name.toLowerCase();
@@ -57,113 +50,7 @@ interface Props {
 }
 
 export const ClassSection = (props: Props) => {
-	const isSmall = useIsSmall();
 	const appOptions = useOptions();
-	const [ selectedSubClass, setSelectedSubClass ] = useState<SubClass | null>(null);
-	const [ subclassSelectorOpen, setSubclassSelectorOpen ] = useState<boolean>(false);
-
-	const getClassOptions = (heroClass: HeroClass) => {
-		const options = {
-			level: 0,
-			choices: [] as ReactNode[],
-			completed: !HeroLogic.canLevelUp(props.hero, appOptions)
-				&& (heroClass.primaryCharacteristics.length > 0)
-				&& heroClass.characteristics.some(ch => ch.value !== 0)
-				&& (heroClass.subclasses.filter(sc => sc.selected).length >= heroClass.subclassCount)
-		};
-
-		options.choices.push(
-			<SelectablePanel key='class-level'>
-				<HeaderText>Level</HeaderText>
-				<NumberSpin
-					value={heroClass.level}
-					min={1}
-					max={heroClass.featuresByLevel.length}
-					onChange={value => props.setLevel(value)}
-				/>
-				<Field label='XP' value={props.hero.state.xp} />
-				{
-					HeroLogic.canLevelUp(props.hero, appOptions) ?
-						<Button
-							className='status-warning'
-							onClick={() => props.setLevel(heroClass.level + 1)}
-						>
-							Advance to level {heroClass.level + 1}
-						</Button>
-						: null
-				}
-			</SelectablePanel>
-		);
-
-		options.choices.push(
-			<SelectablePanel key='characteristics'>
-				<Characteristics
-					heroClass={heroClass}
-					selectPrimaryCharacteristics={props.selectPrimaryCharacteristics}
-					selectCharacteristics={props.selectCharacteristics}
-				/>
-			</SelectablePanel>
-		);
-
-		if (heroClass.subclassCount > 0) {
-			options.choices.push(
-				<SelectablePanel key='subclass'>
-					<HeaderText>{heroClass.subclassName}</HeaderText>
-					<div className='ds-text'>Choose {heroClass.subclassCount === 1 ? `${Format.startsWithVowel(heroClass.subclassName || 'subclass') ? 'an' : 'a'} ${heroClass.subclassName || 'subclass'}` : `${heroClass.subclassCount} ${heroClass.subclassName || 'subclasse'}s`}.</div>
-					{
-						heroClass.subclasses
-							.filter(sc => sc.selected)
-							.map(sc => (
-								<Flex key={sc.id} align='center'>
-									<Field
-										style={{ flex: '1 1 0' }}
-										label={sc.name}
-										value={sc.description}
-									/>
-									<Flex vertical={true}>
-										<Button
-											style={{ flex: '0 0 auto' }}
-											type='text'
-											title='Select'
-											icon={<InfoCircleOutlined />}
-											onClick={() => setSelectedSubClass(sc)}
-										/>
-										<Button
-											style={{ flex: '0 0 auto' }}
-											type='text'
-											title='Remove'
-											icon={<CloseOutlined />}
-											onClick={() => props.removeSubclass(sc.id)}
-										/>
-									</Flex>
-								</Flex>
-							))
-					}
-					{
-						heroClass.subclasses.filter(sc => sc.selected).length < heroClass.subclassCount ?
-							<Button className='status-warning' block={true} onClick={() => setSubclassSelectorOpen(true)}>
-								Choose {Format.startsWithVowel(heroClass.subclassName || 'subclass') ? 'an' : 'a'} {heroClass.subclassName || 'subclass'}
-							</Button>
-							: null
-					}
-					<Drawer open={subclassSelectorOpen} onClose={() => setSubclassSelectorOpen(false)} closeIcon={null} size={500}>
-						<SubClassSelectModal
-							subClasses={heroClass.subclasses.filter(sc => !sc.selected)}
-							classID={heroClass.id}
-							sourcebooks={props.sourcebooks}
-							onSelect={sc => {
-								setSubclassSelectorOpen(false);
-								props.addSubclass(sc);
-							}}
-							onClose={() => setSubclassSelectorOpen(false)}
-						/>
-					</Drawer>
-				</SelectablePanel>
-			);
-		}
-
-		return options;
-	};
 
 	const classes = SourcebookLogic.getClasses(props.sourcebooks).map(Utils.copy).filter(c => matchElement(c, props.searchTerm));
 	const options = classes.map(c => (
@@ -172,97 +59,116 @@ export const ClassSection = (props: Props) => {
 		</SelectablePanel>
 	));
 
-	const choicesByLevel: { level: number, choices: ReactNode[], completed: boolean }[] = [];
+	const heroClass = props.hero.class;
 
-	if (props.hero.class) {
-		choicesByLevel.push(getClassOptions(props.hero.class));
-
-		const features = FeatureLogic.getFeaturesFromClass(props.hero.class, props.hero);
-
-		for (let level = 1; level <= 10; ++level) {
-			const featuresForLevel = features.filter(f => f.level === level).map(f => f.feature);
-			if (featuresForLevel.length > 0) {
-				choicesByLevel.push({
-					level: level,
-					choices: featuresForLevel
-						.filter(f => FeatureLogic.isChoice(f))
-						.map(f => (
-							<SelectablePanel key={f.id}>
-								<FeatureConfigPanel feature={f} hero={props.hero} sourcebooks={props.sourcebooks} setData={props.setFeatureData} />
-							</SelectablePanel>
-						)),
-					completed: featuresForLevel.every(f => FeatureLogic.isChosen(f, props.hero, props.sourcebooks))
-				});
+	const renderLevelBlock = (cls: HeroClass) => (
+		<div>
+			<HeaderText>Level</HeaderText>
+			<NumberSpin
+				value={cls.level}
+				min={1}
+				max={cls.featuresByLevel.length}
+				onChange={value => props.setLevel(value)}
+			/>
+			<Field label='XP' value={props.hero.state.xp} />
+			{
+				HeroLogic.canLevelUp(props.hero, appOptions) ?
+					<Button
+						className='status-warning'
+						onClick={() => props.setLevel(cls.level + 1)}
+					>
+						Advance to level {cls.level + 1}
+					</Button>
+					: null
 			}
-		}
-	}
+		</div>
+	);
 
-	let columnClassName = 'hero-edit-content-column selected';
-	if (choicesByLevel.length === 0) {
-		columnClassName += ' single-column';
-	}
+	const renderSubclassBlock = (cls: HeroClass) => {
+		if (cls.subclassCount === 0) {
+			return null;
+		}
+
+		const selectedIDs = cls.subclasses.filter(sc => sc.selected).map(sc => sc.id);
+		const subclasses = Collections.sort(cls.subclasses, sc => sc.name);
+
+		const toggleSubclass = (sc: SubClass) => {
+			if (sc.selected) {
+				props.removeSubclass(sc.id);
+			} else if (selectedIDs.length < cls.subclassCount) {
+				props.addSubclass(sc);
+			}
+		};
+
+		const article = Format.startsWithVowel(cls.subclassName || 'subclass') ? 'an' : 'a';
+		const subclassLabel = cls.subclassName || 'subclass';
+		const prompt = cls.subclassCount === 1
+			? `Choose ${article} ${subclassLabel}.`
+			: `Choose ${cls.subclassCount} ${subclassLabel}s.`;
+
+		return (
+			<div>
+				<HeaderText>{Format.capitalize(subclassLabel)}{cls.subclassCount > 1 ? 's' : ''}</HeaderText>
+				<div className='ds-text'>{prompt}</div>
+				{
+					subclasses.map(sc => {
+						const isSelected = !!sc.selected;
+						const overLimit = !isSelected && selectedIDs.length >= cls.subclassCount;
+						return (
+							<div
+								key={sc.id}
+								className={`choice-option${isSelected ? ' selected' : ''}${overLimit ? ' disabled' : ''}`}
+								onClick={() => !overLimit && toggleSubclass(sc)}
+							>
+								<div className='choice-option-indicator'>{isSelected ? '●' : '○'}</div>
+								<div className='choice-option-body'>
+									<div className='choice-option-name'>{sc.name}</div>
+									<div className='choice-option-content'><Markdown text={sc.description} useSpan={true} /></div>
+								</div>
+							</div>
+						);
+					})
+				}
+			</div>
+		);
+	};
 
 	return (
 		<div className='hero-edit-content class-section'>
 			{
-				props.hero.class && (!isSmall || (choicesByLevel.length === 0)) ?
-					<div className={columnClassName} id='class-selected'>
-						<SelectablePanel>
-							<ClassPanel heroClass={props.hero.class} hero={props.hero} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
-						</SelectablePanel>
+				heroClass ?
+					<div className='hero-edit-content-column selected single-column' id='class-selected'>
+						{renderLevelBlock(heroClass)}
+						<Characteristics
+							heroClass={heroClass}
+							selectPrimaryCharacteristics={props.selectPrimaryCharacteristics}
+							selectCharacteristics={props.selectCharacteristics}
+						/>
+						{renderSubclassBlock(heroClass)}
+						<ClassPanel
+							heroClass={heroClass}
+							hero={props.hero}
+							sourcebooks={props.sourcebooks}
+							mode={PanelMode.Full}
+							setFeatureData={props.setFeatureData}
+						/>
 					</div>
 					: null
 			}
 			{
-				!props.hero.class && (options.length > 0) ?
+				!heroClass && (options.length > 0) ?
 					<div className='hero-edit-content-column grid' id='class-list'>
 						{options}
 					</div>
 					: null
 			}
 			{
-				!props.hero.class && (options.length === 0) ?
+				!heroClass && (options.length === 0) ?
 					<div className='hero-edit-content-column' id='class-list'>
 						<EmptyMessage hero={props.hero} />
 					</div>
 					: null
 			}
-			{
-				choicesByLevel.length > 0 ?
-					<div className='hero-edit-content-column choices' id='class-choices'>
-						<HeaderText>Choices</HeaderText>
-						{
-							choicesByLevel.map(lvl => (
-								<Expander
-									key={lvl.level}
-									title={lvl.level === 0 ? 'Class Choices' : `Level ${lvl.level} Choices`}
-									expandedByDefault={!lvl.completed}
-									extra={[
-										lvl.completed ?
-											<CheckIcon key='completed' state='success' />
-											: null
-									]}
-								>
-									<Space orientation='vertical' size={20} style={{ width: '100%' }}>
-										{lvl.choices}
-										{
-											lvl.choices.length === 0 ?
-												<Empty text='Nothing to choose for this level' />
-												: null
-										}
-									</Space>
-								</Expander>
-							))
-						}
-					</div>
-					: null
-			}
-			<Drawer open={!!selectedSubClass} onClose={() => setSelectedSubClass(null)} closeIcon={null} size={500}>
-				<Modal
-					content={selectedSubClass ? <SubclassPanel subclass={selectedSubClass} sourcebooks={props.sourcebooks} mode={PanelMode.Full} /> : null}
-					onClose={() => setSelectedSubClass(null)}
-				/>
-			</Drawer>
 		</div>
 	);
 };
@@ -317,7 +223,7 @@ const Characteristics = (props: CharacteristicsProps) => {
 
 	if ((props.heroClass.primaryCharacteristicsOptions.length > 1) && (props.heroClass.primaryCharacteristics.length === 0)) {
 		return (
-			<>
+			<div>
 				{getHeader()}
 				<div className='ds-text'>
 					Your class allows you to choose your primary characteristics.
@@ -334,13 +240,13 @@ const Characteristics = (props: CharacteristicsProps) => {
 						props.selectPrimaryCharacteristics(data.array);
 					}}
 				/>
-			</>
+			</div>
 		);
 	}
 
 	if (array.length === 0) {
 		return (
-			<>
+			<div>
 				{getHeader()}
 				<Space orientation='vertical' style={{ width: '100%' }}>
 					<div className='ds-text'>
@@ -355,13 +261,13 @@ const Characteristics = (props: CharacteristicsProps) => {
 							))
 					}
 				</Space>
-			</>
+			</div>
 		);
 	}
 
 	if (values.length === 0) {
 		return (
-			<>
+			<div>
 				{getHeader()}
 				<div className='ds-text'>
 					Choose your characteristics.
@@ -389,12 +295,12 @@ const Characteristics = (props: CharacteristicsProps) => {
 							</StatsRow>
 						))
 				}
-			</>
+			</div>
 		);
 	}
 
 	return (
-		<>
+		<div>
 			{getHeader()}
 			<StatsRow>
 				{
@@ -408,6 +314,6 @@ const Characteristics = (props: CharacteristicsProps) => {
 					))
 				}
 			</StatsRow>
-		</>
+		</div>
 	);
 };

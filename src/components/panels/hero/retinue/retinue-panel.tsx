@@ -43,7 +43,7 @@ export const RetinuePanel = (props: Props) => {
 				{
 					monsters.length > 0 ?
 						<>
-							<div className={`retinue-grid ${useRows ? 'compact' : ''} ${options.abilityWidth.toLowerCase().replace(' ', '-')}`}>
+							<div className={`retinue-grid ${useRows ? 'compact' : ''} medium`}>
 								{
 									Collections.sort(monsters, m => m.monster.name).map(m =>
 										useRows ?
@@ -64,7 +64,7 @@ export const RetinuePanel = (props: Props) => {
 					followers.length > 0 ?
 						<>
 							<HeaderText level={options.compactView ? 3 : 1}>Followers</HeaderText>
-							<div className={`retinue-grid ${useRows ? 'compact' : ''} ${options.abilityWidth.toLowerCase().replace(' ', '-')}`}>
+							<div className={`retinue-grid ${useRows ? 'compact' : ''} medium`}>
 								{
 									followers.map(follower =>
 										useRows ?
@@ -85,7 +85,7 @@ export const RetinuePanel = (props: Props) => {
 					fixtures.length > 0 ?
 						<>
 							<HeaderText level={options.compactView ? 3 : 1}>Fixtures</HeaderText>
-							<div className={`retinue-grid ${useRows ? 'compact' : ''} ${options.abilityWidth.toLowerCase().replace(' ', '-')}`}>
+							<div className={`retinue-grid ${useRows ? 'compact' : ''} medium`}>
 								{
 									fixtures.map(fixture =>
 										useRows ?

@@ -15,7 +15,6 @@ import { InfoFeature } from '@/components/features/feature';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { PanelMode } from '@/enums/panel-mode';
 import { Perk } from '@/models/perk';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -123,7 +122,7 @@ export const FeaturePanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className={props.mode === PanelMode.Full ? 'feature-panel' : 'feature-panel compact'} id={props.mode === PanelMode.Full ? SheetFormatter.getPageId('feaure', props.feature.id) : undefined} style={props.style}>
+			<div className={props.mode === PanelMode.Full ? 'feature-panel' : 'feature-panel compact'} style={props.style}>
 				<HeaderText
 					ribbon={
 						props.cost === 'signature' ?

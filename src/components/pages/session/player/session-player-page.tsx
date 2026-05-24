@@ -83,7 +83,7 @@ export const SessionPlayerPage = (props: Props) => {
 	return (
 		<ErrorBoundary>
 			<div className='session-player-page'>
-				<AppHeader subheader='Forge Steel' />
+				<AppHeader subheader='Damascus' />
 				<ErrorBoundary>
 					<div className='session-player-page-content'>
 						{getContent()}

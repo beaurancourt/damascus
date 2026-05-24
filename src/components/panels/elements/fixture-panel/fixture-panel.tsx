@@ -9,7 +9,6 @@ import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { PanelMode } from '@/enums/panel-mode';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { Space } from 'antd';
 
@@ -25,7 +24,7 @@ interface Props {
 export const FixturePanel = (props: Props) => {
 	return (
 		<ErrorBoundary>
-			<div className={props.mode === PanelMode.Full ? 'fixture-panel' : 'fixture-panel compact'} id={props.mode === PanelMode.Full ? SheetFormatter.getPageId('fixture', props.fixture.id) : undefined}>
+			<div className={props.mode === PanelMode.Full ? 'fixture-panel' : 'fixture-panel compact'}>
 				<HeaderText level={1}>{props.fixture.name || 'Unnamed Fixture'}</HeaderText>
 				<FixtureLabel fixture={props.fixture} />
 				<Field label='Stamina' value={FixtureLogic.getStamina(props.fixture)} />

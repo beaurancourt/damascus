@@ -3,6 +3,9 @@ import { RulesItem } from '@/models/rules-item';
 export class RulesData {
 	static abilityDistance: RulesItem = {
 		label: 'Ability Distance',
+		section: 'Classes',
+		ancestors: [ 'Abilities' ],
+		page: 86,
 		content: `
 An ability’s “Distance” entry indicates how close you need to be to a creature or object to affect that target with the ability.
 
@@ -36,6 +39,9 @@ An area ability might use any of the following areas of effect.
 
 	static abilityTarget: RulesItem = {
 		label: 'Ability Target',
+		section: 'Classes',
+		ancestors: [ 'Abilities' ],
+		page: 88,
 		content: `
 The “Target” entry of an ability notes the number of creatures, objects, or both who can be targeted by that ability. You can always affect fewer targets than the number indicated by this entry.
 
@@ -58,6 +64,8 @@ You aren’t an eligible target for your own abilities that target allies unless
 
 	static assist: RulesItem = {
 		label: 'Assisting a Test',
+		section: 'Tests',
+		page: 273,
 		content: `
 You can attempt to assist another creature with a test they make, provided you have a skill that applies to the test, the other creature isn’t using that same skill on the test, and you can describe how your character helps to the Director’s satisfaction. In other words, your attempt to help has to make sense, and you have to bring some useful expertise to the table. Helping another creature sneak by shouting encouragement at them isn’t going to make them stealthier.
 
@@ -74,6 +82,10 @@ For example, when an ally tries to pick a jailer’s pocket, you might attempt t
 
 	static burrowing: RulesItem = {
 		label: 'Burrowing',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement', 'Movement Types' ],
+		page: 283,
 		content: `
 A creature who has “burrow” in their speed entry, or who gains the temporary ability to burrow, can move through dirt horizontally, and either has the means to breathe while doing so or doesn’t require air to live. Such creatures can’t move through more solid ground, such as stone, unless their stat block or the effect that lets them burrow says otherwise. Similarly, a burrowing creature doesn’t leave a tunnel unless the rules say so.
 
@@ -107,6 +119,10 @@ If a creature who can’t burrow wants to dig into the ground, they can use the 
 
 	static climbingAndSwimming: RulesItem = {
 		label: 'Climbing / Swimming',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement', 'Movement Types' ],
+		page: 284,
 		content: `
 A creature who has “climb” in their speed entry, or who gains the temporary ability to automatically climb, can climb across vertical and horizontal surfaces at full speed. Likewise, a creature who has “swim” in their speed entry, or who gains the temporary ability to automatically swim, can swim in liquid at full speed.
 
@@ -137,24 +153,35 @@ If you are knocked prone while climbing or riding a creature, you fall and land 
 
 	static concealment: RulesItem = {
 		label: 'Concealment',
+		section: 'Combat',
+		page: 291,
 		content: `
 Darkness, fog, invisibility magic, and any other effect that fully obscures a creature or object but doesn’t protect their physical form grants that creature or object concealment. Even if you have line of effect to such a target, a creature or object has concealment from you if you can’t see or otherwise observe them. You can target a creature or object with concealment using a strike, provided they aren’t hidden. However, strikes against such targets take a bane.`
 	};
 
 	static cover: RulesItem = {
 		label: 'Cover',
+		section: 'Combat',
+		page: 291,
 		content: `
 When you have line of effect to a creature or object but that target has at least half their form blocked by a solid object such as a tree, wall, or overturned table, the target has cover. You take a bane on damage-dealing abilities used against creatures or objects that have cover from you.`
 	};
 
 	static crawling: RulesItem = {
 		label: 'Crawling',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement', 'Movement Types' ],
+		page: 284,
 		content: `
 If you are prone, you can remain prone and crawl on the ground. Doing so costs you 1 additional square of movement for every square you crawl. If you intentionally want to crawl, you can fall prone as a free maneuver. While voluntarily prone, you can choose to stand as a free maneuver.`
 	};
 
 	static criticalHit: RulesItem = {
 		label: 'Critical Hit',
+		section: 'Classes',
+		ancestors: [ 'Abilities' ],
+		page: 90,
 		content: `
 Whenever you make an ability roll as a main action and the roll is a natural 19 or natural 20 — a total of 19 or 20 before adding your characteristic score or other modifiers — you score a critical hit. A critical hit allows you to immediately take an additional main action after resolving the power roll, whether or not it’s your turn and even if you are dazed (see Conditions below).
 
@@ -163,12 +190,18 @@ You can’t score a critical hit with an ability roll made as a maneuver or any 
 
 	static damagingTerrain: RulesItem = {
 		label: 'Damaging Terrain',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement' ],
+		page: 285,
 		content: ` 
 Areas of acid, fire, sharp rocks, lava, or any other terrain that causes damage to creatures within it is damaging terrain. The damage dealt by damaging terrain is noted in the terrain’s description or in the description of the effect that creates the terrain.`
 	};
 
 	static damageAndEffect: RulesItem = {
 		label: 'Damage and Effect',
+		section: 'Combat',
+		page: 292,
 		content: `
 Strikes and area abilities can deal damage and have an additional effect on a target. The damage and the strength of the effect are determined by the ability roll.
 
@@ -185,17 +218,26 @@ Unless otherwise indicated, any effects that are determined by a power roll’s 
 
 	static difficultTerrain: RulesItem = {
 		label: 'Difficult Terrain',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement' ],
+		page: 285,
 		content: `
 Areas of thick underbrush, rubble, spiderwebs, or other obstacles to movement create difficult terrain. It costs 1 additional square of movement to enter a square of difficult terrain.`
 	};
 
 	static duringTheMove: RulesItem = {
 		label: 'During the Move',
+		section: 'Combat',
+		page: 282,
 		content: 'Certain ability effects allow you to move and affect other creatures or objects during that move, such as the shadow’s One Hundred Throats ability. For such abilities, the move begins in the space you first leave when you start the move and ends in the last space you move into.'
 	};
 
 	static dyingAndDeath: RulesItem = {
 		label: 'Dying and Death',
+		section: 'Combat',
+		ancestors: [ 'Stamina' ],
+		page: 293,
 		content: `
 When your Stamina is 0 or lower, you are dying. While dying, you can’t take the Catch Breath maneuver in combat, and you are bleeding, and this condition can’t be removed in any way until you are no longer dying. While you are dying, your allies can help you spend Recoveries in combat, and you can spend Recoveries out of combat as usual.
 
@@ -204,6 +246,10 @@ While your Stamina is lower than 0, if it reaches the negative of your winded va
 
 	static falling: RulesItem = {
 		label: 'Falling',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement' ],
+		page: 284,
 		content: `
 When a creature falls 2 or more squares and lands on the ground, they take 2 damage for each square they fall (to a maximum of 50 damage) and land prone. A creature who falls can reduce the effective height of the fall by a number of squares equal to their Agility score (to a minimum of 0). Falling into liquid that is 1 square or more deep reduces the effective height of a fall by 4 squares (to a minimum of 0).
 
@@ -216,6 +262,8 @@ Falling is not forced movement, but being force moved downward is considered fal
 
 	static flanking: RulesItem = {
 		label: 'Flanking',
+		section: 'Combat',
+		page: 291,
 		content: `
 When you and one or more allies are adjacent to the same enemy and on opposite sides of the enemy, you are flanking that enemy. While flanking an enemy, you gain an edge on melee strikes against them.
 
@@ -226,12 +274,20 @@ You must have line of effect to the enemy and be able to take triggered actions 
 
 	static flying: RulesItem = {
 		label: 'Flying',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement', 'Movement Types' ],
+		page: 284,
 		content: `
 A creature who has “fly” in their speed entry, or who gains the temporary ability to fly, can move through the air vertically or horizontally at full speed and remain in midair. If a flying creature is knocked prone or has their speed reduced to 0, they fall.`
 	};
 
 	static forcedMovement: RulesItem = {
 		label: 'Forced Movement',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement' ],
+		page: 285,
 		content: `
 Some actions and maneuvers allow a creature to push, pull, or slide a target creature or object a specific distance across the battlefield. Collectively, these types of movement are called forced movement:
 
@@ -262,6 +318,9 @@ Some creatures can force move multiple creatures or objects with a single abilit
 
 	static hiding: RulesItem = {
 		label: 'Hiding',
+		section: 'Tests',
+		ancestors: [ 'Hide and Sneak' ],
+		page: 273,
 		content: `
 To hide from a creature, you must have cover or concealment from that creature (see Chapter 10: Combat), who can’t observe you attempting to hide. A creature is observing you if they’re aware of your specific location before you attempt to hide. This means they can pinpoint you with their senses and point a finger (or paw or tentacle) at you as if to shout, “There they are!” If you duck behind a barrel to hide from a foe, your attempt to hide has a chance of succeeding only if your foe doesn’t notice you doing so. If you’re being chased by a hungry dragon, you can hide only if you first move to a location where the dragon can’t observe you—for instance, by turning a sharp corner into a tunnel full of giant stalagmites before the dragon does. You then make your hide attempt.
 
@@ -282,6 +341,10 @@ If a creature is hidden from your allies but not from you, you can use a maneuve
 
 	static highGround: RulesItem = {
 		label: 'High Ground',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement' ],
+		page: 285,
 		content: `
 Whenever a creature uses an ability to target a creature or object while standing on the ground and occupying a space that is fully above the target’s space, they gain an edge on the power roll against that target. To be fully above a target, the bottom of a creature’s space must be higher than or bordering on the top of the target’s space.
 
@@ -290,18 +353,30 @@ A creature can gain this benefit while climbing only if they have “climb” in
 
 	static hover: RulesItem = {
 		label: 'Hover',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement', 'Movement Types' ],
+		page: 284,
 		content: `
 A creature who has “hover” in their speed entry (most commonly alongside “fly” or “teleport”), or who gains the temporary ability to hover, can remain motionless in midair. They don’t fall even if they are knocked prone or their speed is reduced to 0.`
 	};
 
 	static invisibility: RulesItem = {
 		label: 'Invisible Creatures',
+		section: 'Combat',
+		parent: 'Concealment',
+		ancestors: [ 'Concealment' ],
+		page: 291,
 		content: `
 Invisible creatures always have concealment from other creatures. If an invisible creature isn’t hidden, they can still be targeted by abilities. The test made to find a hidden creature who is invisible takes a bane.`
 	};
 
 	static jumping: RulesItem = {
 		label: 'Jumping',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement', 'Movement Types' ],
+		page: 284,
 		content: `
 Whenever an effect allows you to move (including using the Advance move action), you can automatically long jump a number of squares up to your Might or Agility score (your choice; minimum 1 square) as part of that movement. The height of your jump is automatically 1 square as part of that movement.
 
@@ -320,6 +395,8 @@ You can’t jump farther or higher than the distance of the effect that allows y
 
 	static mainAction: RulesItem = {
 		label: 'Main Action',
+		section: 'Combat',
+		page: 289,
 		content: `
 When you take a main action, you most often do so to use a unique ability granted by your class, kit, or a treasure. These abilities represent the most unique, flavorful, and impactful things you can do with your main action.
 
@@ -331,6 +408,8 @@ You can convert your main action into a maneuver or a move action, allowing you 
 
 	static mountedCombat: RulesItem = {
 		label: 'Mounted Combat',
+		section: 'Combat',
+		page: 294,
 		content: `
 A willing creature with the Mount role can serve as your mount as long as their size is greater than yours. You can climb onto your mount freely (see Climbing Other Creatures above). You determine which space you occupy. While mounted, you can take the Ride move action, but a mount can only be ridden this way once per round. Both mount and rider each take a turn during combat.
 
@@ -341,6 +420,8 @@ If your mount dies, they fall prone, and you fall off them and land prone in the
 
 	static movement: RulesItem = {
 		label: 'Movement',
+		section: 'Combat',
+		page: 282,
 		content: `
 During combat, creatures can employ multiple mechanics that allow them to move around the battlefield. The most common of those mechanics is the Advance or Disengage move action (detailed under Move Actions below), but abilities granted by your class, equipment, ancestry, title, or other options might allow you other ways to move.
 
@@ -359,6 +440,9 @@ At the Director’s discretion, you can be forced into the same space as another
 
 	static naturalRoll: RulesItem = {
 		label: 'Natural Roll',
+		section: 'The Basics',
+		ancestors: [ 'Power Rolls', 'Making a Power Roll' ],
+		page: 20,
 		content: `
 The total of your power roll before your characteristic or any other modifiers are added is called the natural roll. The rules often refer to this as “rolling a natural X,” where X is the total of the roll. For example, if you get a 20 on a power roll before adding your characteristic, this is called rolling a natural 20.
 
@@ -367,6 +451,9 @@ When you roll a natural 19 or 20 on a power roll, it is always a tier 3 result r
 
 	static opportunityAttack: RulesItem = {
 		label: 'Opportunity Attack',
+		section: 'Combat',
+		ancestors: [ 'Free Strikes' ],
+		page: 290,
 		content: `
 Whenever a creature has an enemy adjacent to them and the enemy willingly moves to a space that isn’t adjacent to the creature without shifting, the creature can take advantage of that movement to quickly make a melee free strike against the enemy as a free triggered action. This is called an opportunity attack.
 
@@ -375,6 +462,9 @@ If a creature has a bane or double bane on the power roll against the enemy, the
 
 	static rollVsMultipleCreatures: RulesItem = {
 		label: 'Roll vs Multiple Creatures',
+		section: 'Classes',
+		ancestors: [ 'Abilities' ],
+		page: 90,
 		content: `
 When an ability has multiple targets (whether a strike with more than one target or an area affect), you make one power roll and apply the total to all targets. If you have edges or banes (see Chapter 1: The Basics) against some but not all of your targets, you might apply a different tier outcome to individual targets. 
 
@@ -383,6 +473,10 @@ For example, if you target three creatures with a strike ability and the power r
 
 	static shifting: RulesItem = {
 		label: 'Shifting',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement' ],
+		page: 283,
 		content: `
 Shifting is a careful form of movement that allows a creature to move safely past dangerous foes. Certain abilities, features, and other rules allow you to shift a specific number of squares, sometimes up to your speed. Whenever you shift, creatures can’t make opportunity attacks against you triggered by that movement.
 
@@ -391,6 +485,10 @@ You can’t shift into or while within difficult terrain or damaging terrain. If
 
 	static slammingCreatures: RulesItem = {
 		label: 'Slamming into Creatures',
+		section: 'Combat',
+		parent: 'Forced Movement',
+		ancestors: [ 'Movement', 'Forced Movement' ],
+		page: 286,
 		content: `
 When you force move a creature into another creature, the movement ends and both creatures take 1 damage for each square remaining in the first creature’s forced movement. You can also force move an object into a creature. The object’s movement ends, and the creature takes 1 damage for each square remaining in the object’s forced movement.
 
@@ -403,6 +501,10 @@ You can force move another creature into yourself with a pull or a slide.`
 
 	static slammingObjects: RulesItem = {
 		label: 'Slamming into Objects',
+		section: 'Combat',
+		parent: 'Forced Movement',
+		ancestors: [ 'Movement', 'Forced Movement' ],
+		page: 287,
 		content: `
 When a creature force moves a target into a stationary object that is the target’s size or larger and the object doesn’t break (see below), the movement ends and the target takes 2 damage plus 1 damage for each square remaining in their forced movement.
 
@@ -420,12 +522,17 @@ If any forced movement remains after the object is destroyed, you can continue t
 
 	static sneaking: RulesItem = {
 		label: 'Sneaking',
+		section: 'Tests',
+		ancestors: [ 'Hide and Sneak' ],
+		page: 274,
 		content: `
 While you are hidden from another creature and not in combat, you can attempt to sneak—avoiding the senses of other creatures as you move around them in the open—to remain hidden. While sneaking, your speed is halved. To sneak, you make an Agility test using the Sneak skill with a difficulty set by the Director. If you succeed, you remain hidden during your movement. This test can use another characteristic at the Director’s discretion, such as using Presence to blend in with a crowd on a packed city street.`
 	};
 
 	static suffocating: RulesItem = {
 		label: 'Suffocating',
+		section: 'Combat',
+		page: 293,
 		content: `
 During combat or under similarly stressful circumstances, you can hold your breath for a number of combat rounds equal to your Might score (minimum 1 round). At the end of each combat round after that, you take 1d6 damage while holding your breath.
 
@@ -434,6 +541,9 @@ Out of combat, you can hold your breath for a number of minutes equal to your Mi
 
 	static surprise: RulesItem = {
 		label: 'Surprise',
+		section: 'Combat',
+		ancestors: [ 'Combat Round' ],
+		page: 281,
 		content: `
 When battle starts, the Director determines which creatures, if any, are caught off guard. Any creature who isn’t ready for combat at the start of an encounter is surprised until the end of the first combat round. A surprised creature can’t take triggered actions or free triggered actions, and ability rolls made against them gain an edge.
 
@@ -442,12 +552,18 @@ For example, if the heroes sneak up unnoticed on a camp of marauders and attack,
 
 	static takingATurn: RulesItem = {
 		label: 'Taking a Turn',
+		section: 'Combat',
+		page: 282,
 		content: `
 Each creature in combat—whether hero, adversary, or something in between—gets to take a main action, a maneuver, and a move action on their turn. Each combatant can perform their maneuver and main action in any order, and can break up the movement granted by their move action before, after, or between their maneuver and main action however they like. You can also turn your main action into a move action or a maneuver, so that your turn can alternatively consist of two move actions and a maneuver, or two maneuvers and a move action.`
 	};
 
 	static teleporting: RulesItem = {
 		label: 'Teleporting',
+		section: 'Combat',
+		parent: 'Movement',
+		ancestors: [ 'Movement', 'Movement Types' ],
+		page: 284,
 		content: `
 When a creature teleports, they move from one space to another space instantaneously. The following rules apply to teleporting:
 
@@ -464,12 +580,17 @@ When a creature teleports, they move from one space to another space instantaneo
 
 	static underwaterCombat: RulesItem = {
 		label: 'Underwater Combat',
+		section: 'Combat',
+		page: 293,
 		content: `
 If a creature is fully submerged in water, they have fire immunity 5 and lightning weakness 5. If their speed doesn’t have the Swim keyword, all their power rolls take a bane.`
 	};
 
 	static wieldingTreasures: RulesItem = {
 		label: 'Wielding Treasures',
+		section: 'Rewards',
+		ancestors: [ 'Treasures', 'Found, Earned, or Crafted' ],
+		page: 329,
 		content: `
 Some treasures are wielded in the form of weapons or implements. A weapon might have the Light Weapon, Medium Weapon, or Heavy Weapon keywords, or might have a keyword denoting a specific category of weapon (Bow, Polearm, and so forth). An implement might have the Implement keyword or a keyword denoting the type of implement (Orb, Wand, and so forth). Armor is also considered a wielded treasure, with the Light Armor, Medium Armor, or Heavy Armor keywords, or the Shield keyword.
 

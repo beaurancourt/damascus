@@ -1,5 +1,5 @@
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
-import { Button, Segmented, Select, Space } from 'antd';
+import { Button, Segmented, Space } from 'antd';
 import { CloseOutlined, SaveOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { CultureData, EnvironmentData, OrganizationData, UpbringingData } from '@/data/culture-data';
 import { Feature, FeatureClassAbilityData, FeatureData } from '@/models/feature';
@@ -377,13 +377,6 @@ export const HeroEditPage = (props: Props) => {
 		setDirty(true);
 	};
 
-	const setSettingIDs = (settingIDs: string[]) => {
-		const heroCopy = Utils.copy(hero);
-		heroCopy.sourcebookIDs = settingIDs;
-		setHero(heroCopy);
-		setDirty(true);
-	};
-
 	const saveChanges = () => {
 		props.saveChanges(hero);
 		setDirty(false);
@@ -435,40 +428,35 @@ export const HeroEditPage = (props: Props) => {
 				break;
 		}
 
+		const tabs = [ 'start', 'ancestry', 'culture', 'career', 'class', 'complication', 'details' ] as const;
 		return (
 			<div className='page-controls'>
 				{
 					isSmall ?
-						<Select
-							style={{ width: '100%' }}
-							options={([
-								'start',
-								'ancestry',
-								'culture',
-								'career',
-								'class',
-								'complication',
-								'details'
-							] as const).map(tab => ({
-								value: tab,
-								label: <div className='ds-text'>{Format.capitalize(tab, '-')}</div>
-							}))}
-							value={page}
-							onChange={value => navigation.goToHeroEdit(heroID!, value)}
-						/>
+						<div className='hero-edit-chip-strip' role='tablist' aria-label='Hero builder sections'>
+							{tabs.map(tab => {
+								const state = getPageState(tab);
+								const stateClass = state.toLowerCase().replace(' ', '-');
+								return (
+									<button
+										key={tab}
+										type='button'
+										role='tab'
+										aria-selected={page === tab}
+										className={`hero-edit-chip ${stateClass}${page === tab ? ' selected' : ''}`}
+										onClick={() => navigation.goToHeroEdit(heroID!, tab)}
+									>
+										<span className='chip-title'>{Format.capitalize(tab, '-')}</span>
+										{state && <span className='chip-state'>{state}</span>}
+									</button>
+								);
+							})}
+						</div>
 						:
 						<Segmented
 							name='sections'
 							style={{ flex: '1 1 0' }}
-							options={([
-								'start',
-								'ancestry',
-								'culture',
-								'career',
-								'class',
-								'complication',
-								'details'
-							] as const).map(tab => ({
+							options={tabs.map(tab => ({
 								value: tab,
 								label: (
 									<div className={`page-button ${getPageState(tab).toLowerCase().replace(' ', '-')}`}>
@@ -482,10 +470,21 @@ export const HeroEditPage = (props: Props) => {
 							onChange={value => navigation.goToHeroEdit(heroID!, value)}
 						/>
 				}
-				<Space orientation='vertical' size={4}>
-					{!isSmall ? <Button disabled={!allowRandom || !!searchTerm} icon={<ThunderboltOutlined />} onClick={selectRandom}>Random</Button> : null}
-					<Button disabled={!unselect} icon={<CloseOutlined />} onClick={unselect}>Unselect</Button>
-				</Space>
+				{!isSmall && (
+					<Space orientation='vertical' size={4}>
+						<Button disabled={!allowRandom || !!searchTerm} icon={<ThunderboltOutlined />} onClick={selectRandom}>Random</Button>
+						<Button disabled={!unselect} icon={<CloseOutlined />} onClick={unselect}>Unselect</Button>
+					</Space>
+				)}
+				{isSmall && unselect && (
+					<Button
+						danger={true}
+						icon={<CloseOutlined />}
+						className='hero-edit-unselect'
+						onClick={unselect}
+						title='Unselect this choice'
+					/>
+				)}
 			</div>
 		);
 	};
@@ -510,14 +509,7 @@ export const HeroEditPage = (props: Props) => {
 	const getContent = () => {
 		switch (page) {
 			case 'start':
-				return (
-					<StartSection
-						sourcebookIDs={hero.sourcebookIDs}
-						sourcebooks={props.sourcebooks}
-						setSourcebookIDs={setSettingIDs}
-						importSourcebook={props.importSourcebook}
-					/>
-				);
+				return <StartSection />;
 			case 'ancestry':
 				return (
 					<AncestrySection
@@ -597,7 +589,7 @@ export const HeroEditPage = (props: Props) => {
 				<AppHeader subheader='Hero Builder'>
 					<ButtonGroup
 						buttons={[
-							{ type: 'control', control: <SearchBox disabled={!allowSearch()} searchTerm={searchTerm} setSearchTerm={setSearchTerm} /> },
+							...(isSmall ? [] : [ { type: 'control' as const, control: <SearchBox disabled={!allowSearch()} searchTerm={searchTerm} setSearchTerm={setSearchTerm} /> } ]),
 							{ type: 'button', label: isSmall ? undefined : 'Save Changes', icon: <SaveOutlined />, primary: true, disabled: !dirty, onClick: saveChanges },
 							{ type: 'button', label: isSmall ? undefined : 'Cancel', icon: <CloseOutlined />, onClick: () => navigation.goToHeroView(heroID!) }
 						]}
@@ -606,6 +598,11 @@ export const HeroEditPage = (props: Props) => {
 				<ErrorBoundary>
 					<div className={isSmall ? 'hero-edit-page-content small' : 'hero-edit-page-content'}>
 						{getControls()}
+						{isSmall && allowSearch() && (
+							<div className='hero-edit-mobile-search'>
+								<SearchBox searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+							</div>
+						)}
 						{getContent()}
 					</div>
 				</ErrorBoundary>

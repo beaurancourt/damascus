@@ -6,7 +6,6 @@ import { Negotiation } from '@/models/negotiation';
 import { NegotiationLogic } from '@/logic/negotiation-logic';
 import { PanelMode } from '@/enums/panel-mode';
 import { Segmented } from 'antd';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -139,7 +138,7 @@ export const NegotiationPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='negotiation-panel' id={SheetFormatter.getPageId('negotiation', props.negotiation.id)}>
+			<div className='negotiation-panel'>
 				<HeaderText level={1} tags={tags}>
 					{props.negotiation.name || 'Unnamed Negotiation'}
 				</HeaderText>

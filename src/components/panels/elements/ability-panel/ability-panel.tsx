@@ -20,7 +20,6 @@ import { Monster } from '@/models/monster';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { PanelMode } from '@/enums/panel-mode';
 import { PowerRollPanel } from '@/components/panels/power-roll/power-roll-panel';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { useState } from 'react';
 
 import './ability-panel.scss';
@@ -291,7 +290,7 @@ export const AbilityPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='ability-panel' id={SheetFormatter.getPageId('ability', props.ability.id)}>
+			<div className='ability-panel'>
 				<Space orientation='vertical' style={{ marginTop: '15px', width: '100%' }}>
 					{
 						getWarnings().map((warn, n) => (

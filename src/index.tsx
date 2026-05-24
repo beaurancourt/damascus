@@ -37,12 +37,8 @@ root.render(
 										initialSession={data.session}
 										initialHeroes={data.heroes}
 										initialHomebrewSourcebooks={data.homebrewSourcebooks}
-										initialHiddenSourcebookIDs={data.hiddenSourcebookIDs}
 									>
-										<Main
-											connectionSettings={data.connectionSettings}
-											dataService={data.service}
-										/>
+										<Main />
 									</DataManagerProvider>
 								</HashRouter>
 							</StrictMode>

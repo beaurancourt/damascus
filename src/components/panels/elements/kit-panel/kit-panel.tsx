@@ -6,12 +6,9 @@ import { Hero } from '@/models/hero';
 import { Kit } from '@/models/kit';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { PanelMode } from '@/enums/panel-mode';
-import { Segmented } from 'antd';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
-import { useState } from 'react';
 
 import './kit-panel.scss';
 
@@ -23,84 +20,6 @@ interface Props {
 }
 
 export const KitPanel = (props: Props) => {
-	const [ page, setPage ] = useState<string>('overview');
-
-	const getOverview = () => {
-		return (
-			<>
-				<Markdown text={props.kit.description} />
-				<Field label='Uses' value={[ ...props.kit.armor, ...props.kit.weapon ].join(', ')} />
-				<Field label='Features' value={props.kit.features.map(f => f.name).join(', ')} />
-			</>
-		);
-	};
-
-	const getStats = () => {
-		return (
-			<>
-				{props.kit.armor.length > 0 ? <Field label='Armor' value={props.kit.armor.join(', ')} /> : null}
-				{props.kit.weapon.length > 0 ? <Field label='Weapon' value={props.kit.weapon.join(', ')} /> : null}
-				{props.kit.stamina > 0 ? <Field label='Stamina' value={`+${props.kit.stamina}`} /> : null}
-				{props.kit.speed > 0 ? <Field label='Speed' value={`+${props.kit.speed}`} /> : null}
-				{props.kit.stability > 0 ? <Field label='Stability' value={`+${props.kit.stability}`} /> : null}
-				{
-					props.kit.meleeDamage ?
-						<Field label='Melee Damage' value={`+${props.kit.meleeDamage.tier1} / +${props.kit.meleeDamage.tier2} / +${props.kit.meleeDamage.tier3}`} />
-						: null
-				}
-				{
-					props.kit.rangedDamage ?
-						<Field label='Ranged Damage' value={`+${props.kit.rangedDamage.tier1} / +${props.kit.rangedDamage.tier2} / +${props.kit.rangedDamage.tier3}`} />
-						: null
-				}
-				{props.kit.meleeDistance > 0 ? <Field label='Melee Distance' value={`+${props.kit.meleeDistance}`} /> : null}
-				{props.kit.rangedDistance > 0 ? <Field label='Ranged Distance' value={`+${props.kit.rangedDistance}`} /> : null}
-				{props.kit.disengage > 0 ? <Field label='Disengage' value={`+${props.kit.disengage}`} /> : null}
-			</>
-		);
-	};
-
-	const getFeatures = () => {
-		return (
-			<>
-				{props.kit.features.map(f => <FeaturePanel key={f.id} feature={f} hero={props.hero} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />)}
-			</>
-		);
-	};
-
-	const getContent = () => {
-		let content = null;
-		switch (page) {
-			case 'overview':
-				content = getOverview();
-				break;
-			case 'stats':
-				content = getStats();
-				break;
-			case 'features':
-				content = getFeatures();
-				break;
-		}
-
-		return (
-			<>
-				<Segmented
-					style={{ marginBottom: '20px' }}
-					block={true}
-					options={[
-						{ value: 'overview', label: 'Overview' },
-						{ value: 'stats', label: 'Stats' },
-						{ value: 'features', label: 'Features' }
-					]}
-					value={page}
-					onChange={setPage}
-					onClick={e => e.stopPropagation()}
-				/>
-				{content}
-			</>
-		);
-	};
-
 	const tags = [];
 	if (props.kit.type) {
 		tags.push(props.kit.type);
@@ -123,11 +42,34 @@ export const KitPanel = (props: Props) => {
 		);
 	}
 
+	const kit = props.kit;
+
 	return (
 		<ErrorBoundary>
-			<div className='kit-panel' id={SheetFormatter.getPageId('kit', props.kit.id)}>
-				<HeaderText level={1} tags={tags}>{props.kit.name || 'Unnamed Kit'}</HeaderText>
-				{getContent()}
+			<div className='kit-panel'>
+				<HeaderText level={1} tags={tags}>{kit.name || 'Unnamed Kit'}</HeaderText>
+				<Markdown text={kit.description} />
+				<div className='kit-stats'>
+					{kit.armor.length > 0 ? <Field label='Armor' value={kit.armor.join(', ')} /> : null}
+					{kit.weapon.length > 0 ? <Field label='Weapon' value={kit.weapon.join(', ')} /> : null}
+					{kit.stamina > 0 ? <Field label='Stamina' value={`+${kit.stamina}`} /> : null}
+					{kit.speed > 0 ? <Field label='Speed' value={`+${kit.speed}`} /> : null}
+					{kit.stability > 0 ? <Field label='Stability' value={`+${kit.stability}`} /> : null}
+					{
+						kit.meleeDamage ?
+							<Field label='Melee Damage' value={`+${kit.meleeDamage.tier1} / +${kit.meleeDamage.tier2} / +${kit.meleeDamage.tier3}`} />
+							: null
+					}
+					{
+						kit.rangedDamage ?
+							<Field label='Ranged Damage' value={`+${kit.rangedDamage.tier1} / +${kit.rangedDamage.tier2} / +${kit.rangedDamage.tier3}`} />
+							: null
+					}
+					{kit.meleeDistance > 0 ? <Field label='Melee Distance' value={`+${kit.meleeDistance}`} /> : null}
+					{kit.rangedDistance > 0 ? <Field label='Ranged Distance' value={`+${kit.rangedDistance}`} /> : null}
+					{kit.disengage > 0 ? <Field label='Disengage' value={`+${kit.disengage}`} /> : null}
+				</div>
+				{kit.features.map(f => <FeaturePanel key={f.id} feature={f} hero={props.hero} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />)}
 			</div>
 		</ErrorBoundary>
 	);

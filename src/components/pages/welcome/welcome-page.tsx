@@ -1,9 +1,8 @@
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
-import { BookOutlined, BulbFilled, BulbOutlined, DoubleLeftOutlined, DoubleRightOutlined, EllipsisOutlined, PlayCircleOutlined, TeamOutlined } from '@ant-design/icons';
+import { BookOutlined, EllipsisOutlined, PlayCircleOutlined, TeamOutlined } from '@ant-design/icons';
 import { Button, Divider, Flex, Popover, Segmented, Space } from 'antd';
 import { AppHeader } from '@/components/panels/app-header/app-header';
 import { ButtonGroup } from '@/components/controls/button-group/button-group';
-import { Collections } from '@/utils/collections';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
@@ -12,10 +11,6 @@ import { PregenInfo } from '@/components/panels/token/token';
 import { PregenLogic } from '@/logic/pregen-logic';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { Sourcebook } from '@/models/sourcebook';
-import { Tip } from '@/models/tip';
-import { TipData } from '@/data/tip-data';
-import { TipPanel } from '@/components/panels/tip/tip-panel';
-import { useMediaQuery } from '@/hooks/use-media-query';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useOptions } from '@/contexts/data-context';
 import { useState } from 'react';
@@ -33,13 +28,6 @@ interface Props {
 }
 
 export const WelcomePage = (props: Props) => {
-	const isSmall = useMediaQuery('(max-width: 1000px)');
-	const [ tips ] = useState<Tip[]>([
-		...Collections.shuffle(TipData.getTips().filter(t => t.isNew)),
-		...Collections.shuffle(TipData.getTips().filter(t => !t.isNew))
-	]);
-	const [ showTips, setShowTips ] = useState<boolean>(true);
-	const [ tipIndex, setTipIndex ] = useState<number>(0);
 	const navigation = useNavigation();
 
 	const topNav = (
@@ -55,7 +43,6 @@ export const WelcomePage = (props: Props) => {
 							<Button block={true} type='text' onClick={() => navigation.goToSession()}>Session</Button>
 							<Divider size='small' />
 							<Button block={true} type='text' onClick={() => navigation.goToBackup()}>Backup</Button>
-							<Button block={true} type='text' onClick={() => navigation.goToClocktower()}>Clocktower</Button>
 						</Space>
 					)
 				}
@@ -63,88 +50,24 @@ export const WelcomePage = (props: Props) => {
 		/>
 	);
 
-	if (isSmall) {
-		return (
-			<ErrorBoundary name='welcome-page'>
-				<div className='welcome-page'>
-					<AppHeader>
-						{topNav}
-					</AppHeader>
-					<ErrorBoundary>
-						<div className='welcome-page-content compact'>
-							<div className='welcome-column'>
-								<Welcome
-									sourcebooks={props.sourcebooks}
-									onNewHero={props.onNewHero}
-									onPregen={props.onPregen}
-									onNewEncounter={props.onNewEncounter}
-								/>
-							</div>
-						</div>
-					</ErrorBoundary>
-					<AppFooter
-						page='welcome'
-						params={props.params}
-					/>
-				</div>
-			</ErrorBoundary>
-		);
-	}
-
 	return (
 		<ErrorBoundary name='welcome-page'>
 			<div className='welcome-page'>
 				<AppHeader>
 					{topNav}
 				</AppHeader>
-				<div className='welcome-page-content'>
-					<div className='welcome-column'>
-						<Welcome
-							sourcebooks={props.sourcebooks}
-							onNewHero={props.onNewHero}
-							onPregen={props.onPregen}
-							onNewEncounter={props.onNewEncounter}
-						/>
-					</div>
-					{
-						showTips ?
-							<div className='tip-column'>
-								<Flex justify='center'>
-									<ButtonGroup
-										buttons={[
-											{
-												type: 'button',
-												tooltip: 'Previous Tip',
-												icon: <DoubleLeftOutlined />,
-												disabled: tipIndex <= 0,
-												onClick: () => setTipIndex(tipIndex - 1)
-											},
-											{
-												type: 'button',
-												tooltip: 'Hide Tips',
-												icon: <BulbFilled style={{ color: 'rgba(64, 150, 255)' }} />,
-												onClick: () => setShowTips(false)
-											},
-											{
-												type: 'button',
-												tooltip: 'Next Tip',
-												icon: <DoubleRightOutlined />,
-												onClick: () => setTipIndex(tipIndex + 1)
-											}
-										]}
-									/>
-								</Flex>
-								<TipPanel tip={tips[tipIndex % tips.length]} />
-							</div>
-							:
-							<Button
-								type='text'
-								icon={<BulbOutlined />}
-								title='Show Tips'
-								onClick={() => setShowTips(true)}
+				<ErrorBoundary>
+					<div className='welcome-page-content'>
+						<div className='welcome-column'>
+							<Welcome
+								sourcebooks={props.sourcebooks}
+								onNewHero={props.onNewHero}
+								onPregen={props.onPregen}
+								onNewEncounter={props.onNewEncounter}
 							/>
-					}
-				</div>
+						</div>
+					</div>
+				</ErrorBoundary>
 				<AppFooter
 					page='welcome'
 					params={props.params}
@@ -191,9 +114,6 @@ const Welcome = (props: WelcomeProps) => {
 								</li>
 								<li>
 									You can use the app to track your hero's stamina, conditions, surges, and so on.
-								</li>
-								<li>
-									If you're playing offline, you can export your heroes in PNG or PDF formats (either portrait or landscape).
 								</li>
 								<li>
 									Want something a little different? You can customize any of your abilities to make them more unique to your hero.
@@ -347,7 +267,7 @@ const Welcome = (props: WelcomeProps) => {
 								When you're creating your own homebrew content, you can create a copy of an existing element and modify it to suit your needs, or you can create it from scratch.
 							</div>
 							<div className='ds-text'>
-								If you're creating a monster, <b>FORGE STEEL</b> provides lots of extra tools so you can build exactly the monster you're imagining, and gauge exactly how much of a challenge it will be.
+								If you're creating a monster, <b>DAMASCUS</b> provides lots of extra tools so you can build exactly the monster you're imagining, and gauge exactly how much of a challenge it will be.
 							</div>
 							<ul>
 								<li>
@@ -370,7 +290,7 @@ const Welcome = (props: WelcomeProps) => {
 		<ErrorBoundary>
 			<div>
 				<div className='ds-text centered-text'>
-					<b>FORGE STEEL</b> is an app for <b>DRAW STEEL</b> players, directors, and content creators.
+					<b>DAMASCUS</b> is an app for <b>DRAW STEEL</b> players, directors, and content creators.
 				</div>
 				<Segmented
 					style={{ margin: '15px 0' }}

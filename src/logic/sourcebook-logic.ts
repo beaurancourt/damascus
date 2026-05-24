@@ -12,7 +12,6 @@ import { Element } from '@/models/element';
 import { Encounter } from '@/models/encounter';
 import { EncounterLogic } from '@/logic/encounter-logic';
 import { Feature } from '@/models/feature';
-import { FeatureFlags } from '@/utils/feature-flags';
 import { FeatureType } from '@/enums/feature-type';
 import { HeroClass } from '@/models/class';
 import { Imbuement } from '@/models/imbuement';
@@ -23,7 +22,6 @@ import { Monster } from '@/models/monster';
 import { MonsterGroup } from '@/models/monster-group';
 import { Montage } from '@/models/montage';
 import { Negotiation } from '@/models/negotiation';
-import { Options } from '@/models/options';
 import { Perk } from '@/models/perk';
 import { Project } from '@/models/project';
 import { Random } from '@/utils/random';
@@ -39,28 +37,12 @@ import { Title } from '@/models/title';
 export class SourcebookLogic {
 	static getSourcebooks = (homebrew: Sourcebook[] = []) => {
 		const list: Sourcebook[] = [
-			// Official
 			SourcebookData.core,
 			SourcebookData.orden,
 			SourcebookData.beastheart,
-
-			// Third Party
-			SourcebookData.community,
-			SourcebookData.lookOut,
-			SourcebookData.magazineBlacksmith,
-			SourcebookData.magazineRatcatcher,
-			SourcebookData.steelEchoes,
-			SourcebookData.triglav
+			SourcebookData.summoner,
+			SourcebookData.patreon
 		];
-
-		if (FeatureFlags.hasFlag(FeatureFlags.playtest.code)) {
-			list.push(SourcebookData.patreon);
-			list.push(SourcebookData.summoner);
-		}
-
-		if (FeatureFlags.hasFlag(FeatureFlags.communityPreRelease.code)) {
-			list.push(SourcebookData.communityPrerelease);
-		}
 
 		list.forEach(SourcebookUpdateLogic.updateSourcebook);
 
@@ -540,15 +522,15 @@ export class SourcebookLogic {
 			}) || null;
 	};
 
-	static getSimilarMonsters = (sourcebooks: Sourcebook[], monster: Monster, options: Options) => {
+	static getSimilarMonsters = (sourcebooks: Sourcebook[], monster: Monster) => {
 		return sourcebooks
 			.flatMap(sb => sb.monsterGroups)
 			.flatMap(mg => mg.monsters)
 			.filter(m => m.id !== monster.id)
-			.filter(m => !options.similarLevel || (m.level === monster.level))
-			.filter(m => !options.similarRole || (m.role.type === monster.role.type))
-			.filter(m => !options.similarOrganization || (m.role.organization === monster.role.organization))
-			.filter(m => !options.similarSize || ((m.size.value === monster.size.value) && (m.size.mod === monster.size.mod)));
+			.filter(m => m.level === monster.level)
+			.filter(m => m.role.type === monster.role.type)
+			.filter(m => m.role.organization === monster.role.organization)
+			.filter(m => (m.size.value === monster.size.value) && (m.size.mod === monster.size.mod));
 	};
 
 	///////////////////////////////////////////////////////////////////////////

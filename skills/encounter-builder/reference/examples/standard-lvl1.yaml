@@ -1,0 +1,33 @@
+# Standard difficulty for 4 level-1 heroes.
+# Hero value = 6, effectiveHeroes = 4, maxStandard = (4+1)*6 = 30.
+# Budget plan: 1 Leader (12) + 6 Horde minions x 3 each (18) = 30. Exactly Standard.
+
+name: Goblin Ambush at the Coalroad
+description: |
+  Standard fight for 4 level-1 heroes. EV 30/30.
+  A small goblin warband ambushes the heroes on the road to the coal mines.
+
+groups:
+  - name: Initial ambush
+    slots:
+      - monster: goblin-10        # Monarch (Leader, ev 12)
+        count: 1
+      - monster: goblin-9         # Warrior (Horde/Harrier, ev 3)
+        count: 3
+      - monster: goblin-6         # Cursespitter (Horde/Hexer, ev 3)
+        count: 3
+
+notes:
+  tactics: |
+    Cursespitters open from cover at 10+ squares; Warriors charge the front line
+    on round 1 to lock down the squishies. The Monarch hangs back and uses Inspire
+    to keep the Warriors swinging.
+  ending: |
+    When the Monarch falls, the surviving goblins flee. If pursued, they lead the
+    heroes to the warren entrance two hexes north — hook for the next encounter.
+
+sections:
+  - title: Terrain
+    body: |
+      Coalroad cuts through a shallow gully. The slopes are difficult terrain.
+      Two overturned coal carts on the road provide cover.

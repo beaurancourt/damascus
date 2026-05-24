@@ -1,23 +1,20 @@
-import { Button, Drawer, Select, Space } from 'antd';
+import { Select, Space } from 'antd';
 import { Feature, FeatureKitData } from '@/models/feature';
 import { Collections } from '@/utils/collections';
 import { Empty } from '@/components/controls/empty/empty';
-import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { HeroLogic } from '@/logic/hero-logic';
 import { Kit } from '@/models/kit';
 import { KitPanel } from '@/components/panels/elements/kit-panel/kit-panel';
-import { KitSelectModal } from '@/components/modals/select/kit-select/kit-select-modal';
-import { Markdown } from '@/components/controls/markdown/markdown';
-import { Modal } from '@/components/modals/modal/modal';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { PanelMode } from '@/enums/panel-mode';
-import { SelectionBox } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { Utils } from '@/utils/utils';
 import { useState } from 'react';
+
+import './choice.scss';
 
 interface InfoProps {
 	data: FeatureKitData;
@@ -94,78 +91,65 @@ interface ConfigProps {
 }
 
 export const ConfigKit = (props: ConfigProps) => {
-	const [ kitSelectorOpen, setKitSelectorOpen ] = useState<boolean>(false);
-	const [ selectedKit, setSelectedKit ] = useState<Kit | null>(null);
+	const otherKitIDs = HeroLogic.getKits(props.hero)
+		.filter(k => !props.data.selected.some(s => s.id === k.id))
+		.map(k => k.id);
 
-	const currentKitIDs = HeroLogic.getKits(props.hero).map(k => k.id);
+	const selectedIDs = props.data.selected.map(k => k.id);
+	const count = props.data.count;
+	const isSingle = count === 1;
 
 	const kitTypes = props.data.types.length > 0 ? props.data.types : [ '' ];
-	const kits = SourcebookLogic.getKits(props.sourcebooks as Sourcebook[])
-		.filter(k => kitTypes.includes(k.type))
-		.filter(k => !currentKitIDs.includes(k.id));
-	const sortedKits = Collections.sort(kits, k => k.name);
+	const allKits = Collections.sort(
+		SourcebookLogic.getKits(props.sourcebooks).filter(k => kitTypes.includes(k.type)),
+		k => k.name
+	);
 
-	const getAddButton = () => {
-		if (sortedKits.length === 0) {
-			return (
-				<Empty text='There are no options to choose for this feature.' />
-			);
+	const toggleKit = (kit: Kit) => {
+		const isSelected = selectedIDs.includes(kit.id);
+		const dataCopy = Utils.copy(props.data);
+		if (isSelected) {
+			dataCopy.selected = dataCopy.selected.filter(k => k.id !== kit.id);
+		} else if (isSingle) {
+			dataCopy.selected = [ Utils.copy(kit) ];
+		} else if (selectedIDs.length < count) {
+			dataCopy.selected.push(Utils.copy(kit));
+		} else {
+			return;
 		}
-
-		return (
-			<Button className='status-warning' block={true} onClick={() => setKitSelectorOpen(true)}>
-				Choose a kit
-			</Button>
-		);
+		props.setData(dataCopy);
 	};
+
+	if (allKits.length === 0) {
+		return <Empty text='There are no options to choose for this feature.' />;
+	}
 
 	return (
 		<Space orientation='vertical' style={{ width: '100%' }}>
-			{props.data.count > 1 ? <div className='ds-text'>Choose {props.data.count}:</div> : null}
+			<div className='ds-text'>
+				{count === 1 ? 'Choose 1 kit.' : `Choose ${count} kits.`}
+			</div>
 			{
-				props.data.selected.map(kit => (
-					<SelectionBox
-						key={kit.id}
-						content={
-							<Field
-								style={{ flex: '1 1 0' }}
-								label={kit.name}
-								value={<Markdown text={kit.description} useSpan={true} />}
-							/>
-						}
-						onSelect={() => setSelectedKit(kit)}
-						onRemove={() => {
-							const dataCopy = Utils.copy(props.data);
-							dataCopy.selected = dataCopy.selected.filter(k => k.id !== kit.id);
-							props.setData(dataCopy);
-						}}
-					/>
-				))
+				allKits.map(kit => {
+					const isSelected = selectedIDs.includes(kit.id);
+					const alreadyTaken = !isSelected && otherKitIDs.includes(kit.id);
+					const overLimit = !isSelected && !alreadyTaken && !isSingle && selectedIDs.length >= count;
+					const disabled = alreadyTaken || overLimit;
+					return (
+						<div
+							key={kit.id}
+							className={`choice-option${isSelected ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
+							onClick={() => !disabled && toggleKit(kit)}
+							title={alreadyTaken ? 'You already have this kit' : undefined}
+						>
+							<div className='choice-option-indicator'>{isSelected ? '●' : '○'}</div>
+							<div className='choice-option-body'>
+								<KitPanel kit={kit} hero={props.hero} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
+							</div>
+						</div>
+					);
+				})
 			}
-			{props.data.selected.length < props.data.count ? getAddButton() : null}
-			<Drawer open={kitSelectorOpen} onClose={() => setKitSelectorOpen(false)} closeIcon={null} size={500}>
-				<KitSelectModal
-					kits={sortedKits}
-					hero={props.hero}
-					sourcebooks={props.sourcebooks}
-					onSelect={kit => {
-						setKitSelectorOpen(false);
-
-						const kitCopy = Utils.copy(kit);
-
-						const dataCopy = Utils.copy(props.data);
-						dataCopy.selected.push(kitCopy);
-						props.setData(dataCopy);
-					}}
-					onClose={() => setKitSelectorOpen(false)}
-				/>
-			</Drawer>
-			<Drawer open={!!selectedKit} onClose={() => setSelectedKit(null)} closeIcon={null} size={500}>
-				<Modal
-					content={selectedKit ? <KitPanel kit={selectedKit} sourcebooks={props.sourcebooks} mode={PanelMode.Full} /> : null}
-					onClose={() => setSelectedKit(null)}
-				/>
-			</Drawer>
 		</Space>
 	);
 };

@@ -1,8 +1,8 @@
-import { Alert, Button, Divider, Flex, Segmented } from 'antd';
+import { Alert, Button, Flex, Segmented } from 'antd';
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
-import { ArrowRightOutlined, CopyOutlined, DoubleLeftOutlined, DoubleRightOutlined, EditOutlined, FilterFilled, FilterOutlined, PlayCircleOutlined, UploadOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ArrowRightOutlined, CopyOutlined, DoubleLeftOutlined, DoubleRightOutlined, EditOutlined, FilterFilled, FilterOutlined, PlayCircleOutlined, UploadOutlined } from '@ant-design/icons';
 import { ButtonConfig, ButtonGroup, DangerConfig, DropdownConfig } from '@/components/controls/button-group/button-group';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
 import { AddBtn } from '@/components/pages/library/library-list/controls/add-btn';
 import { Adventure } from '@/models/adventure';
@@ -25,7 +25,6 @@ import { Element } from '@/models/element';
 import { Empty } from '@/components/controls/empty/empty';
 import { Encounter } from '@/models/encounter';
 import { EncounterPanel } from '@/components/panels/elements/encounter-panel/encounter-panel';
-import { EncounterSheetPage } from '@/components/panels/classic-sheet/encounter-sheet/encounter-sheet-page';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { FactoryLogic } from '@/logic/factory-logic';
 import { Format } from '@/utils/format';
@@ -37,7 +36,6 @@ import { Item } from '@/models/item';
 import { ItemPanel } from '@/components/panels/elements/item-panel/item-panel';
 import { Kit } from '@/models/kit';
 import { KitPanel } from '@/components/panels/elements/kit-panel/kit-panel';
-import { LibraryItemSheetPage } from '@/components/panels/classic-sheet/library-item-sheet/library-item-sheet-page';
 import { LibraryLogic } from '@/logic/library-logic';
 import { Monster } from '@/models/monster';
 import { MonsterFilter } from '@/models/filter';
@@ -48,10 +46,8 @@ import { MonsterInfo } from '@/components/panels/token/token';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
 import { Montage } from '@/models/montage';
 import { MontagePanel } from '@/components/panels/elements/montage-panel/montage-panel';
-import { MontageSheetPage } from '@/components/panels/classic-sheet/montage-sheet/montage-sheet-page';
 import { Negotiation } from '@/models/negotiation';
 import { NegotiationPanel } from '@/components/panels/elements/negotiation-panel/negotiation-panel';
-import { NegotiationSheetPage } from '@/components/panels/classic-sheet/negotiation-sheet/negotiation-sheet-page';
 import { PanelMode } from '@/enums/panel-mode';
 import { Perk } from '@/models/perk';
 import { PerkPanel } from '@/components/panels/elements/perk-panel/perk-panel';
@@ -71,8 +67,6 @@ import { TerrainPanel } from '@/components/panels/elements/terrain-panel/terrain
 import { Title } from '@/models/title';
 import { TitlePanel } from '@/components/panels/elements/title-panel/title-panel';
 import { Toggle } from '@/components/controls/toggle/toggle';
-import { ViewSelector } from '@/components/panels/view-selector/view-selector';
-import { useHiddenSourcebookIDs } from '@/contexts/data-context';
 import { useIsSmall } from '@/hooks/use-is-small';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useParams } from 'react-router';
@@ -83,16 +77,14 @@ import './library-list-page.scss';
 interface Props {
 	sourcebooks: Sourcebook[];
 	params: FooterParams;
-	showSourcebooks: () => void;
 	showMonster: (monster: Monster) => void;
 	showEncounterTools: (encounter: Encounter, tool: string) => void;
+	showEncounterImport: (sourcebookID: string, setSourcebookID: (id: string) => void) => void;
 	createElement: (kind: SourcebookElementKind, sourcebookID: string, element: Element | null) => void;
 	importElement: (kind: SourcebookElementKind, sourcebookID: string, element: Element) => void;
 	moveElement: (kind: SourcebookElementKind, sourcebookID: string, element: Element) => void;
 	deleteElement: (kind: SourcebookElementKind, sourcebookID: string, element: Element) => void;
 	exportElementData: (category: string, element: Element) => void;
-	exportElementImage: (category: string, element: Element) => void;
-	exportElementPdf: (category: string, element: Element, resolution: 'standard' | 'high') => void;
 	startEncounter: (encounter: Encounter) => void;
 	startMontage: (montage: Montage) => void;
 	startNegotiation: (negotiation: Negotiation) => void;
@@ -109,7 +101,6 @@ export const LibraryListPage = (props: Props) => {
 	const [ previousSelectedID, setPreviousSelectedID ] = useState<string | null | undefined>(elementID);
 	const [ searchTerm, setSearchTerm ] = useState<string>('');
 	const [ showSidebar, setShowSidebar ] = useState<boolean>(true);
-	const [ view, setView ] = useState<string>('modern');
 	const [ showMonsters, setShowMonsters ] = useState<boolean>(false);
 	const [ showCulturesFromAncestries, setShowCulturesFromAncestries ] = useState<boolean>(false);
 	const [ showSubclassesFromClasses, setShowSubclassesFromClasses ] = useState<boolean>(false);
@@ -118,13 +109,11 @@ export const LibraryListPage = (props: Props) => {
 	const [ showMonsterFilter, setShowMonsterFilter ] = useState<boolean>(false);
 	const [ monsterFilter, setMonsterFilter ] = useState<MonsterFilter>(FactoryLogic.createMonsterFilter());
 	const [ sourcebookID, setSourcebookID ] = useState<string>(props.sourcebooks.filter(sb => sb.type === SourcebookType.Homebrew).length > 0 ? Collections.sort(props.sourcebooks, sb => sb.name).filter(sb => sb.type === SourcebookType.Homebrew)[0].id : '');
-	const hiddenSourcebookIDs = useHiddenSourcebookIDs();
 	useTitle('Library');
 
 	if (kind !== previousCategory) {
 		setCategory(kind || 'ancestry');
 		setPreviousCategory(kind);
-		setView('modern');
 	}
 
 	if (elementID !== previousSelectedID) {
@@ -136,7 +125,7 @@ export const LibraryListPage = (props: Props) => {
 		let list: Element[] = [];
 
 		const getSourcebooks = () => {
-			return props.sourcebooks.filter(sb => !hiddenSourcebookIDs.includes(sb.id));
+			return props.sourcebooks;
 		};
 
 		switch (type) {
@@ -211,241 +200,191 @@ export const LibraryListPage = (props: Props) => {
 	const getElementPanel = () => {
 		let getPanel: (element: Element) => ReactNode = () => null;
 
-		if (view === 'classic') {
-			getPanel = (element: Element) => {
-				switch (category) {
-					case 'encounter':
-						return (
-							<div style={{ padding: '20px', overflow: 'auto' }}>
-								<EncounterSheetPage
-									encounter={element as Encounter}
-									sourcebooks={props.sourcebooks}
-								/>
-							</div>
-						);
-					case 'montage':
-						return (
-							<div style={{ padding: '20px', overflow: 'auto' }}>
-								<MontageSheetPage
-									montage={element as Montage}
-								/>
-							</div>
-						);
-					case 'negotiation':
-						return (
-							<div style={{ padding: '20px', overflow: 'auto' }}>
-								<NegotiationSheetPage
-									negotiation={element as Negotiation}
-								/>
-							</div>
-						);
-					case 'terrain':
-						return (
-							<div style={{ padding: '20px', overflow: 'auto' }}>
-								<LibraryItemSheetPage
-									category={category}
-									terrain={element as Terrain}
-								/>
-							</div>
-						);
-				}
-
-				return null;
-			};
-		} else {
-			switch (category) {
-				case 'adventure':
-					getPanel = (element: Element) => <AdventurePanel key={element.id} adventure={element as Adventure} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'ancestry':
-					getPanel = (element: Element) => <AncestryPanel key={element.id} ancestry={element as Ancestry} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'career':
-					getPanel = (element: Element) => <CareerPanel key={element.id} career={element as Career} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'class':
-					getPanel = (element: Element) => <ClassPanel key={element.id} heroClass={element as HeroClass} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'complication':
-					getPanel = (element: Element) => <ComplicationPanel key={element.id} complication={element as Complication} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'culture':
-					getPanel = (element: Element) => <CulturePanel key={element.id} culture={element as Culture} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'domain':
-					getPanel = (element: Element) => <DomainPanel key={element.id} domain={element as Domain} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'encounter':
-					getPanel = (element: Element) => <EncounterPanel key={element.id} encounter={element as Encounter} sourcebooks={props.sourcebooks} mode={PanelMode.Full} showTools={tool => props.showEncounterTools(element as Encounter, tool)} />;
-					break;
-				case 'imbuement':
-					getPanel = (element: Element) => <ImbuementPanel key={element.id} imbuement={element as Imbuement} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'item':
-					getPanel = (element: Element) => <ItemPanel key={element.id} item={element as Item} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'kit':
-					getPanel = (element: Element) => <KitPanel key={element.id} kit={element as Kit} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'monster-group':
-					getPanel = (element: Element) => {
-						return showMonsters ?
-							<MonsterPanel key={element.id} monster={element as Monster} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
-							:
-							<MonsterGroupPanel key={element.id} monsterGroup={element as MonsterGroup} sourcebooks={props.sourcebooks} mode={PanelMode.Full} onSelectMonster={props.showMonster} />;
-					};
-					break;
-				case 'montage':
-					getPanel = (element: Element) => <MontagePanel key={element.id} montage={element as Montage} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'negotiation':
-					getPanel = (element: Element) => <NegotiationPanel key={element.id} negotiation={element as Negotiation} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'perk':
-					getPanel = (element: Element) => <PerkPanel key={element.id} perk={element as Perk} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'project':
-					getPanel = (element: Element) => <ProjectPanel key={element.id} project={element as Project} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'subclass':
-					getPanel = (element: Element) => <SubclassPanel key={element.id} subclass={element as SubClass} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'tactical-map':
-					getPanel = (element: Element) => <TacticalMapPanel key={element.id} map={element as TacticalMap} sourcebooks={props.sourcebooks} display={TacticalMapDisplayType.DirectorView} mode={PanelMode.Full} />;
-					break;
-				case 'terrain':
-					getPanel = (element: Element) => <TerrainPanel key={element.id} terrain={element as Terrain} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-				case 'title':
-					getPanel = (element: Element) => <TitlePanel key={element.id} title={element as Title} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-					break;
-			}
+		switch (category) {
+			case 'adventure':
+				getPanel = (element: Element) => <AdventurePanel key={element.id} adventure={element as Adventure} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'ancestry':
+				getPanel = (element: Element) => <AncestryPanel key={element.id} ancestry={element as Ancestry} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'career':
+				getPanel = (element: Element) => <CareerPanel key={element.id} career={element as Career} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'class':
+				getPanel = (element: Element) => <ClassPanel key={element.id} heroClass={element as HeroClass} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'complication':
+				getPanel = (element: Element) => <ComplicationPanel key={element.id} complication={element as Complication} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'culture':
+				getPanel = (element: Element) => <CulturePanel key={element.id} culture={element as Culture} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'domain':
+				getPanel = (element: Element) => <DomainPanel key={element.id} domain={element as Domain} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'encounter':
+				getPanel = (element: Element) => <EncounterPanel key={element.id} encounter={element as Encounter} sourcebooks={props.sourcebooks} mode={PanelMode.Full} showTools={tool => props.showEncounterTools(element as Encounter, tool)} />;
+				break;
+			case 'imbuement':
+				getPanel = (element: Element) => <ImbuementPanel key={element.id} imbuement={element as Imbuement} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'item':
+				getPanel = (element: Element) => <ItemPanel key={element.id} item={element as Item} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'kit':
+				getPanel = (element: Element) => <KitPanel key={element.id} kit={element as Kit} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'monster-group':
+				getPanel = (element: Element) => {
+					return showMonsters ?
+						<MonsterPanel key={element.id} monster={element as Monster} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
+						:
+						<MonsterGroupPanel key={element.id} monsterGroup={element as MonsterGroup} sourcebooks={props.sourcebooks} mode={PanelMode.Full} onSelectMonster={props.showMonster} />;
+				};
+				break;
+			case 'montage':
+				getPanel = (element: Element) => <MontagePanel key={element.id} montage={element as Montage} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'negotiation':
+				getPanel = (element: Element) => <NegotiationPanel key={element.id} negotiation={element as Negotiation} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'perk':
+				getPanel = (element: Element) => <PerkPanel key={element.id} perk={element as Perk} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'project':
+				getPanel = (element: Element) => <ProjectPanel key={element.id} project={element as Project} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'subclass':
+				getPanel = (element: Element) => <SubclassPanel key={element.id} subclass={element as SubClass} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'tactical-map':
+				getPanel = (element: Element) => <TacticalMapPanel key={element.id} map={element as TacticalMap} sourcebooks={props.sourcebooks} display={TacticalMapDisplayType.DirectorView} mode={PanelMode.Full} />;
+				break;
+			case 'terrain':
+				getPanel = (element: Element) => <TerrainPanel key={element.id} terrain={element as Terrain} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
+			case 'title':
+				getPanel = (element: Element) => <TitlePanel key={element.id} title={element as Title} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
+				break;
 		}
 
 		return getPanel;
 	};
 
-	const getSidebar = () => {
-		const getElementListHeader = () => {
-			switch (category) {
-				case 'monster-group':
-					return (
-						<div className='list-header'>
-							<Flex align='center' justify='space-between' gap={5}>
-								<Segmented
-									style={{ flex: '1 1 0' }}
-									block={true}
-									options={[
-										{ value: false, label: 'Groups' },
-										{ value: true, label: 'Monsters' }
-									]}
-									value={showMonsters}
-									onChange={setShowMonsters}
-								/>
-								<Button
-									disabled={!showMonsters}
-									icon={showMonsterFilter ? <FilterFilled style={{ color: 'rgb(22, 119, 255)' }} /> : <FilterOutlined />}
-									onClick={() => setShowMonsterFilter(!showMonsterFilter)}
-								/>
-							</Flex>
-							{
-								showMonsters && showMonsterFilter ?
-									<div style={{ paddingTop: '5px' }}>
-										<MonsterFilterPanel
-											monsterFilter={monsterFilter}
-											monsters={SourcebookLogic.getMonsters(props.sourcebooks)}
-											includeNameFilter={false}
-											includeOrgFilter={true}
-											includeEVFilter={true}
-											onChange={setMonsterFilter}
-										/>
-									</div>
-									: null
-							}
-						</div>
-					);
-				case 'culture':
-					return (
-						<div className='list-header'>
-							<Toggle style={{ margin: '0' }} label='Include cultures from ancestries' value={showCulturesFromAncestries} onChange={setShowCulturesFromAncestries} />
-						</div>
-					);
-				case 'project':
-					return (
-						<div className='list-header'>
-							<Toggle style={{ margin: '0' }} label='Include projects from imbuements' value={showProjectsFromImbuements} onChange={setShowProjectsFromImbuements} />
-							<Toggle style={{ margin: '0' }} label='Include projects from items' value={showProjectsFromItems} onChange={setShowProjectsFromItems} />
-						</div>
-					);
-				case 'subclass':
-					return (
-						<div className='list-header'>
-							<Toggle style={{ margin: '0' }} label='Include subclasses from classes' value={showSubclassesFromClasses} onChange={setShowSubclassesFromClasses} />
-						</div>
-					);
-			}
-
-			return null;
-		};
-
-		const getElementListItems = () => {
-			const listItems: ReactNode[] = [];
-
-			const headers = getList(category).map(item => LibraryLogic.getGroupHeader(item, category, props.sourcebooks));
-			const distinctHeaders = Collections.distinct(headers, x => x);
-			const sortedHeaders = Collections.sort(distinctHeaders, x => x || '');
-			sortedHeaders.forEach(header => {
-				if (header) {
-					listItems.push(
-						<div key={`${header}-header`} className='selection-list-group-header'>
-							<HeaderText level={3}>{header || 'List'}</HeaderText>
-						</div>
-					);
-				}
-
-				const items = getList(category).filter(item => LibraryLogic.getGroupHeader(item, category, props.sourcebooks) === header);
-
-				items.forEach(a => {
-					listItems.push(
-						<SelectorRow
-							key={a.id}
-							selected={selectedID === a.id}
-							content={(category === 'monster-group') && showMonsters ? <MonsterInfo monster={a as Monster} /> : a.name || `Unnamed ${Format.capitalize(category.split('-').join(' '))}`}
-							info={LibraryLogic.getInfo(a, category, showMonsters)}
-							onSelect={() => navigation.goToLibrary(category, a.id)}
+	const getElementListHeader = () => {
+		switch (category) {
+			case 'monster-group':
+			return (
+				<div className='list-header'>
+					<Flex align='center' justify='space-between' gap={5}>
+						<Segmented
+							style={{ flex: '1 1 0' }}
+							block={true}
+							options={[
+								{ value: false, label: 'Groups' },
+								{ value: true, label: 'Monsters' }
+							]}
+							value={showMonsters}
+							onChange={setShowMonsters}
 						/>
-					);
-				});
+						<Button
+							disabled={!showMonsters}
+							icon={showMonsterFilter ? <FilterFilled style={{ color: 'rgb(22, 119, 255)' }} /> : <FilterOutlined />}
+							onClick={() => setShowMonsterFilter(!showMonsterFilter)}
+						/>
+					</Flex>
+					{
+						showMonsters && showMonsterFilter ?
+							<div style={{ paddingTop: '5px' }}>
+								<MonsterFilterPanel
+									monsterFilter={monsterFilter}
+									monsters={SourcebookLogic.getMonsters(props.sourcebooks)}
+									includeNameFilter={false}
+									includeOrgFilter={true}
+									includeEVFilter={true}
+									onChange={setMonsterFilter}
+								/>
+							</div>
+							: null
+					}
+				</div>
+			);
+			case 'culture':
+			return (
+				<div className='list-header'>
+					<Toggle style={{ margin: '0' }} label='Include cultures from ancestries' value={showCulturesFromAncestries} onChange={setShowCulturesFromAncestries} />
+				</div>
+			);
+			case 'project':
+			return (
+				<div className='list-header'>
+					<Toggle style={{ margin: '0' }} label='Include projects from imbuements' value={showProjectsFromImbuements} onChange={setShowProjectsFromImbuements} />
+					<Toggle style={{ margin: '0' }} label='Include projects from items' value={showProjectsFromItems} onChange={setShowProjectsFromItems} />
+				</div>
+			);
+			case 'subclass':
+			return (
+				<div className='list-header'>
+					<Toggle style={{ margin: '0' }} label='Include subclasses from classes' value={showSubclassesFromClasses} onChange={setShowSubclassesFromClasses} />
+				</div>
+			);
+		}
 
-				if (items.length === 0) {
-					listItems.push(
-						<Empty key={`${header}-empty`} />
-					);
-				}
+		return null;
+	};
+
+	const getElementListItems = () => {
+		const listItems: ReactNode[] = [];
+
+		const headers = getList(category).map(item => LibraryLogic.getGroupHeader(item, category, props.sourcebooks));
+		const distinctHeaders = Collections.distinct(headers, x => x);
+		const sortedHeaders = Collections.sort(distinctHeaders, x => x || '');
+		sortedHeaders.forEach(header => {
+			if (header) {
+			listItems.push(
+				<div key={`${header}-header`} className='selection-list-group-header'>
+					<HeaderText level={3}>{header || 'List'}</HeaderText>
+				</div>
+			);
+		}
+
+			const items = getList(category).filter(item => LibraryLogic.getGroupHeader(item, category, props.sourcebooks) === header);
+
+			items.forEach(a => {
+				listItems.push(
+					<SelectorRow
+						key={a.id}
+						selected={selectedID === a.id}
+						content={(category === 'monster-group') && showMonsters ? <MonsterInfo monster={a as Monster} /> : a.name || `Unnamed ${Format.capitalize(category.split('-').join(' '))}`}
+						info={LibraryLogic.getInfo(a, category, showMonsters)}
+						onSelect={() => navigation.goToLibrary(category, a.id)}
+					/>
+				);
 			});
 
-			if (listItems.length === 0) {
+			if (items.length === 0) {
 				listItems.push(
-					<Empty key='empty' />
+					<Empty key={`${header}-empty`} />
 				);
 			}
+		});
 
-			return listItems;
-		};
+		if (listItems.length === 0) {
+			listItems.push(
+				<Empty key='empty' />
+			);
+		}
 
+		return listItems;
+	};
+
+	const getSidebar = () => {
 		return (
 			<div className={showSidebar ? 'selection-sidebar' : 'selection-sidebar closed'}>
 				<div className='selection-toolbar'>
 					{
 						showSidebar ?
 							<SearchBox searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-							: null
-					}
-					{
-						showSidebar ?
-							<Button onClick={props.showSourcebooks}>
-								Sourcebooks
-							</Button>
 							: null
 					}
 					<Button icon={showSidebar ? <DoubleLeftOutlined /> : <DoubleRightOutlined />} style={{ flex: '0 0 auto' }} onClick={() => setShowSidebar(!showSidebar)} />
@@ -638,54 +577,10 @@ export const LibraryListPage = (props: Props) => {
 		const getExport = () => {
 			const cat = ((category === 'monster-group') && showMonsters) ? 'monster' : category;
 
-			let canExportAsImage = false;
-			let canExportAsPDF = false;
-			switch (cat) {
-				case 'encounter':
-				case 'montage':
-				case 'negotiation':
-				case 'terrain':
-					canExportAsImage = false;
-					canExportAsPDF = true;
-					break;
-			}
-
-			const imageOrPDF = canExportAsImage || canExportAsPDF ?
-				view === 'classic' ?
-					<>
-						{
-							canExportAsImage ?
-								<>
-									<Button onClick={() => props.exportElementImage(cat, element)}>
-										Export As Image
-									</Button>
-								</>
-								: null
-						}
-						{canExportAsImage && canExportAsPDF ? <Divider /> : null}
-						{
-							canExportAsPDF ?
-								<>
-									<Button onClick={() => props.exportElementPdf(cat, element, 'standard')}>
-										Export As PDF
-									</Button>
-									<Button onClick={() => props.exportElementPdf(cat, element, 'high')}>
-										Export As PDF (high res)
-									</Button>
-								</>
-								: null
-						}
-					</>
-					:
-					<Alert
-						type='info'
-						showIcon={true}
-						title='If you want to export as a PDF, switch to Classic view.'
-						action={<Button onClick={() => setView('classic')}>Classic</Button>}
-					/>
-				: null;
-
 			const externalContent = LibraryLogic.getExternalContent(element, category, props.sourcebooks);
+
+			// Suppress unused-var warnings for the trimmed PDF-export branches.
+			void cat;
 
 			return {
 				type: 'dropdown',
@@ -693,8 +588,6 @@ export const LibraryListPage = (props: Props) => {
 				icon: <UploadOutlined />,
 				popover: (
 					<div style={{ width: '310px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-						{imageOrPDF}
-						{imageOrPDF ? <Divider /> : null}
 						{
 							externalContent.length > 0 ?
 								<Alert
@@ -792,50 +685,141 @@ export const LibraryListPage = (props: Props) => {
 		].filter(item => !!item);
 	};
 
-	const getViewSelector = () => {
-		if (!selectedID) {
-			return null;
-		}
-
-		if ((category === 'monster-group') && showMonsters) {
-			return null;
-		}
-
-		switch (category) {
-			case 'adventure':
-			case 'tactical-map':
-				return null;
-			case 'encounter':
-			case 'montage':
-			case 'negotiation':
-			case 'terrain':
-				return (
-					<ViewSelector
-						mode='classic'
-						value={view}
-						onChange={setView}
-					/>
-				);
-			default:
-				return (
-					<ViewSelector
-						mode='printable'
-						value={view}
-						onChange={value => {
-							if (value === 'print') {
-								const sourcebook = props.sourcebooks.find(sb => SourcebookLogic.getElements(sb).map(e => e.element.id).includes(selectedID));
-								if (sourcebook) {
-									navigation.goToLibraryPrint(category, sourcebook.id, selectedID);
-								}
-							}
-						}}
-					/>
-				);
-		}
-	};
 
 	const selected = getList(category).find(item => item.id == selectedID);
 	const getPanel = getElementPanel();
+
+	const CATEGORIES: { key: SourcebookElementKind, label: string }[] = [
+		{ key: 'ancestry', label: 'Ancestries' },
+		{ key: 'career', label: 'Careers' },
+		{ key: 'class', label: 'Classes' },
+		{ key: 'complication', label: 'Complications' },
+		{ key: 'culture', label: 'Cultures' },
+		{ key: 'domain', label: 'Domains' },
+		{ key: 'imbuement', label: 'Imbuements' },
+		{ key: 'item', label: 'Items' },
+		{ key: 'kit', label: 'Kits' },
+		{ key: 'perk', label: 'Perks' },
+		{ key: 'project', label: 'Projects' },
+		{ key: 'subclass', label: 'Subclasses' },
+		{ key: 'title', label: 'Titles' },
+		{ key: 'adventure', label: 'Adventures' },
+		{ key: 'encounter', label: 'Encounters' },
+		{ key: 'monster-group', label: showMonsters ? 'Monsters' : 'Monster Groups' },
+		{ key: 'montage', label: 'Montages' },
+		{ key: 'negotiation', label: 'Negotiations' },
+		{ key: 'tactical-map', label: 'Tactical Maps' },
+		{ key: 'terrain', label: 'Terrain' }
+	];
+
+	const selectedChipRef = useRef<HTMLButtonElement | null>(null);
+	const chipStripRef = useRef<HTMLDivElement | null>(null);
+	useEffect(() => {
+		if (!isSmall) return;
+		const chip = selectedChipRef.current;
+		const strip = chipStripRef.current;
+		if (!chip || !strip) return;
+		const target = chip.offsetLeft - (strip.clientWidth - chip.clientWidth) / 2;
+		strip.scrollLeft = Math.max(0, target);
+	}, [ category, isSmall ]);
+
+	const renderMobile = () => {
+		const showElement = !!selected;
+		return (
+			<div className='library-list-page mobile'>
+				{!showElement && (
+					<AppHeader subheader='Library'>
+						<ButtonGroup
+							buttons={[
+								{
+									type: 'control',
+									control: (
+										<AddBtn
+											category={category}
+											sourcebooks={props.sourcebooks}
+											showMonsters={showMonsters}
+											sourcebookID={sourcebookID}
+											setShowMonsters={setShowMonsters}
+											setSourcebookID={setSourcebookID}
+											createElement={props.createElement}
+											importElement={props.importElement}
+											showEncounterImport={() => props.showEncounterImport(sourcebookID, setSourcebookID)}
+										/>
+									)
+								}
+							]}
+						/>
+					</AppHeader>
+				)}
+
+				{showElement && (
+					<div className='mobile-element-bar'>
+						<Button
+							type='text'
+							icon={<ArrowLeftOutlined />}
+							onClick={() => navigation.goToLibrary(category)}
+						>
+							{CATEGORIES.find(c => c.key === category)?.label || 'Back'}
+						</Button>
+						<div className='mobile-element-title'>{selected?.name || `Unnamed ${Format.capitalize(category.split('-').join(' '))}`}</div>
+						<ButtonGroup
+							buttons={[
+								...getElementToolbarItems()
+							]}
+						/>
+					</div>
+				)}
+
+				<ErrorBoundary>
+					{showElement ? (
+						<div className='mobile-element-view'>
+							{getPanel(selected!)}
+						</div>
+					) : (
+						<div className='mobile-list-view'>
+							<div className='mobile-search-bar'>
+								<SearchBox searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+							</div>
+							<div className='mobile-category-chips' ref={chipStripRef} role='tablist' aria-label='Library categories'>
+								{CATEGORIES.map(c => (
+									<button
+										key={c.key}
+										ref={category === c.key ? selectedChipRef : undefined}
+										type='button'
+										role='tab'
+										aria-selected={category === c.key}
+										className={`mobile-category-chip${category === c.key ? ' selected' : ''}`}
+										onClick={() => navigation.goToLibrary(c.key)}
+									>
+										{c.label} <span className='chip-count'>{getList(c.key).length}</span>
+									</button>
+								))}
+							</div>
+							{getElementListHeader && (
+								<div className='mobile-list-header-slot'>{getElementListHeader()}</div>
+							)}
+							<div className='mobile-element-list'>
+								{getElementListItems()}
+							</div>
+						</div>
+					)}
+				</ErrorBoundary>
+
+				<AppFooter
+					page='library'
+					params={props.params}
+				/>
+			</div>
+		);
+	};
+
+	if (isSmall) {
+		return (
+			<ErrorBoundary>
+				{renderMobile()}
+			</ErrorBoundary>
+		);
+	}
 
 	return (
 		<ErrorBoundary>
@@ -855,11 +839,11 @@ export const LibraryListPage = (props: Props) => {
 										setSourcebookID={setSourcebookID}
 										createElement={props.createElement}
 										importElement={props.importElement}
+										showEncounterImport={() => props.showEncounterImport(sourcebookID, setSourcebookID)}
 									/>
 								)
 							},
-							...getElementToolbarItems(),
-							{ type: 'control', control: getViewSelector() }
+							...getElementToolbarItems()
 						]}
 					/>
 				</AppHeader>

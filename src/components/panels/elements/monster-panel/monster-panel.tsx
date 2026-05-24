@@ -25,7 +25,6 @@ import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { MonsterToken } from '@/components/panels/token/token';
 import { PanelMode } from '@/enums/panel-mode';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -121,7 +120,7 @@ export const MonsterPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className={props.mode === PanelMode.Full ? 'monster-panel' : 'monster-panel compact'} id={props.mode === PanelMode.Full ? SheetFormatter.getPageId('monster', props.monster.id) : undefined} style={props.style}>
+			<div className={props.mode === PanelMode.Full ? 'monster-panel' : 'monster-panel compact'} style={props.style}>
 				<HeaderText
 					level={1}
 					ribbon={<MonsterToken monster={props.monster} monsterGroup={props.monsterGroup} size={28} />}

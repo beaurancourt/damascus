@@ -1,19 +1,18 @@
-import { Button, Drawer, Flex, Select, Space } from 'antd';
+import { Select, Space } from 'antd';
 import { Feature, FeatureSkillChoiceData } from '@/models/feature';
 import { Collections } from '@/utils/collections';
-import { FeatureType } from '@/enums/feature-type';
 import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { HeroLogic } from '@/logic/hero-logic';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
-import { SelectionBox } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { SkillList } from '@/enums/skill-list';
-import { SkillSelectModal } from '@/components/modals/select/skill-select/skill-select-modal';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { Utils } from '@/utils/utils';
 import { useState } from 'react';
+
+import './choice.scss';
 
 interface InfoProps {
 	data: FeatureSkillChoiceData;
@@ -136,76 +135,64 @@ interface ConfigProps {
 }
 
 export const ConfigSkillChoice = (props: ConfigProps) => {
-	const [ skillSelectorOpen, setSkillSelectorOpen ] = useState<boolean>(false);
+	const heroSkills = HeroLogic.getSkills(props.hero, props.sourcebooks).map(s => s.name);
+	const selectedSkills = props.data.selected;
+	const count = props.data.count;
+	const isSingle = count === 1;
 
-	const currentSkills = HeroLogic.getSkills(props.hero, props.sourcebooks).map(s => s.name);
-	const skills = SourcebookLogic.getSkills(props.sourcebooks as Sourcebook[])
-		.filter(skill => (props.data.options.includes(skill.name)) || (props.data.listOptions.includes(skill.list)))
-		.filter(skill => !currentSkills.includes(skill.name));
-	const distinctSkills = Collections.distinct(skills, s => s.name);
-	const sortedSkills = Collections.sort(distinctSkills, s => s.name);
+	// All skills available to this choice (from explicit options + skill lists). Don't filter out
+	// hero's other skills — they're still part of the list, just shown as disabled-duplicates.
+	const availableSkills = Collections.sort(
+		Collections.distinct(
+			SourcebookLogic.getSkills(props.sourcebooks)
+				.filter(skill => props.data.options.includes(skill.name) || props.data.listOptions.includes(skill.list)),
+			s => s.name
+		),
+		s => s.name
+	);
+
+	const toggleSkill = (skillName: string) => {
+		const isSelected = selectedSkills.includes(skillName);
+		const dataCopy = Utils.copy(props.data);
+		if (isSelected) {
+			dataCopy.selected = dataCopy.selected.filter(s => s !== skillName);
+		} else if (isSingle) {
+			dataCopy.selected = [ skillName ];
+		} else if (count === -1 || selectedSkills.length < count) {
+			dataCopy.selected.push(skillName);
+		} else {
+			return;
+		}
+		props.setData(dataCopy);
+	};
 
 	return (
 		<Space orientation='vertical' style={{ width: '100%' }}>
-			{props.data.count > 1 ? <div className='ds-text'>Choose {props.data.count}:</div> : null}
+			<div className='ds-text'>
+				{count === 1 ? 'Choose 1 skill.' : `Choose ${count} skill${count === 1 ? '' : 's'}.`}
+			</div>
 			{
-				props.data.selected.map((skill, n) => {
-					const duplicated = props.hero && HeroLogic.getFeatures(props.hero)
-						.map(f => f.feature)
-						.filter(f => f.type === FeatureType.SkillChoice)
-						.flatMap(f => f.data.selected)
-						.filter(s => s === skill)
-						.length > 1;
-
-					const sk = SourcebookLogic.getSkill(skill, props.sourcebooks!);
+				availableSkills.map(skill => {
+					const isSelected = selectedSkills.includes(skill.name);
+					const alreadyKnown = !isSelected && heroSkills.includes(skill.name);
+					const overLimit = !isSelected && !alreadyKnown && !isSingle && count !== -1 && selectedSkills.length >= count;
+					const disabled = alreadyKnown || overLimit;
 					return (
-						<SelectionBox
-							key={n}
-							content={
-								<Flex vertical={true}>
-									{
-										sk ?
-											<Field label={sk.name} value={sk.description} style={{ flex: '1 1 0' }} />
-											:
-											<div className='ds-text' style={{ flex: '1 1 0' }}>{skill}</div>
-									}
-									{
-										duplicated ?
-											<Field danger={true} label='Duplicated' value='You already have this skill.' />
-											: null
-									}
-								</Flex>
-							}
-							onRemove={() => {
-								const dataCopy = Utils.copy(props.data);
-								dataCopy.selected = dataCopy.selected.filter(s => s !== skill);
-								props.setData(dataCopy);
-							}}
-						/>
+						<div
+							key={skill.name}
+							className={`choice-option${isSelected ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
+							onClick={() => !disabled && toggleSkill(skill.name)}
+							title={alreadyKnown ? 'You already have this skill' : undefined}
+						>
+							<div className='choice-option-indicator'>{isSelected ? '●' : '○'}</div>
+							<div className='choice-option-body'>
+								<div className='choice-option-name'>{skill.name}</div>
+								<div className='choice-option-content'>{skill.description}</div>
+							</div>
+						</div>
 					);
 				})
 			}
-			{
-				(props.data.selected.length < props.data.count) || (props.data.count === -1) ?
-					<Button className='status-warning' block={true} onClick={() => setSkillSelectorOpen(true)}>
-						Choose a Skill
-					</Button>
-					: null
-			}
-			<Drawer open={skillSelectorOpen} onClose={() => setSkillSelectorOpen(false)} closeIcon={null} size={500}>
-				<SkillSelectModal
-					skills={sortedSkills}
-					sourcebooks={props.sourcebooks}
-					onSelect={s => {
-						setSkillSelectorOpen(false);
-
-						const dataCopy = Utils.copy(props.data);
-						dataCopy.selected.push(s.name);
-						props.setData(dataCopy);
-					}}
-					onClose={() => setSkillSelectorOpen(false)}
-				/>
-			</Drawer>
 		</Space>
 	);
 };

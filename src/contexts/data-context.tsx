@@ -1,5 +1,4 @@
 import { ActionDispatch, PropsWithChildren, createContext, useContext, useReducer } from 'react';
-import { Analytics } from '@/utils/analytics';
 import { Collections } from '@/utils/collections';
 import { DataService } from '@/services/data-service';
 import { Hero } from '@/models/hero';
@@ -12,7 +11,6 @@ import { Utils } from '@/utils/utils';
 interface DataManagerDispatchers {
 	options: ActionDispatch<[ReducerAction<Options>]>;
 	session: ActionDispatch<[ReducerAction<Session>]>;
-	hiddenSourcebooks: ActionDispatch<[ReducerAction<string[]>]>;
 	hero: ActionDispatch<[ReducerAction<Hero>]>;
 	sourcebooks: ActionDispatch<[ReducerAction<Sourcebook>]>;
 }
@@ -21,7 +19,6 @@ export class DataManager {
 	private readonly dataService: DataService;
 	private readonly optionsDispatch: ActionDispatch<[ReducerAction<Options>]>;
 	private readonly sessionDispatch: ActionDispatch<[ReducerAction<Session>]>;
-	private readonly hiddenSourcebooksDispatch:	ActionDispatch<[ReducerAction<string[]>]>;
 	private readonly heroDispatch: ActionDispatch<[ReducerAction<Hero>]>;
 	private readonly sourcebookDispatch: ActionDispatch<[ReducerAction<Sourcebook>]>;
 
@@ -29,7 +26,6 @@ export class DataManager {
 		this.dataService = service;
 		this.optionsDispatch = dispatchers.options;
 		this.sessionDispatch = dispatchers.session;
-		this.hiddenSourcebooksDispatch = dispatchers.hiddenSourcebooks;
 		this.heroDispatch = dispatchers.hero;
 		this.sourcebookDispatch = dispatchers.sourcebooks;
 	};
@@ -50,16 +46,6 @@ export class DataManager {
 				this.sessionDispatch({
 					type: ReducerActionKind.UPDATE,
 					payload: session
-				});
-			});
-	}
-
-	async saveHiddenSourcebookIDs(hiddenSourcebookIDs: string[]) {
-		return this.dataService.saveHiddenSourcebookIDs(hiddenSourcebookIDs)
-			.then(ids => {
-				this.hiddenSourcebooksDispatch({
-					type: ReducerActionKind.UPDATE,
-					payload: ids
 				});
 			});
 	}
@@ -119,13 +105,11 @@ interface DataManagerProps {
 	dataService: DataService;
 	initialOptions: Options;
 	initialSession: Session;
-	initialHiddenSourcebookIDs: string[];
 	initialHeroes: Hero[];
 	initialHomebrewSourcebooks: Sourcebook[];
 }
 
 export const OptionsContext = createContext<Options | null>(null);
-export const HiddenSourcebookIDsContext = createContext<string[] | null>(null);
 export const SessionContext = createContext<Session | null>(null);
 export const HeroesContext = createContext<Hero[] | null>(null);
 export const HomebrewSourcebooksContext = createContext<Sourcebook[] | null>(null);
@@ -135,14 +119,12 @@ export function DataManagerProvider(props: PropsWithChildren<DataManagerProps>) 
 
 	const [ options, optionsDispatch ] = useReducer(UpdateOnlyReducer<Options>, props.initialOptions);
 	const [ session, sessionDispatch ] = useReducer(UpdateOnlyReducer<Session>, props.initialSession);
-	const [ hiddenSourcebookIDs, hiddenSourcebookIDsDispatch ] = useReducer(UpdateOnlyReducer<string[]>, props.initialHiddenSourcebookIDs);
 	const [ heroes, heroDispatch ] = useReducer(HeroesReducer, props.initialHeroes);
 	const [ sourcebooks, sourcebookDispatch ] = useReducer(SourcebooksReducer, props.initialHomebrewSourcebooks);
 
 	const dataManager = new DataManager(dataService, {
 		options: optionsDispatch,
 		session: sessionDispatch,
-		hiddenSourcebooks: hiddenSourcebookIDsDispatch,
 		hero: heroDispatch,
 		sourcebooks: sourcebookDispatch
 	});
@@ -165,13 +147,9 @@ export function DataManagerProvider(props: PropsWithChildren<DataManagerProps>) 
 				const hero = action.payload;
 				const copy = Utils.copy(currentHeroes);
 				if (currentHeroes.some(h => h.id === hero.id)) {
-					Analytics.logHeroEdited(hero);
-
 					const list = copy.map(h => h.id === hero.id ? hero : h);
 					newHeroes = list;
 				} else {
-					Analytics.logHeroCreated(hero);
-
 					copy.push(hero);
 					Collections.sort(copy, h => h.name);
 					newHeroes = copy;
@@ -220,13 +198,11 @@ export function DataManagerProvider(props: PropsWithChildren<DataManagerProps>) 
 		<DataManagerContext value={dataManager}>
 			<OptionsContext value={options}>
 				<SessionContext value={session}>
-					<HiddenSourcebookIDsContext value={hiddenSourcebookIDs}>
-						<HomebrewSourcebooksContext value={sourcebooks}>
-							<HeroesContext value={heroes}>
-								{props.children}
-							</HeroesContext>
-						</HomebrewSourcebooksContext>
-					</HiddenSourcebookIDsContext>
+					<HomebrewSourcebooksContext value={sourcebooks}>
+						<HeroesContext value={heroes}>
+							{props.children}
+						</HeroesContext>
+					</HomebrewSourcebooksContext>
 				</SessionContext>
 			</OptionsContext>
 		</DataManagerContext>
@@ -254,14 +230,6 @@ export function useSession() {
 	const context = useContext(SessionContext);
 	if (!context) {
 		throw new Error('useSession may only be used within <SessionContext>');
-	}
-	return context;
-}
-
-export function useHiddenSourcebookIDs() {
-	const context = useContext(HiddenSourcebookIDsContext);
-	if (!context) {
-		throw new Error('useHiddenSourcebookIDs may only be used within <HiddenSourcebookIDsContext>');
 	}
 	return context;
 }

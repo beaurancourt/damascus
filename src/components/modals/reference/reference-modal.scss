@@ -3,4 +3,75 @@
 	height: 100%;
 	display: flex;
 	flex-direction: column;
+
+	.rules-doc {
+		// Cross-reference anchor links (auto-linked rule + condition references)
+		a[href^="#rule-"],
+		a[href^="#condition-"] {
+			color: rgb(22, 119, 255);
+			text-decoration: none;
+			border-bottom: 1px dotted rgba(22, 119, 255, 0.5);
+			cursor: pointer;
+
+			&:hover {
+				border-bottom-style: solid;
+			}
+		}
+
+		.rules-section-heading {
+			font-size: 1.8em;
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			margin: 24px 0 4px 0;
+			padding-bottom: 4px;
+			border-bottom: 3px solid rgba(127, 127, 127, 0.4);
+		}
+
+		.rules-entry {
+			scroll-margin-top: 10px;
+		}
+
+		// Virtual sub-section headings (e.g. "Abilities", "Stamina", "Hide and Sneak")
+		// are pulled in from the PDF outline but have no body content in our data.
+		.rules-entry.virtual > .rules-entry-heading {
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			opacity: 0.7;
+			margin-top: 18px;
+			margin-bottom: 0;
+			padding-bottom: 2px;
+			border-bottom: 1px solid rgba(127, 127, 127, 0.25);
+		}
+
+		.rules-entry-heading {
+			display: flex;
+			align-items: baseline;
+			gap: 8px;
+			margin: 14px 0 6px 0;
+
+			.rules-entry-page {
+				font-size: 0.6em;
+				font-weight: 400;
+				opacity: 0.5;
+				letter-spacing: 0.04em;
+			}
+		}
+
+		// depth-0 (top-level under a section) — slightly larger
+		.rules-entry.depth-0 > .rules-entry-heading {
+			font-size: 1.25em;
+		}
+		.rules-entry.depth-1 > .rules-entry-heading {
+			font-size: 1.1em;
+		}
+		.rules-entry.depth-2 > .rules-entry-heading,
+		.rules-entry.depth-3 > .rules-entry-heading {
+			font-size: 1em;
+		}
+
+		// Nested entries get a left indent so the hierarchy is visible while reading.
+		.rules-entry.depth-1 { padding-left: 12px; border-left: 2px solid rgba(127, 127, 127, 0.18); }
+		.rules-entry.depth-2 { padding-left: 24px; border-left: 2px solid rgba(127, 127, 127, 0.18); }
+		.rules-entry.depth-3 { padding-left: 36px; border-left: 2px solid rgba(127, 127, 127, 0.18); }
+	}
 }

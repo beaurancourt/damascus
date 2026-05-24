@@ -67,14 +67,13 @@ export const ComplicationSection = (props: Props) => {
 			.map(f => f.feature)
 			.filter(f => FeatureLogic.isChoice(f))
 			.map(f => (
-				<SelectablePanel key={f.id}>
-					<FeatureConfigPanel
-						feature={f}
-						hero={props.hero}
-						sourcebooks={props.sourcebooks}
-						setData={props.setFeatureData}
-					/>
-				</SelectablePanel>
+				<FeatureConfigPanel
+					key={f.id}
+					feature={f}
+					hero={props.hero}
+					sourcebooks={props.sourcebooks}
+					setData={props.setFeatureData}
+				/>
 			));
 	}
 
@@ -88,9 +87,7 @@ export const ComplicationSection = (props: Props) => {
 			{
 				props.hero.complication && (!isSmall || (choices.length === 0)) ?
 					<div className={columnClassName} id='complication-selected'>
-						<SelectablePanel>
-							<ComplicationPanel complication={props.hero.complication} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
-						</SelectablePanel>
+						<ComplicationPanel complication={props.hero.complication} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
 					</div>
 					: null
 			}

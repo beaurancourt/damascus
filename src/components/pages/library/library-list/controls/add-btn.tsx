@@ -1,5 +1,5 @@
 import { Alert, Button, Flex, Popover, Segmented, Select, Space, Upload } from 'antd';
-import { DownOutlined, DownloadOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { CodeOutlined, DownOutlined, DownloadOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
 import { useHeroes, useOptions } from '@/contexts/data-context';
 import { Collections } from '@/utils/collections';
@@ -27,9 +27,11 @@ interface Props {
 	setSourcebookID: (value: string) => void;
 	createElement: (kind: SourcebookElementKind, sourcebookID: string, element: Element | null) => void;
 	importElement: (kind: SourcebookElementKind, sourcebookID: string, element: Element) => void;
+	showEncounterImport?: () => void;
 }
 
 export const AddBtn = (props: Props) => {
+	const [ popoverOpen, setPopoverOpen ] = useState(false);
 	const [ difficulty, setDifficulty ] = useState<EncounterDifficulty>(EncounterDifficulty.Standard);
 	const [ keywords, setKeywords ] = useState<string[]>([]);
 	const [ mapImportType, setMapImportType ] = useState<'image' | 'video'>('image');
@@ -122,6 +124,25 @@ export const AddBtn = (props: Props) => {
 		switch (props.category) {
 			case 'encounter':
 				return [
+					props.showEncounterImport ? (
+						<Expander key='yaml-import' title='Import from YAML (Claude / LLM)'>
+							<div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+								<div style={{ fontSize: '0.85em', opacity: 0.75 }}>
+									Paste a YAML encounter (e.g. one produced by the <code>encounter-builder</code> Claude skill). Save it to the library, run it live in the director, or generate a printable PDF.
+								</div>
+								<Button
+									block={true}
+									icon={<CodeOutlined />}
+									onClick={() => {
+										setPopoverOpen(false);
+										props.showEncounterImport!();
+									}}
+								>
+									Open YAML importer
+								</Button>
+							</div>
+						</Expander>
+					) : null,
 					<Expander key='premade' title='Use a premade example'>
 						<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px' }}>
 							{
@@ -245,6 +266,8 @@ export const AddBtn = (props: Props) => {
 	return (
 		<Popover
 			trigger='click'
+			open={popoverOpen}
+			onOpenChange={setPopoverOpen}
 			content={(
 				<div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px' }}>
 					<DestinationSelector sourcebooks={props.sourcebooks} sourcebookID={props.sourcebookID} setSourcebookID={props.setSourcebookID} />

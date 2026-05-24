@@ -1,10 +1,10 @@
-import { Alert, Button, Drawer, Flex, InputNumber, Popover, Segmented, Space, Tag } from 'antd';
+import { Alert, Button, Flex, InputNumber, Popover, Segmented, Space, Tag } from 'antd';
 import { ConditionEndType, ConditionType } from '@/enums/condition-type';
 import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import { Collections } from '@/utils/collections';
 import { Condition } from '@/models/condition';
+import { ConditionLogic } from '@/logic/condition-logic';
 import { ConditionPanel } from '@/components/panels/condition/condition-panel';
-import { ConditionSelectModal } from '@/components/modals/select/condition-select/condition-select-modal';
 import { DamageModifierType } from '@/enums/damage-modifier-type';
 import { DropdownButton } from '@/components/controls/dropdown-button/dropdown-button';
 import { Empty } from '@/components/controls/empty/empty';
@@ -25,18 +25,24 @@ import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { PanelMode } from '@/enums/panel-mode';
 import { Utils } from '@/utils/utils';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import './health-panel.scss';
 
 interface HeroProps {
 	hero: Hero;
 	showEncounterControls: boolean;
+	sections?: ('stamina' | 'conditions')[];
 	onChange?: (hero: Hero) => void;
 }
 
 export const HeroHealthPanel = (props: HeroProps) => {
 	const [ hero, setHero ] = useState<Hero>(Utils.copy(props.hero));
+
+	// Sync local copy when the source hero changes (important for inline mounts that outlive a single edit)
+	useEffect(() => {
+		setHero(Utils.copy(props.hero));
+	}, [ props.hero ]);
 
 	const setStaminaDamage = (value: number) => {
 		const copy = Utils.copy(hero);
@@ -161,6 +167,7 @@ export const HeroHealthPanel = (props: HeroProps) => {
 			<HealthPanel
 				mode={props.onChange ? PanelMode.Full : PanelMode.Compact}
 				showToggles={props.showEncounterControls}
+				sections={props.sections}
 				stamina={
 					HeroLogic.getStamina(hero) !== 0 ?
 						{
@@ -534,6 +541,7 @@ export const MinionGroupHealthPanel = (props: MinionGroupProps) => {
 interface Props {
 	mode: PanelMode;
 	showToggles: boolean;
+	sections?: ('stamina' | 'conditions')[];
 	stamina?: {
 		staminaMax: number;
 		staminaDamage: number;
@@ -579,9 +587,8 @@ interface Props {
 }
 
 const HealthPanel = (props: Props) => {
-	const [ page, setPage ] = useState<string>(!props.stamina && props.recoveries ? 'recoveries' : 'stamina');
 	const [ damageValue, setDamageValue ] = useState<number>(0);
-	const [ conditionsVisible, setConditionsVisible ] = useState<boolean>(false);
+	const [ addConditionOpen, setAddConditionOpen ] = useState<boolean>(false);
 
 	const takeDamage = () => {
 		if (props.stamina) {
@@ -605,7 +612,7 @@ const HealthPanel = (props: Props) => {
 	};
 
 	const addCondition = (type: ConditionType) => {
-		setConditionsVisible(false);
+		setAddConditionOpen(false);
 		props.addCondition({
 			id: Utils.guid(),
 			type: type,
@@ -615,7 +622,6 @@ const HealthPanel = (props: Props) => {
 	};
 
 	const addSpecial = (text: string) => {
-		setConditionsVisible(false);
 		props.addCondition({
 			id: Utils.guid(),
 			type: ConditionType.Quick,
@@ -624,25 +630,25 @@ const HealthPanel = (props: Props) => {
 		});
 	};
 
+	const conditionTypes: ConditionType[] = [
+		ConditionType.Custom,
+		ConditionType.Bleeding,
+		ConditionType.Dazed,
+		ConditionType.Frightened,
+		ConditionType.Grabbed,
+		ConditionType.Prone,
+		ConditionType.Restrained,
+		ConditionType.Slowed,
+		ConditionType.Taunted,
+		ConditionType.Weakened
+	];
+
 	const getHealthControls = () => {
 		return (
 			<Space orientation='vertical' style={{ flex: '1 1 0', width: '100%' }}>
 				{
-					props.stamina && props.recoveries ?
-						<Segmented
-							block={true}
-							options={[
-								{ value: 'stamina', label: 'Stamina' },
-								{ value: 'recoveries', label: 'Recoveries' }
-							]}
-							value={page}
-							onChange={setPage}
-						/>
-						: null
-				}
-				{
-					page === 'stamina' ?
-						<Space orientation='vertical' style={{ width: '100%' }}>
+					props.stamina ?
+						<>
 							<NumberSpin
 								style={{ flex: '1 1 0' }}
 								min={0}
@@ -655,29 +661,29 @@ const HealthPanel = (props: Props) => {
 							<Button block={true} disabled={damageValue === 0} onClick={takeDamage}>Take Damage</Button>
 							<Button block={true} disabled={damageValue === 0} onClick={heal}>Regain Stamina</Button>
 							{props.staminaTemp ? <Button block={true} disabled={damageValue === 0} onClick={addTemp}>Add Temporary Stamina</Button> : null}
-						</Space>
+						</>
 						: null
 				}
 				{
-					page === 'recoveries' ?
-						<Space orientation='vertical' style={{ width: '100%' }}>
+					props.recoveries ?
+						<>
 							<Button
 								block={true}
 								className='tall-button'
-								disabled={(props.stamina!.staminaDamage === 0) || (props.recoveries!.recoveriesUsed >= props.recoveries!.recoveriesMax)}
-								onClick={props.recoveries!.spendRecovery}
+								disabled={!props.stamina || (props.stamina.staminaDamage === 0) || (props.recoveries.recoveriesUsed >= props.recoveries.recoveriesMax)}
+								onClick={props.recoveries.spendRecovery}
 							>
 								<div>
 									<div>Spend a Recovery</div>
 									<div className='subtext'>
-										Regain up to {props.recoveries!.recoveryValue} Stamina
+										Regain up to {props.recoveries.recoveryValue} Stamina
 									</div>
 								</div>
 							</Button>
 							<Button
 								block={true}
 								className='tall-button'
-								disabled={props.recoveries!.recoveriesUsed >= props.recoveries!.recoveriesMax}
+								disabled={props.recoveries.recoveriesUsed >= props.recoveries.recoveriesMax}
 								onClick={() => props.recoveries!.setValue(props.recoveries!.recoveriesUsed + 1)}
 							>
 								<div>
@@ -689,12 +695,12 @@ const HealthPanel = (props: Props) => {
 							</Button>
 							<Button
 								block={true}
-								disabled={props.recoveries!.recoveriesUsed === 0}
+								disabled={props.recoveries.recoveriesUsed === 0}
 								onClick={() => props.recoveries!.setValue(props.recoveries!.recoveriesUsed - 1)}
 							>
 								Regain a Recovery
 							</Button>
-						</Space>
+						</>
 						: null
 				}
 			</Space>
@@ -744,11 +750,15 @@ const HealthPanel = (props: Props) => {
 		);
 	}
 
+	const sections = props.sections || [ 'stamina', 'conditions' ];
+	const showStamina = sections.includes('stamina');
+	const showConditions = sections.includes('conditions');
+
 	return (
 		<ErrorBoundary>
 			<div className='health-panel'>
 				{
-					props.stamina ?
+					showStamina && props.stamina ?
 						<div className='health-panel-stamina'>
 							<HealthGauge stamina={props.stamina} staminaTemp={props.staminaTemp} recoveries={props.recoveries} />
 							{getHealthControls()}
@@ -859,52 +869,74 @@ Your allies can help you spend Recoveries in combat, and you can spend Recoverie
 						</>
 						: null
 				}
-				<HeaderText
-					extra={
-						<Space>
-							<Button onClick={() => setConditionsVisible(true)}>
-								<PlusOutlined />
-								Add a condition
-							</Button>
-							<Popover
-								trigger='click'
-								content={
-									<Space orientation='vertical'>
-										<Button block={true} type='text' onClick={() => addSpecial('Judged')}>Judged</Button>
-										<Button block={true} type='text' onClick={() => addSpecial('Marked')}>Marked</Button>
-										<Button block={true} type='text' onClick={() => addSpecial('Surprised')}>Surprised</Button>
+				{
+					showConditions ?
+						<>
+							<HeaderText
+								extra={
+									<Space>
+										<Popover
+											trigger='click'
+											open={addConditionOpen}
+											onOpenChange={setAddConditionOpen}
+											content={
+												<div className='add-condition-popover'>
+													<div className='add-condition-grid'>
+														{
+															conditionTypes.map(c => {
+																const immune = props.conditions.immunities.includes(c);
+																return (
+																	<button
+																		key={c}
+																		type='button'
+																		className={`add-condition-chip${immune ? ' immune' : ''}`}
+																		disabled={immune}
+																		title={immune ? `Immune to ${c}` : ConditionLogic.getDescription(c)}
+																		onClick={() => addCondition(c)}
+																	>
+																		{c}
+																	</button>
+																);
+															})
+														}
+													</div>
+													<div className='add-condition-quick'>
+														<Button size='small' type='text' onClick={() => { setAddConditionOpen(false); addSpecial('Judged'); }}>+ Judged</Button>
+														<Button size='small' type='text' onClick={() => { setAddConditionOpen(false); addSpecial('Marked'); }}>+ Marked</Button>
+														<Button size='small' type='text' onClick={() => { setAddConditionOpen(false); addSpecial('Surprised'); }}>+ Surprised</Button>
+													</div>
+												</div>
+											}
+										>
+											<Button>
+												<PlusOutlined />
+												Add a condition
+												<DownOutlined />
+											</Button>
+										</Popover>
 									</Space>
 								}
 							>
-								<Button>
-									<PlusOutlined />
-									Add other
-									<DownOutlined />
-								</Button>
-							</Popover>
-						</Space>
-					}
-				>
-					Conditions
-				</HeaderText>
-				{
-					props.conditions.current.map(c => (
-						<ConditionPanel
-							key={c.id}
-							condition={c}
-							onChange={props.editCondition}
-							onDelete={props.deleteCondition}
-						/>
-					))
-				}
-				{
-					props.conditions.current.length === 0 ?
-						<Empty text='You are not affected by any conditions.' />
+								Conditions
+							</HeaderText>
+							{
+								props.conditions.current.map(c => (
+									<ConditionPanel
+										key={c.id}
+										condition={c}
+										onChange={props.editCondition}
+										onDelete={props.deleteCondition}
+									/>
+								))
+							}
+							{
+								props.conditions.current.length === 0 ?
+									<Empty text='You are not affected by any conditions.' />
+									: null
+							}
+						</>
 						: null
 				}
-				<Drawer open={conditionsVisible} onClose={() => setConditionsVisible(false)} closeIcon={null} size={500}>
-					<ConditionSelectModal immunities={props.conditions.immunities} onSelect={addCondition} onClose={() => setConditionsVisible(false)} />
-				</Drawer>
 			</div>
 		</ErrorBoundary>
 	);

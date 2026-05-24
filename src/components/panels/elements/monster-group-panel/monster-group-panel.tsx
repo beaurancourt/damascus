@@ -10,7 +10,6 @@ import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster
 import { PanelMode } from '@/enums/panel-mode';
 import { Segmented } from 'antd';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -184,7 +183,7 @@ export const MonsterGroupPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='monster-group-panel' id={SheetFormatter.getPageId('monster-group', props.monsterGroup.id)}>
+			<div className='monster-group-panel'>
 				<HeaderText level={1} tags={tags}>
 					{props.monsterGroup.name || 'Unnamed Monster Group'}
 				</HeaderText>

@@ -1,25 +1,22 @@
-import { Button, Drawer, Select, Space } from 'antd';
+import { Select, Space } from 'antd';
 import { Feature, FeaturePerkData } from '@/models/feature';
 import { Collections } from '@/utils/collections';
 import { Empty } from '@/components/controls/empty/empty';
 import { FeatureType } from '@/enums/feature-type';
-import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { HeroLogic } from '@/logic/hero-logic';
 import { Markdown } from '@/components/controls/markdown/markdown';
-import { Modal } from '@/components/modals/modal/modal';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
-import { PanelMode } from '@/enums/panel-mode';
 import { Perk } from '@/models/perk';
 import { PerkList } from '@/enums/perk-list';
 import { PerkPanel } from '@/components/panels/elements/perk-panel/perk-panel';
-import { PerkSelectModal } from '@/components/modals/select/perk-select/perk-select-modal';
-import { SelectionBox } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { Utils } from '@/utils/utils';
 import { useState } from 'react';
+
+import './choice.scss';
 
 interface InfoProps {
 	data: FeaturePerkData;
@@ -96,81 +93,68 @@ interface ConfigProps {
 }
 
 export const ConfigPerk = (props: ConfigProps) => {
-	const [ perkSelectorOpen, setPerkSelectorOpen ] = useState<boolean>(false);
-	const [ selectedPerk, setSelectedPerk ] = useState<Perk | null>(null);
-
-	const currentPerkIDs = HeroLogic.getFeatures(props.hero)
+	const otherPerkIDs = HeroLogic.getFeatures(props.hero)
 		.map(f => f.feature)
 		.filter(f => f.type === FeatureType.Perk)
+		.filter(f => f.id !== props.feature.id)
 		.flatMap(f => f.data.selected)
 		.map(p => p.id);
 
-	const perks = SourcebookLogic.getPerks(props.sourcebooks as Sourcebook[]).filter(p => props.data.lists.includes(p.list));
-	const sortedPerks = Collections.sort(perks, p => p.name);
+	const selectedIDs = props.data.selected.map(p => p.id);
+	const count = props.data.count;
+	const isSingle = count === 1;
 
-	const getAddButton = () => {
-		if (sortedPerks.length === 0) {
-			return (
-				<Empty text='There are no options to choose for this feature.' />
-			);
+	const allPerks = Collections.sort(
+		SourcebookLogic.getPerks(props.sourcebooks).filter(p => props.data.lists.includes(p.list)),
+		p => p.name
+	);
+
+	const togglePerk = (perk: Perk) => {
+		const isSelected = selectedIDs.includes(perk.id);
+		const dataCopy = Utils.copy(props.data);
+		if (isSelected) {
+			dataCopy.selected = dataCopy.selected.filter(p => p.id !== perk.id);
+		} else if (isSingle) {
+			dataCopy.selected = [ perk ];
+		} else if (selectedIDs.length < count) {
+			dataCopy.selected.push(perk);
+		} else {
+			return;
 		}
-
-		return (
-			<Button className='status-warning' block={true} onClick={() => setPerkSelectorOpen(true)}>
-				Choose a perk
-			</Button>
-		);
+		props.setData(dataCopy);
 	};
+
+	if (allPerks.length === 0) {
+		return <Empty text='There are no options to choose for this feature.' />;
+	}
 
 	return (
 		<Space orientation='vertical' style={{ width: '100%' }}>
-			{props.data.count > 1 ? <div className='ds-text'>Choose {props.data.count}:</div> : null}
+			<div className='ds-text'>
+				{count === 1 ? 'Choose 1 perk.' : `Choose ${count} perks.`}
+			</div>
 			{
-				props.data.selected.map(perk => (
-					<SelectionBox
-						key={perk.id}
-						content={
-							<Field
-								style={{ flex: '1 1 0' }}
-								label={perk.name}
-								value={<Markdown text={perk.description} useSpan={true} />}
-							/>
-						}
-						onSelect={() => setSelectedPerk(perk)}
-						onRemove={() => {
-							const dataCopy = Utils.copy(props.data);
-							dataCopy.selected = dataCopy.selected.filter(p => p.id !== perk.id);
-							props.setData(dataCopy);
-						}}
-					/>
-				))
+				allPerks.map(perk => {
+					const isSelected = selectedIDs.includes(perk.id);
+					const alreadyTaken = !isSelected && otherPerkIDs.includes(perk.id);
+					const overLimit = !isSelected && !alreadyTaken && !isSingle && selectedIDs.length >= count;
+					const disabled = alreadyTaken || overLimit;
+					return (
+						<div
+							key={perk.id}
+							className={`choice-option${isSelected ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
+							onClick={() => !disabled && togglePerk(perk)}
+							title={alreadyTaken ? 'You already have this perk' : undefined}
+						>
+							<div className='choice-option-indicator'>{isSelected ? '●' : '○'}</div>
+							<div className='choice-option-body'>
+								<div className='choice-option-name'>{perk.name}</div>
+								<div className='choice-option-content'><Markdown text={perk.description} useSpan={true} /></div>
+							</div>
+						</div>
+					);
+				})
 			}
-			{
-				props.data.selected.length < props.data.count ?
-					getAddButton()
-					: null
-			}
-			<Drawer open={perkSelectorOpen} onClose={() => setPerkSelectorOpen(false)} closeIcon={null} size={500}>
-				<PerkSelectModal
-					perks={sortedPerks.filter(p => !currentPerkIDs.includes(p.id))}
-					hero={props.hero}
-					sourcebooks={props.sourcebooks}
-					onSelect={perk => {
-						setPerkSelectorOpen(false);
-
-						const dataCopy = Utils.copy(props.data);
-						dataCopy.selected.push(perk);
-						props.setData(dataCopy);
-					}}
-					onClose={() => setPerkSelectorOpen(false)}
-				/>
-			</Drawer>
-			<Drawer open={!!selectedPerk} onClose={() => setSelectedPerk(null)} closeIcon={null} size={500}>
-				<Modal
-					content={selectedPerk ? <PerkPanel perk={selectedPerk} sourcebooks={props.sourcebooks} mode={PanelMode.Full} /> : null}
-					onClose={() => setSelectedPerk(null)}
-				/>
-			</Drawer>
 		</Space>
 	);
 };

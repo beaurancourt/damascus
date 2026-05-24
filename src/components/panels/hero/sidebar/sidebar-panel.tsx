@@ -1,16 +1,11 @@
-import { Flex, Space, Tag } from 'antd';
-import { Ability } from '@/models/ability';
-import { AbilityLogic } from '@/logic/ability-logic';
-import { AbilityUsage } from '@/enums/ability-usage';
+import { Flex, Tag } from 'antd';
 import { ConditionLogic } from '@/logic/condition-logic';
 import { ConditionType } from '@/enums/condition-type';
 import { ControlledMonstersPanel } from '@/components/panels/hero/controlled-monsters/controlled-monsters-panel';
 import { DamageModifierType } from '@/enums/damage-modifier-type';
 import { EncounterSlot } from '@/models/encounter-slot';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
-import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
-import { HealthGauge } from '../../health-gauge/health-gauge';
 import { Hero } from '@/models/hero';
 import { HeroLogic } from '@/logic/hero-logic';
 import { HeroModalType } from '@/enums/hero-modal-type';
@@ -28,7 +23,6 @@ import './sidebar-panel.scss';
 interface Props {
 	hero: Hero;
 	sourcebooks: Sourcebook[];
-	setTab: (tab: string) => void;
 	onShowState: (type: HeroModalType) => void;
 	onShowReference: (page: RulesPage) => void;
 	onAddSquad: (hero: Hero, monster: Monster, count: number) => void;
@@ -43,12 +37,6 @@ export const SidebarPanel = (props: Props) => {
 	const onShowStats = () => {
 		if (props.onShowState) {
 			props.onShowState(HeroModalType.Resources);
-		}
-	};
-
-	const onShowVitals = () => {
-		if (props.onShowState) {
-			props.onShowState(HeroModalType.Vitals);
 		}
 	};
 
@@ -75,49 +63,10 @@ export const SidebarPanel = (props: Props) => {
 	const damageImmunities = damageModifiers.filter(dm => dm.modifierType === DamageModifierType.Immunity);
 	const damageWeaknesses = damageModifiers.filter(dm => dm.modifierType === DamageModifierType.Weakness);
 
-	const abilities = HeroLogic.getAbilities(props.hero, props.sourcebooks, options.shownStandardAbilities);
 	const heroicResources = HeroLogic.getHeroicResources(props.hero);
-	const triggers = abilities.filter(a => a.ability.type.usage === AbilityUsage.Trigger);
 	const languages = HeroLogic.getLanguages(props.hero, props.sourcebooks);
 
 	const useRows = options.singlePage && options.compactView;
-
-	const getTrigger = (ability: Ability) => {
-		const showTarget = ability.type.trigger.toLowerCase().includes('the target');
-		const distance = ability.distance.map(d => AbilityLogic.getDistance(d, ability, props.hero)).join(' or ');
-
-		return (
-			<div key={ability.id}>
-				{
-					ability.type.trigger ?
-						<Field
-							compact={true}
-							label={ability.name || 'Unnamed Ability'}
-							value={ability.type.trigger}
-						/>
-						: null
-				}
-				{
-					showTarget && distance ?
-						<Field
-							compact={true}
-							label={ability.target !== distance ? 'Distance' : 'Distance / Target'}
-							value={distance}
-						/>
-						: null
-				}
-				{
-					showTarget && ability.target && (ability.target !== distance) ?
-						<Field
-							compact={true}
-							label='Target'
-							value={ability.target}
-						/>
-						: null
-				}
-			</div>
-		);
-	};
 
 	const getSkills = (label: string, skills: Skill[]) => {
 		return skills.length > 0 ?
@@ -153,11 +102,11 @@ export const SidebarPanel = (props: Props) => {
 				{
 					HeroLogic.getCombatState(props.hero) === 'dying' ?
 						useRows ?
-							<div className='selectable-row danger clickable' onClick={onShowVitals}>
+							<div className='selectable-row danger'>
 								<div><b>Dying</b></div>
 							</div>
 							:
-							<div className='overview-tile danger clickable' onClick={onShowVitals}>
+							<div className='overview-tile danger'>
 								<HeaderText>Dying</HeaderText>
 								<div className='ds-text'>
 									You can’t take the Catch Breath maneuver in combat, and you are bleeding, and this condition can’t be removed in any way until you are no longer dying.
@@ -171,36 +120,15 @@ export const SidebarPanel = (props: Props) => {
 				{
 					props.hero.state.conditions.map(c =>
 						useRows ?
-							<div key={c.id} className='selectable-row warning clickable' onClick={onShowVitals}>
+							<div key={c.id} className='selectable-row warning'>
 								<div>Condition: <b>{c.type === ConditionType.Custom ? c.text || 'A custom condition.' : ConditionLogic.getDescription(c.type)}</b></div>
 							</div>
 							:
-							<div key={c.id} className='overview-tile warning clickable' onClick={onShowVitals}>
+							<div key={c.id} className='overview-tile warning'>
 								<HeaderText tags={[ c.ends ]}>{c.type}</HeaderText>
 								<Markdown text={c.type === ConditionType.Custom ? c.text || 'A custom condition.' : ConditionLogic.getDescription(c.type)} />
 							</div>
 					)
-				}
-				{
-					useRows ?
-						null
-						:
-						<div className='overview-tile clickable' style={{ display: 'flex', justifyContent: 'center', padding: '0' }} onClick={onShowVitals}>
-							<HealthGauge
-								stamina={{
-									staminaMax: HeroLogic.getStamina(props.hero),
-									staminaDamage: props.hero.state.staminaDamage,
-									state: HeroLogic.getCombatState(props.hero)
-								}}
-								staminaTemp={{
-									staminaTemp: props.hero.state.staminaTemp
-								}}
-								recoveries={{
-									recoveriesMax: HeroLogic.getRecoveries(props.hero),
-									recoveriesUsed: props.hero.state.recoveriesUsed
-								}}
-							/>
-						</div>
 				}
 				{
 					(heroicResources.length > 0) && !options.singlePage ?
@@ -241,21 +169,6 @@ export const SidebarPanel = (props: Props) => {
 					onSelectControlledMonster={props.onSelectControlledMonster!}
 					onSelectControlledSquad={props.onSelectControlledSquad!}
 				/>
-				{
-					(triggers.length > 0) && !options.singlePage ?
-						useRows ?
-							<div className='selectable-row clickable' onClick={() => props.setTab('Triggers')}>
-								<div>Triggers: <b>{triggers.map(t => t.ability.name).join(', ')}</b></div>
-							</div>
-							:
-							<div className='overview-tile clickable' onClick={() => props.setTab('Triggers')}>
-								<HeaderText>Triggered Actions</HeaderText>
-								<Space orientation='vertical'>
-									{triggers.map(t => getTrigger(t.ability))}
-								</Space>
-							</div>
-						: null
-				}
 				{
 					conditionImmunities.length > 0 ?
 						useRows ?

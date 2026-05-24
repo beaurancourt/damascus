@@ -13,7 +13,6 @@ import { AttitudeType } from '@/enums/attitude-type';
 import { Career } from '@/models/career';
 import { Characteristic } from '@/enums/characteristic';
 import { Complication } from '@/models/complication';
-import { ConnectionSettings } from '@/models/connection-settings';
 import { Culture } from '@/models/culture';
 import { CultureType } from '@/enums/culture-type';
 import { DamageType } from '@/enums/damage-type';
@@ -46,7 +45,6 @@ import { MonsterRoleType } from '@/enums/monster-role-type';
 import { MonsterState } from '@/models/monster-state';
 import { Negotiation } from '@/models/negotiation';
 import { Options } from '@/models/options';
-import { PanelWidth } from '@/enums/panel-width';
 import { Perk } from '@/models/perk';
 import { PerkList } from '@/enums/perk-list';
 import { Plot } from '@/models/plot';
@@ -54,7 +52,6 @@ import { PowerRoll } from '@/models/power-roll';
 import { Pregen } from '@/models/pregen';
 import { RetainerLogic } from '@/logic/retainer-logic';
 import { Session } from '@/models/session';
-import { SheetPageSize } from '@/enums/sheet-page-size';
 import { Size } from '@/models/size';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -63,7 +60,6 @@ import { SubClass } from '@/models/subclass';
 import { Summon } from '@/models/summon';
 import { TerrainCategory } from '@/enums/terrain-category';
 import { TerrainRoleType } from '@/enums/terrain-role-type';
-import { Tip } from '@/models/tip';
 import { Title } from '@/models/title';
 import { Utils } from '@/utils/utils';
 
@@ -1031,19 +1027,10 @@ export class FactoryLogic {
 		};
 	};
 
-	static createTip = (data: { content: string, image: string, isNew?: boolean }): Tip => {
-		return {
-			content: data.content,
-			image: data.image,
-			isNew: data.isNew || false
-		};
-	};
-
 	static createOptions = (): Options => {
 		return {
 			// App
 			cookieConsent: false,
-			showDataSource: false,
 			// Hero
 			shownStandardAbilities: [],
 			xpPerLevel: 16,
@@ -1052,22 +1039,6 @@ export class FactoryLogic {
 			showSkillsInGroups: false,
 			showSources: true,
 			compactView: false,
-			abilityWidth: PanelWidth.Medium,
-			// Hero: Classic Sheet
-			includePlayState: false,
-			classicSheetPageSize: SheetPageSize.Letter,
-			colorSheet: true,
-			colorScheme: 'community',
-			showPowerRollCalculation: true,
-			sheetTextColor: 'default',
-			featuresInclude: 'all',
-			pageOrientation: 'portrait',
-			debugClassicSheet: false,
-			// Monster Builder
-			similarLevel: true,
-			similarRole: true,
-			similarOrganization: true,
-			similarSize: true,
 			// Encounter
 			party: '',
 			// Encounter: Running
@@ -1080,18 +1051,6 @@ export class FactoryLogic {
 			// Tactical Map
 			gridSize: 50,
 			playerGridSize: 50
-		};
-	};
-
-	static createConnectionSettings = (): ConnectionSettings => {
-		return {
-			useManualWarehouse: false,
-			warehouseHost: '',
-			warehouseToken: '',
-			patreonConnected: false,
-			usePatreonWarehouse: false,
-			patreonConnections: [],
-			dataSource: undefined
 		};
 	};
 

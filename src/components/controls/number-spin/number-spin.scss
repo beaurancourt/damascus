@@ -10,8 +10,10 @@
 		pointer-events: none;
 	}
 
-	&:hover {
-		background-color: rgba(0, 0, 0, 0.06);
+	@media (hover: hover) {
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.06);
+		}
 	}
 
 	.spin-buttons {
@@ -28,8 +30,10 @@
 				opacity: 0.3;
 			}
 
-			&:hover {
-				background-color: rgba(0, 0, 0, 0.06);
+			@media (hover: hover) {
+				&:hover {
+					background-color: rgba(0, 0, 0, 0.06);
+				}
 			}
 		}
 	}
@@ -43,14 +47,18 @@ html[data-theme="dark"] {
 	.number-spin {
 		color: rgba(255, 255, 255, 0.88);
 
-		&:hover {
-			background-color: rgba(250, 250, 250, 0.3);
+		@media (hover: hover) {
+			&:hover {
+				background-color: rgba(250, 250, 250, 0.3);
+			}
 		}
 
 		.spin-buttons {
 			.spin-button {
-				&:hover {
-					background-color: rgba(250, 250, 250, 0.3);
+				@media (hover: hover) {
+					&:hover {
+						background-color: rgba(250, 250, 250, 0.3);
+					}
 				}
 			}
 		}

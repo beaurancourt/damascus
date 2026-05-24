@@ -478,11 +478,7 @@ export class HeroLogic {
 			.filter(f => f.feature.type === FeatureType.LanguageChoice)
 			.forEach(f => {
 				const feature = f.feature as FeatureLanguageChoice;
-				const selected = Utils.copy(feature.data.selected);
-				if (selected.length < feature.data.count) {
-					selected.push(`I Speak Their Language (${f.source})`);
-				}
-				languageNames.push(...selected);
+				languageNames.push(...feature.data.selected);
 			});
 
 		const allLanguages = sourcebooks.flatMap(sb => sb.languages);

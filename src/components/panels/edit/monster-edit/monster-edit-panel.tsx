@@ -37,7 +37,6 @@ import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { TextInput } from '@/components/controls/text-input/text-input';
 import { Utils } from '@/utils/utils';
-import { useOptions } from '@/contexts/data-context';
 import { useState } from 'react';
 
 import './monster-edit-panel.scss';
@@ -57,7 +56,6 @@ export const MonsterEditPanel = (props: Props) => {
 	const [ scratchpadMonsters, setScratchpadMonsters ] = useState<Monster[]>([]);
 	const [ hiddenMonsterIDs, setHiddenMonsterIDs ] = useState<string[]>([]);
 	const [ drawerOpen, setDrawerOpen ] = useState<boolean>(false);
-	const options = useOptions();
 
 	const setEncounterValue = (value: number) => {
 		const copy = Utils.copy(monster);
@@ -510,7 +508,7 @@ export const MonsterEditPanel = (props: Props) => {
 
 	const getSimilarMonsters = () => {
 		const monsters = SourcebookLogic
-			.getSimilarMonsters(props.sourcebooks, monster, options)
+			.getSimilarMonsters(props.sourcebooks, monster)
 			.filter(m => !hiddenMonsterIDs.includes(m.id));
 
 		scratchpadMonsters

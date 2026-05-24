@@ -10,7 +10,6 @@ import { Hero } from '@/models/hero';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { PanelMode } from '@/enums/panel-mode';
 import { Pill } from '@/components/controls/pill/pill';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -161,7 +160,7 @@ export const DomainPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='domain-panel' id={SheetFormatter.getPageId('domain', props.domain.id)}>
+			<div className='domain-panel'>
 				<HeaderText level={1} tags={tags}>
 					{props.domain.name || 'Unnamed Domain'}
 				</HeaderText>

@@ -9,7 +9,6 @@ import { Markdown } from '@/components/controls/markdown/markdown';
 import { MontageLogic } from '@/logic/montage-logic';
 import { PanelMode } from '@/enums/panel-mode';
 import { Pill } from '@/components/controls/pill/pill';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -174,7 +173,7 @@ export const MontagePanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='montage-panel' id={SheetFormatter.getPageId('montage', props.montage.id)}>
+			<div className='montage-panel'>
 				<HeaderText level={1} tags={tags}>{props.montage.name || 'Unnamed Montage'}</HeaderText>
 				{getContent()}
 			</div>

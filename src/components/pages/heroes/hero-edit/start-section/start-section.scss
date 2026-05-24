@@ -1,3 +1,20 @@
 .start-section {
-	display: block;
+	display: flex;
+	flex-direction: row;
+	gap: 10px;
+
+	> .hero-edit-content-column {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+}
+
+@media (max-width: 1000px) {
+	.start-section {
+		flex-direction: column;
+
+		> .hero-edit-content-column {
+			flex: 0 0 auto;
+		}
+	}
 }

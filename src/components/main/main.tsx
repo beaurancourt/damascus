@@ -1,34 +1,31 @@
 import { Feature, FeatureCompanion, FeatureRetainer } from '@/models/feature';
 import { Navigate, Route, Routes } from 'react-router';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
-import { Spin, notification } from 'antd';
+import { notification } from 'antd';
 import { useDataManager, useHeroes, useHomebrewSourcebooks, useOptions, useSession } from '@/contexts/data-context';
 import { Ability } from '@/models/ability';
 import { AbilityModal } from '@/components/modals/ability/ability-modal';
 import { AboutModal } from '@/components/modals/about/about-modal';
 import { Adventure } from '@/models/adventure';
 import { AdventureLogic } from '@/logic/adventure-logic';
-import { Analytics } from '@/utils/analytics';
 import { Ancestry } from '@/models/ancestry';
-import { AuthPage } from '@/components/pages/auth/auth-page';
 import { BackupPage } from '@/components/pages/backup/backup-page';
 import { Career } from '@/models/career';
 import { Characteristic } from '@/enums/characteristic';
-import { ClocktowerPage } from '@/components/pages/clocktower/clocktower-page';
 import { Collections } from '@/utils/collections';
 import { Complication } from '@/models/complication';
-import { ConnectionSettings } from '@/models/connection-settings';
 import { Counter } from '@/models/counter';
 import { Culture } from '@/models/culture';
 import { CultureType } from '@/enums/culture-type';
-import { DataService } from '@/services/data-service';
 import { Domain } from '@/models/domain';
 import { Element } from '@/models/element';
 import { ElementModal } from '@/components/modals/element/element-modal';
 import { Encounter } from '@/models/encounter';
 import { EncounterSlot } from '@/models/encounter-slot';
+import { EncounterImportModal } from '@/components/modals/encounter-import/encounter-import-modal';
 import { EncounterToolsModal } from '@/components/modals/encounter-tools/encounter-tools-modal';
+import { GlobalSearchModal } from '@/components/modals/global-search/global-search-modal';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { ErrorsModal } from '../modals/errors/errors-modal';
 import { FactoryLogic } from '@/logic/factory-logic';
@@ -53,8 +50,6 @@ import { HeroModalType } from '@/enums/hero-modal-type';
 import { HeroProjectsModal } from '@/components/modals/hero-projects/hero-projects-modal';
 import { HeroResourcesModal } from '@/components/modals/hero-resources/hero-resources-modal';
 import { HeroRespiteModal } from '@/components/modals/hero-respite/hero-respite-modal';
-import { HeroSheetPreviewPage } from '@/components/pages/heroes/hero-sheet/hero-sheet-preview-page';
-import { HeroSourcebooksModal } from '@/components/modals/hero-sourcebooks/hero-sourcebooks-modal';
 import { HeroTitlesModal } from '@/components/modals/hero-titles/hero-titles-modal';
 import { HeroUpdateLogic } from '@/logic/update/hero-update-logic';
 import { HeroViewPage } from '@/components/pages/heroes/hero-view/hero-view-page';
@@ -65,7 +60,6 @@ import { ItemType } from '@/enums/item-type';
 import { Kit } from '@/models/kit';
 import { LibraryEditPage } from '@/components/pages/library/library-edit/library-edit-page';
 import { LibraryListPage } from '@/components/pages/library/library-list/library-list-page';
-import { LibraryPrintPage } from '@/components/pages/library/library-print/library-print-page';
 import { MainLayout } from '@/components/main/main-layout';
 import { MinionSlotModal } from '@/components/modals/minion-slot/minion-slot-modal';
 import { Monster } from '@/models/monster';
@@ -89,30 +83,22 @@ import { SettingsModal } from '@/components/modals/settings/settings-modal';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
 import { SourcebookUpdateLogic } from '@/logic/update/sourcebook-update-logic';
-import { SourcebooksModal } from '@/components/modals/sourcebooks/sourcebooks-modal';
-import { StorageServiceFactory } from '@/services/storage/storage-service-factory';
 import { SubClass } from '@/models/subclass';
 import { SummoningInfo } from '@/models/summon';
 import { TacticalMap } from '@/models/tactical-map';
 import { Terrain } from '@/models/terrain';
 import { TerrainModal } from '@/components/modals/terrain/terrain-modal';
 import { Title } from '@/models/title';
-import { TransferPage } from '@/components/pages/transfer/transfer-page';
 import { Utils } from '@/utils/utils';
 import { WelcomePage } from '@/components/pages/welcome/welcome-page';
-import localforage from 'localforage';
 import { useErrorListener } from '@/hooks/use-error-listener';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useSyncStatus } from '@/hooks/use-sync-status';
 
 import './main.scss';
 
-interface Props {
-	connectionSettings: ConnectionSettings;
-	dataService: DataService;
-}
 
-export const Main = (props: Props) => {
+export const Main = () => {
 	const navigation = useNavigation();
 	const [ notify, notifyContext ] = notification.useNotification();
 	const { triggerSyncOnChange } = useSyncStatus();
@@ -122,15 +108,36 @@ export const Main = (props: Props) => {
 	const homebrewSourcebooks = useHomebrewSourcebooks();
 	const dataManager = useDataManager();
 
-	const [ connectionSettings, setConnectionSettings ] = useState<ConnectionSettings>(props.connectionSettings);
-	const [ dataService, setDataService ] = useState<DataService>(props.dataService);
 
 	const [ errors, setErrors ] = useState<Event[]>([]);
 	const [ drawer, setDrawer ] = useState<ReactNode>(null);
 	const [ playerView, setPlayerView ] = useState<Window | null>(null);
-	const [ spinning, setSpinning ] = useState(false);
 
 	useErrorListener(event => setErrors([ ...errors, event ]));
+
+	useEffect(() => {
+		const handler = (e: KeyboardEvent) => {
+			// Cmd/Ctrl+K, or "/" when not focused on an input
+			const target = e.target as HTMLElement | null;
+			const inEditableField = target && (
+				target.tagName === 'INPUT' ||
+				target.tagName === 'TEXTAREA' ||
+				target.isContentEditable
+			);
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+				e.preventDefault();
+				showSearch();
+				return;
+			}
+			if (e.key === '/' && !inEditableField) {
+				e.preventDefault();
+				showSearch();
+			}
+		};
+		window.addEventListener('keydown', handler);
+		return () => window.removeEventListener('keydown', handler);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	// #region Persistence
 
@@ -185,39 +192,6 @@ export const Main = (props: Props) => {
 			.then(() => {
 				// Trigger sync when data changes
 				triggerSyncOnChange();
-			});
-	};
-
-	const deleteHomebrewSourcebook = (homebrew: Sourcebook) => {
-		return dataManager.deleteSourcebook(homebrew)
-			.catch(err => {
-				console.error(err);
-				notify.error({
-					title: 'Error deleting Sourcebook',
-					description: Utils.getErrorMessage(err),
-					placement: 'top'
-				});
-			});
-	};
-
-	const persistConnectionSettings = (connectionSettings: ConnectionSettings) => {
-		return localforage
-			.setItem<ConnectionSettings>('forgesteel-connection-settings', connectionSettings)
-			.then(
-				setConnectionSettings,
-				err => {
-					console.error(err);
-					notify.error({
-						title: 'Error saving connection settings',
-						description: Utils.getErrorMessage(err),
-						placement: 'top'
-					});
-				}
-			).then(() => {
-				const storage = StorageServiceFactory.fromConnectionSettings(connectionSettings);
-				const ds = new DataService(storage);
-				ds.initialize();
-				setDataService(ds);
 			});
 	};
 
@@ -282,44 +256,6 @@ export const Main = (props: Props) => {
 
 	const exportHeroData = (hero: Hero) => {
 		Utils.exportData(hero.name || 'Unnamed Hero', hero, 'hero');
-	};
-
-	const exportHeroImage = (hero: Hero) => {
-		const pageIds: string[] = [];
-		document.querySelectorAll(`[id^=hero-sheet-${hero.id}-page]`).forEach(elem => pageIds.push(elem.id));
-
-		Utils.exportImage(pageIds, hero.name || 'Unnamed Hero');
-	};
-
-	const exportHeroPdf = (hero: Hero, resolution: 'standard' | 'high') => {
-		setSpinning(true);
-		Utils.wait(500).then(() => {
-			const name = hero.name || 'Unnamed Hero';
-
-			const pageIds: string[] = [];
-			document.querySelectorAll(`[id^=hero-sheet-${hero.id}-page]`).forEach(elem => pageIds.push(elem.id));
-
-			Utils.elementsToPdf(pageIds, name, options.classicSheetPageSize, resolution)
-				.then(() => setSpinning(false));
-		});
-	};
-
-	const exportStandardAbilities = () => {
-		setSpinning(true);
-		Utils.wait(500).then(() => {
-			const pageIds: string[] = [];
-			document.querySelectorAll('[id^=hero-sheet-standard-abilities-page-abilities]').forEach(elem => pageIds.push(elem.id));
-
-			Utils.elementsToPdf(pageIds, 'Standard Abilities', options.classicSheetPageSize, 'high')
-				.then(() => setSpinning(false));
-		});
-	};
-
-	const setNotes = (hero: Hero, value: string) => {
-		const copy = Utils.copy(hero);
-		copy.state.notes = value;
-
-		persistHero(copy);
 	};
 
 	const addSquad = (hero: Hero, monster: Monster, count: number) => {
@@ -754,8 +690,6 @@ export const Main = (props: Props) => {
 			return title.id;
 		};
 
-		Analytics.logHomebrewCreated(kind);
-
 		const sourcebooks = Utils.copy(homebrewSourcebooks);
 		let sourcebook = sourcebooks.find(sb => sb.id === sourcebookID) || null;
 		if (!sourcebook) {
@@ -1068,8 +1002,6 @@ export const Main = (props: Props) => {
 	};
 
 	const saveLibraryElement = (kind: SourcebookElementKind, sourcebookID: string, element: Element) => {
-		Analytics.logHomebrewEdited(kind);
-
 		const copy = Utils.copy(homebrewSourcebooks);
 		const sourcebook = copy.find(sb => sb.id === sourcebookID);
 		if (sourcebook) {
@@ -1263,28 +1195,6 @@ export const Main = (props: Props) => {
 		Utils.exportData(name, element, category);
 	};
 
-	const exportLibraryElementImage = (category: string, element: Element) => {
-		const name = element.name || `Unnamed ${Format.capitalize(category.split('-').join(' '))}`;
-
-		const pageIds: string[] = [];
-		document.querySelectorAll(`[id^=${category.toLowerCase()}-${element.id}-page]`).forEach(elem => pageIds.push(elem.id));
-
-		Utils.exportImage(pageIds, name);
-	};
-
-	const exportLibraryElementPdf = (category: string, element: Element, resolution: 'standard' | 'high') => {
-		setSpinning(true);
-		Utils.wait(500).then(() => {
-			const name = element.name || `Unnamed ${Format.capitalize(category.split('-').join(' '))}`;
-
-			const pageIds: string[] = [];
-			document.querySelectorAll(`[id^=${category.toLowerCase()}-${element.id}-page]`).forEach(elem => pageIds.push(elem.id));
-
-			Utils.elementsToPdf(pageIds, name, options.classicSheetPageSize, resolution)
-				.then(() => setSpinning(false));
-		});
-	};
-
 	// #endregion
 
 	// #region Session
@@ -1430,12 +1340,23 @@ export const Main = (props: Props) => {
 		);
 	};
 
+	const showSearch = () => {
+		setDrawer(
+			<GlobalSearchModal
+				sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+				heroes={heroes}
+				onShowRule={(page, label) => {
+					setDrawer(null);
+					onShowReference(null, page, label);
+				}}
+				onClose={() => setDrawer(null)}
+			/>
+		);
+	};
+
 	const showSettings = () => {
 		setDrawer(
 			<SettingsModal
-				connectionSettings={connectionSettings}
-				dataService={dataService}
-				setConnectionSettings={persistConnectionSettings}
 				onClose={() => setDrawer(null)}
 			/>
 		);
@@ -1682,18 +1603,6 @@ export const Main = (props: Props) => {
 					/>
 				);
 				break;
-			case HeroModalType.Sourcebooks:
-				setDrawer(
-					<HeroSourcebooksModal
-						hero={hero}
-						sourcebooks={sourcebooks}
-						allSourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-						onClose={() => setDrawer(null)}
-						onImportSourcebook={persistHomebrewSourcebook}
-						onChange={persistHero}
-					/>
-				);
-				break;
 		}
 	};
 
@@ -1707,7 +1616,7 @@ export const Main = (props: Props) => {
 		);
 	};
 
-	const onShowReference = (hero: Hero | null, page?: RulesPage) => {
+	const onShowReference = (hero: Hero | null, page?: RulesPage, startRule?: string) => {
 		const sourcebooks = SourcebookLogic.getSourcebooks(homebrewSourcebooks);
 
 		setDrawer(
@@ -1715,19 +1624,27 @@ export const Main = (props: Props) => {
 				hero={hero}
 				sourcebooks={sourcebooks}
 				startPage={page}
+				startRule={startRule}
 				onClose={() => setDrawer(null)}
 			/>
 		);
 	};
 
-	const showSourcebooks = () => {
+	const showEncounterImport = (sourcebookID: string, setSourcebookID: (id: string) => void) => {
 		setDrawer(
-			<SourcebooksModal
-				officialSourcebooks={SourcebookLogic.getSourcebooks()}
-				homebrewSourcebooks={homebrewSourcebooks}
+			<EncounterImportModal
+				sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+				sourcebookID={sourcebookID}
+				setSourcebookID={setSourcebookID}
+				onSave={encounter => {
+					setDrawer(null);
+					createLibraryElement('encounter', sourcebookID, encounter);
+				}}
+				onRunLive={encounter => {
+					setDrawer(null);
+					startEncounter(encounter);
+				}}
 				onClose={() => setDrawer(null)}
-				onHomebrewSourcebookChange={persistHomebrewSourcebook}
-				onHomebrewSourcebookDelete={deleteHomebrewSourcebook}
 			/>
 		);
 	};
@@ -1764,7 +1681,7 @@ export const Main = (props: Props) => {
 		showAbout: showAbout,
 		showSettings: showSettings,
 		showErrors: showErrors,
-		connectionSettings: connectionSettings
+		showSearch: showSearch
 	};
 
 	return (
@@ -1812,9 +1729,6 @@ export const Main = (props: Props) => {
 									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
 									params={footerParams}
 									exportHeroData={exportHeroData}
-									exportHeroImage={exportHeroImage}
-									exportHeroPdf={exportHeroPdf}
-									exportStandardAbilities={exportStandardAbilities}
 									copyHero={copyHero}
 									deleteHero={deleteHero}
 									showAncestry={ancestry => onSelectLibraryElement(ancestry, 'ancestry')}
@@ -1833,12 +1747,12 @@ export const Main = (props: Props) => {
 									showAbility={onSelectAbility}
 									showHeroState={onShowHeroState}
 									showHeroReference={onShowReference}
-									setNotes={setNotes}
 									onAddSquad={addSquad}
 									onRemoveSquad={removeSquad}
 									onAddMonsterToSquad={addMonsterToSquad}
 									onSelectControlledMonster={selectControlledMonster}
 									onSelectControlledSquad={selectControlledSquad}
+									updateHero={persistHero}
 								/>
 							}
 						/>
@@ -1857,14 +1771,6 @@ export const Main = (props: Props) => {
 								/>
 							}
 						/>
-						<Route
-							path='sheet/:heroID'
-							element={
-								<HeroSheetPreviewPage
-									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-								/>
-							}
-						/>
 					</Route>
 					<Route path='library'>
 						<Route
@@ -1877,16 +1783,14 @@ export const Main = (props: Props) => {
 								<LibraryListPage
 									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
 									params={footerParams}
-									showSourcebooks={showSourcebooks}
 									showMonster={monster => onSelectMonster(undefined, monster, undefined, undefined)}
 									showEncounterTools={showEncounterTools}
+									showEncounterImport={showEncounterImport}
 									createElement={(kind, sourcebookID, element) => createLibraryElement(kind, sourcebookID, element)}
 									importElement={importLibraryElement}
 									moveElement={moveLibraryElement}
 									deleteElement={deleteLibraryElement}
 									exportElementData={exportLibraryElementData}
-									exportElementImage={exportLibraryElementImage}
-									exportElementPdf={exportLibraryElementPdf}
 									startEncounter={startEncounter}
 									startMontage={startMontage}
 									startNegotiation={startNegotiation}
@@ -1903,14 +1807,6 @@ export const Main = (props: Props) => {
 									showMonster={(monster, monsterGroup) => onSelectMonster(undefined, monster, monsterGroup, undefined)}
 									showTerrain={onSelectTerrain}
 									saveChanges={saveLibraryElement}
-								/>
-							}
-						/>
-						<Route
-							path='print/:kind/:sourcebookID/:elementID'
-							element={
-								<LibraryPrintPage
-									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
 								/>
 							}
 						/>
@@ -1953,16 +1849,6 @@ export const Main = (props: Props) => {
 							}
 						/>
 					</Route>
-					<Route
-						path='oauth-redirect'
-						element={
-							<AuthPage
-								connectionSettings={connectionSettings}
-								params={footerParams}
-								setConnectionSettings={persistConnectionSettings}
-							/>
-						}
-					/>
 				</Route>
 				<Route path='backup'>
 					<Route
@@ -1974,30 +1860,9 @@ export const Main = (props: Props) => {
 						}
 					/>
 				</Route>
-				<Route path='transfer'>
-					<Route
-						index={true}
-						element={
-							<TransferPage
-								connectionSettings={connectionSettings}
-							/>
-						}
-					/>
-				</Route>
-				<Route path='clocktower'>
-					<Route
-						index={true}
-						element={
-							<ClocktowerPage
-								params={footerParams}
-							/>
-						}
-					/>
-				</Route>
 				<Route path='*' element={<Navigate to='/' replace={true} />} />
 			</Routes>
 			{notifyContext}
-			<Spin spinning={spinning} size='large' fullscreen={true} />
 		</ErrorBoundary>
 	);
 };

@@ -28,7 +28,6 @@ import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { PanelMode } from '@/enums/panel-mode';
 import { Radial } from '@/components/controls/radial/radial';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { TacticalMapDisplayType } from '@/enums/tactical-map-display-type';
@@ -1520,7 +1519,7 @@ export const TacticalMapPanel = (props: Props) => {
 		<ErrorBoundary>
 			{getTopToolbar()}
 			<div
-				id={SheetFormatter.getPageId('tactical-map', map.id)}
+
 				className={'tactical-map-panel ' + props.display}
 				style={{ width: widthInPixels + 'px', height: heightInPixels + 'px' }}
 			>

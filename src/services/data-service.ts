@@ -6,9 +6,6 @@ import { Sourcebook } from '@/models/sourcebook';
 import { StorageService } from '@/services/storage/storage-service';
 import localforage from 'localforage';
 
-/**
- * Handles data storage, abstracting out whether that data is stored locally or in a remote warehouse
- */
 export class DataService {
 	private readonly storageService: StorageService;
 
@@ -24,12 +21,12 @@ export class DataService {
 	// Always local only
 
 	async getOptions(): Promise<Options> {
-		const result = await localforage.getItem<Options>('forgesteel-options');
+		const result = await localforage.getItem<Options>('damascus-options');
 		return result ?? FactoryLogic.createOptions();
 	}
 
 	async saveOptions(options: Options): Promise<Options> {
-		return localforage.setItem<Options>('forgesteel-options', options);
+		return localforage.setItem<Options>('damascus-options', options);
 	}
 
 	// #endregion
@@ -84,19 +81,6 @@ export class DataService {
 
 	async saveSession(session: Session): Promise<Session> {
 		return this.storageService.putSession(session);
-	}
-
-	// #endregion
-
-	// #region Hidden sourcebook IDs
-
-	async getHiddenSourcebookIDs(): Promise<string[]> {
-		const result = await this.storageService.getHiddenSourcebookIDs();
-		return result ?? [];
-	}
-
-	async saveHiddenSourcebookIDs(ids: string[]): Promise<string[]> {
-		return this.storageService.putHiddenSourcebookIDs(ids);
 	}
 
 	// #endregion

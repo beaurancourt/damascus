@@ -67,15 +67,140 @@
 			}
 		}
 
-		@media (max-width: 420px) {
-			.selection-sidebar > * {
-				max-width: 200px;
-			}
-		}
-
 		.element-selected {
 			flex: 1 1 0;
 			overflow-y: auto;
+		}
+	}
+
+	&.mobile {
+		overflow-x: hidden;
+
+		.mobile-element-bar {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			padding: 6px 8px;
+			border-bottom: 1px solid rgba(127, 127, 127, 0.18);
+			background: var(--ds-bg-surface, rgb(245, 245, 245));
+			position: sticky;
+			top: 0;
+			z-index: 5;
+
+			.mobile-element-title {
+				flex: 1 1 auto;
+				font-weight: 600;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				font-size: 0.95em;
+			}
+		}
+
+		.mobile-element-view {
+			flex: 1 1 0;
+			overflow-y: auto;
+			background-color: rgb(230, 230, 230);
+		}
+
+		.mobile-list-view {
+			flex: 1 1 0;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			padding: 10px;
+			background-color: rgb(230, 230, 230);
+			overflow-y: auto;
+			overflow-x: hidden;
+
+			.mobile-search-bar {
+				display: flex;
+				gap: 6px;
+				align-items: center;
+
+				> :first-child { flex: 1 1 auto; }
+			}
+
+			.mobile-category-chips {
+				display: flex;
+				flex: 0 0 auto;
+				align-items: center;
+				gap: 6px;
+				overflow-x: auto;
+				min-height: 40px;
+				padding: 4px 2px 8px 2px;
+				scroll-snap-type: x proximity;
+				-webkit-overflow-scrolling: touch;
+
+				&::-webkit-scrollbar { height: 3px; }
+
+				.mobile-category-chip {
+					flex: 0 0 auto;
+					padding: 6px 12px;
+					border-radius: 999px;
+					border: 1px solid rgba(127, 127, 127, 0.3);
+					background: white;
+					font-size: 0.85em;
+					cursor: pointer;
+					scroll-snap-align: start;
+					white-space: nowrap;
+					display: inline-flex;
+					align-items: center;
+					gap: 6px;
+
+					.chip-count {
+						font-size: 0.8em;
+						opacity: 0.6;
+					}
+
+					&.selected {
+						background: rgb(22, 119, 255);
+						color: white;
+						border-color: rgb(22, 119, 255);
+
+						.chip-count { opacity: 0.85; }
+					}
+				}
+			}
+
+			.mobile-list-header-slot {
+				/* host for getElementListHeader (toggles for cultures/projects/etc.) */
+			}
+
+			.mobile-element-list {
+				display: flex;
+				flex-direction: column;
+				gap: 4px;
+				background: white;
+				border-radius: 10px;
+				padding: 6px;
+			}
+		}
+	}
+}
+
+html[data-theme="dark"] {
+	.library-list-page.mobile {
+		.mobile-element-bar {
+			background: rgb(28, 28, 28);
+			border-bottom-color: rgba(255, 255, 255, 0.1);
+		}
+		.mobile-list-view,
+		.mobile-element-view {
+			background-color: rgb(55, 55, 55);
+		}
+		.mobile-list-view {
+			.mobile-category-chips .mobile-category-chip {
+				background: rgb(28, 28, 28);
+				border-color: rgba(255, 255, 255, 0.15);
+				color: rgb(230, 230, 230);
+
+				&.selected {
+					background: rgb(22, 119, 255);
+					color: white;
+				}
+			}
+			.mobile-element-list { background: rgb(20, 20, 20); }
 		}
 	}
 }

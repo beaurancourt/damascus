@@ -1,46 +1,24 @@
 .class-panel {
 	display: flex;
 	flex-direction: column;
+	gap: 10px;
 	padding: 0 20px 20px 20px;
-	overflow: hidden;
 
 	&.compact {
 		margin-top: -10px;
 		padding: unset;
 	}
 
-	.class-features-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: 20px;
-	}
-
-	.class-abilities-grid {
-		padding-top: 15px;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: 20px;
-	}
-
-	.class-subclasses-grid {
-		display: block;
-	}
-
-	.class-features-list {
+	.class-level-block,
+	.class-abilities-block {
 		display: flex;
 		flex-direction: column;
-		gap: 5px;
+		gap: 10px;
 	}
 
-	.class-abilities-list {
+	.class-abilities-cost-group {
 		display: flex;
 		flex-direction: column;
-		gap: 5px;
-	}
-
-	.class-subclasses-list {
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
+		gap: 8px;
 	}
 }

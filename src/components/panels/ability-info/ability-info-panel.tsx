@@ -7,7 +7,6 @@ import { Field } from '@/components/controls/field/field';
 import { FormatLogic } from '@/logic/format-logic';
 import { Hero } from '@/models/hero';
 import { Markdown } from '@/components/controls/markdown/markdown';
-import { SashPanel } from '@/components/panels/sash/sash-panel';
 
 import './ability-info-panel.scss';
 
@@ -16,54 +15,36 @@ interface Props {
 	hero?: Hero;
 }
 
+const getUsageKind = (ability: Ability, hero?: Hero) => {
+	if (ability.type.free) {
+		return 'free';
+	}
+	const keywords = AbilityLogic.getKeywords(ability, hero);
+	if (keywords.includes(AbilityKeyword.Performance)) {
+		return 'perform';
+	}
+	switch (ability.type.usage) {
+		case AbilityUsage.MainAction: return 'main';
+		case AbilityUsage.Maneuver: return 'maneuver';
+		case AbilityUsage.Trigger: return 'trigger';
+		case AbilityUsage.Move: return 'move';
+		case AbilityUsage.VillainAction: return 'villain';
+		case AbilityUsage.ChampionAction: return 'champion';
+	}
+	return '';
+};
+
 export const AbilityInfoPanel = (props: Props) => {
 	if ((props.ability.type.usage === AbilityUsage.NoAction) && (props.ability.distance.length === 0) && (props.ability.target === '') && (props.ability.type.trigger === '')) {
 		return null;
 	}
 
-	const getMonogram = () => {
-		let monogram = '';
-
-		switch (props.ability.type.usage) {
-			case AbilityUsage.MainAction:
-				monogram = 'main';
-				break;
-			case AbilityUsage.Maneuver:
-				monogram = 'maneuver';
-				break;
-			case AbilityUsage.Trigger:
-				monogram = 'trigger';
-				break;
-			case AbilityUsage.Move:
-				monogram = 'move';
-				break;
-			case AbilityUsage.VillainAction:
-				monogram = 'villain';
-				break;
-			case AbilityUsage.ChampionAction:
-				monogram = 'champion';
-				break;
-		}
-
-		if (props.ability.type.free) {
-			monogram = 'free';
-		}
-
-		const keywords = AbilityLogic.getKeywords(props.ability, props.hero);
-		if (keywords.includes(AbilityKeyword.Performance)) {
-			monogram = 'perform';
-		}
-
-		return monogram;
-	};
-
 	const distance = props.ability.distance.map(d => AbilityLogic.getDistance(d, props.ability, props.hero)).join(' or ');
-	const monogram = getMonogram();
+	const kind = getUsageKind(props.ability, props.hero);
 
 	return (
 		<ErrorBoundary>
-			<div className='ability-info-panel'>
-				{monogram ? <SashPanel monogram={monogram} /> : null}
+			<div className={`ability-info-panel${kind ? ` kind-${kind}` : ''}`}>
 				<div className='ds-text compact-text bold-text' style={{ position: 'relative', zIndex: '10' }}>
 					{FormatLogic.getAbilityType(props.ability.type)}
 				</div>

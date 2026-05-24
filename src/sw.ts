@@ -1,4 +1,4 @@
-// Service Worker for Forge Steel PWA
+// Service Worker for Damascus PWA
 // Using proper TypeScript with DOM types
 
 // Service Worker interfaces
@@ -22,7 +22,7 @@ const swSelf = self as unknown as ServiceWorkerGlobalScope;
 
 // Cache version - will be unique for each build
 const CACHE_VERSION = new Date().toISOString().replace(/[:.]/g, '-');
-const CACHE_NAME = `forgesteel-${CACHE_VERSION}`;
+const CACHE_NAME = `damascus-${CACHE_VERSION}`;
 const STATIC_CACHE_URLS = [
 	'/',
 	'/index.html',

@@ -1,25 +1,16 @@
 import { HeaderText } from '@/components/controls/header-text/header-text';
-import { HeroSourcebooksPanel } from '@/components/panels/hero-sourcebooks/hero-sourcebooks-panel';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
-import { Sourcebook } from '@/models/sourcebook';
 
 import './start-section.scss';
 
-interface Props {
-	sourcebookIDs: string[];
-	sourcebooks: Sourcebook[];
-	setSourcebookIDs: (settingIDs: string[]) => void;
-	importSourcebook: (sourcebook: Sourcebook) => void;
-}
-
-export const StartSection = (props: Props) => {
+export const StartSection = () => {
 	return (
 		<div className='hero-edit-content start-section'>
 			<div className='hero-edit-content-column selected'>
 				<SelectablePanel>
 					<HeaderText>Creating a Hero</HeaderText>
 					<div className='ds-text'>
-						Creating a hero in <b>FORGE STEEL</b> is simple.
+						Creating a hero in <b>DAMASCUS</b> is simple.
 					</div>
 					<ul>
 						<li>
@@ -37,14 +28,6 @@ export const StartSection = (props: Props) => {
 						When you're done, click <code>Save Changes</code> in the toolbar at the top, and you'll see your hero sheet.
 					</div>
 				</SelectablePanel>
-			</div>
-			<div className='hero-edit-content-column choices'>
-				<HeroSourcebooksPanel
-					sourcebooks={props.sourcebooks}
-					sourcebookIDs={props.sourcebookIDs}
-					onImportSourcebook={props.importSourcebook}
-					onChange={props.setSourcebookIDs}
-				/>
 			</div>
 		</div>
 	);

@@ -19,7 +19,6 @@ const mockOptions = {} as Options;
 const mockHeroes = [] as Hero[];
 const mockHomebrew = [] as Sourcebook[];
 const mockSession = {} as Session;
-const mockHiddenSettingIds = [ 'one', 'two' ];
 
 const catchFn = vi.fn();
 const thenFn = vi.fn();
@@ -36,7 +35,7 @@ describe('DataService', () => {
 				.then(thenFn)
 				.catch(catchFn);
 
-			expect(localforage.getItem).toHaveBeenCalledWith('forgesteel-options');
+			expect(localforage.getItem).toHaveBeenCalledWith('damascus-options');
 			expect(thenFn).toHaveBeenCalledWith(mockOptions);
 			expect(catchFn).not.toHaveBeenCalled();
 		});
@@ -52,7 +51,7 @@ describe('DataService', () => {
 				.then(thenFn)
 				.catch(catchFn);
 
-			expect(localforage.setItem).toHaveBeenCalledWith('forgesteel-options', mockOptions);
+			expect(localforage.setItem).toHaveBeenCalledWith('damascus-options', mockOptions);
 			expect(thenFn).toHaveBeenCalledWith(mockOptions);
 			expect(catchFn).not.toHaveBeenCalled();
 		});
@@ -128,38 +127,4 @@ describe('DataService', () => {
 		});
 	});
 	// #endregion Session
-
-	// #region HiddenSettingIds
-	describe('getHiddenSettingIds', () => {
-		test('forwards to the storage service', async () => {
-			const ds = new DataService(mockStorage);
-
-			mockStorage.getHiddenSourcebookIDs = vi.fn().mockImplementation(() => Promise.resolve(mockHiddenSettingIds));
-
-			await ds.getHiddenSourcebookIDs()
-				.then(thenFn)
-				.catch(catchFn);
-
-			expect(mockStorage.getHiddenSourcebookIDs).toHaveBeenCalled();
-			expect(thenFn).toHaveBeenCalledWith(mockHiddenSettingIds);
-			expect(catchFn).not.toHaveBeenCalled();
-		});
-	});
-
-	describe('saveHiddenSettingIds', () => {
-		test('forwards to the storage service', async () => {
-			const ds = new DataService(mockStorage);
-
-			mockStorage.putHiddenSourcebookIDs = vi.fn().mockImplementation(() => Promise.resolve(mockHiddenSettingIds));
-
-			await ds.saveHiddenSourcebookIDs(mockHiddenSettingIds)
-				.then(thenFn)
-				.catch(catchFn);
-
-			expect(mockStorage.putHiddenSourcebookIDs).toHaveBeenCalledWith(mockHiddenSettingIds);
-			expect(thenFn).toHaveBeenCalledWith(mockHiddenSettingIds);
-			expect(catchFn).not.toHaveBeenCalled();
-		});
-	});
-	// #endregion HiddenSettingIds
 });

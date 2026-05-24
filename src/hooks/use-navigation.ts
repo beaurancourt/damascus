@@ -33,23 +33,14 @@ export const useNavigation = () => {
 			}
 			return navigate(`/library/edit/${kind}/${sourcebookID}/${elementID}`);
 		},
-		goToLibraryPrint: (kind: SourcebookElementKind, sourcebookID: string, elementID: string) => {
-			return navigate(`/library/print/${kind}/${sourcebookID}/${elementID}`);
-		},
 		goToSession: () => {
 			return navigate('/session/director');
 		},
 		goToPlayerView: () => {
 			return navigate('/session/player');
 		},
-		goToTransfer: () => {
-			return navigate('/transfer');
-		},
 		goToBackup: () => {
 			return navigate('/backup');
-		},
-		goToClocktower: () => {
-			return navigate('/clocktower');
 		}
 	};
 };

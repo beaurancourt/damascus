@@ -24,26 +24,23 @@ export const AboutModal = (props: Props) => {
 								<Tag variant='outlined'>{`Version ${pkg.version}`}</Tag>
 							</div>
 							<div>
-								Designed by <a href='mailto:andy.aiken@live.co.uk'>Andy Aiken</a>.
+								<b>DAMASCUS</b> is a mobile-first fork of <a href='https://github.com/andyaiken/forgesteel' target='_blank'>Forge Steel</a> by <a href='mailto:andy.aiken@live.co.uk'>Andy Aiken</a>.
 							</div>
 							<div>
-								To suggest a new feature or improvement, or to report a bug, go <a href='https://github.com/andyaiken/forgesteel/issues' target='_blank'>here</a>.
+								The fork's source lives at <a href='https://github.com/beaurancourt/damascus' target='_blank'>github.com/beaurancourt/damascus</a>.
 							</div>
 							<div>
-								If you would like to contribute to this project, you can find the code <a href='https://github.com/andyaiken/forgesteel' target='_blank'>here</a>.
+								Suggest a feature or report a bug for the upstream Forge Steel project <a href='https://github.com/andyaiken/forgesteel/issues' target='_blank'>here</a>.
 							</div>
 						</Space>
 					</SelectablePanel>
 					<SelectablePanel style={{ paddingTop: '20px' }}>
 						<Space orientation='vertical'>
 							<div>
-								<b>FORGE STEEL</b> is free.
+								<b>DAMASCUS</b> is free, like its upstream.
 							</div>
 							<div>
-								If you really feel the need to show your appreciation, I'd be grateful if you would take whatever you feel the app is worth and donate it to a local mental health charity.
-							</div>
-							<div>
-								If after that you <i>still</i> have too much spare cash, and you <i>really</i> want to support future development, you can <a href='https://patreon.com/andyaiken' target='_blank'>join the Patreon</a> or <a href='https://coff.ee/andyaiken' target='_blank'>buy me a coffee</a>.
+								If you'd like to support the original author of Forge Steel, you can <a href='https://patreon.com/andyaiken' target='_blank'>join Andy's Patreon</a> or <a href='https://coff.ee/andyaiken' target='_blank'>buy him a coffee</a>.
 							</div>
 						</Space>
 					</SelectablePanel>
@@ -53,7 +50,7 @@ export const AboutModal = (props: Props) => {
 								<img src={pbds} />
 							</div>
 							<div>
-								<b>FORGE STEEL</b> is an independent product published under the DRAW STEEL Creator License and is not affiliated with MCDM Productions, LLC.
+								<b>DAMASCUS</b> is an independent product published under the DRAW STEEL Creator License and is not affiliated with MCDM Productions, LLC.
 							</div>
 							<div>
 								<b>DRAW STEEL</b> © 2024 <a href='https://mcdmproductions.com/' target='_blank'>MCDM Productions, LLC.</a>

@@ -1,4 +1,4 @@
-import { BookOutlined, ControlOutlined, EllipsisOutlined, ToolOutlined } from '@ant-design/icons';
+import { ControlOutlined, EllipsisOutlined, ToolOutlined } from '@ant-design/icons';
 import { Button, Divider, Popover, Space } from 'antd';
 import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { HeaderText } from '@/components/controls/header-text/header-text';
@@ -30,8 +30,6 @@ export const NamePanel = (props: Props) => {
 					<Popover
 						content={
 							<Space orientation='vertical'>
-								<Button block={true} type='text' onClick={() => props.onShowState(HeroModalType.Resources)}>Resources</Button>
-								<Button block={true} type='text' onClick={() => props.onShowState(HeroModalType.Vitals)}>Vitals</Button>
 								<Button block={true} type='text' onClick={() => props.onShowState(HeroModalType.Inventory)}>Inventory</Button>
 								<Button block={true} type='text' onClick={() => props.onShowState(HeroModalType.Projects)}>Projects</Button>
 								<Button block={true} type='text' onClick={() => props.onShowState(HeroModalType.Titles)}>Titles</Button>
@@ -39,7 +37,6 @@ export const NamePanel = (props: Props) => {
 								<Divider />
 								<Button block={true} type='text' icon={<ToolOutlined />} onClick={() => props.onShowState(HeroModalType.Customize)}>Customize</Button>
 								<Button block={true} type='text' icon={<ControlOutlined />} onClick={() => props.onShowState(HeroModalType.Conditional)}>Conditional Features</Button>
-								<Button block={true} type='text' icon={<BookOutlined />} onClick={() => props.onShowState(HeroModalType.Sourcebooks)}>Sourcebooks</Button>
 							</Space>
 						}
 					>
@@ -48,8 +45,6 @@ export const NamePanel = (props: Props) => {
 					:
 					<ButtonGroup
 						buttons={[
-							{ type: 'button', label: 'Resources', onClick: () => props.onShowState(HeroModalType.Resources) },
-							{ type: 'button', label: 'Vitals', onClick: () => props.onShowState(HeroModalType.Vitals) },
 							{ type: 'button', label: 'Inventory', onClick: () => props.onShowState(HeroModalType.Inventory) },
 							{ type: 'button', label: 'Projects', onClick: () => props.onShowState(HeroModalType.Projects) },
 							{ type: 'button', label: 'Titles', onClick: () => props.onShowState(HeroModalType.Titles) },
@@ -63,7 +58,6 @@ export const NamePanel = (props: Props) => {
 											<Space orientation='vertical' style={{ width: '150px' }}>
 												<Button type='text' block={true} icon={<ToolOutlined />} onClick={() => { props.onShowState(HeroModalType.Customize); setOpen(false); }}>Customize</Button>
 												<Button type='text' block={true} icon={<ControlOutlined />} onClick={() => { props.onShowState(HeroModalType.Conditional); setOpen(false); }}>Conditional Features</Button>
-												<Button type='text' block={true} icon={<BookOutlined />} onClick={() => { props.onShowState(HeroModalType.Sourcebooks); setOpen(false); }}>Sourcebooks</Button>
 											</Space>
 										}
 										open={open}

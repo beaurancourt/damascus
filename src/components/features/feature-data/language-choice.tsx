@@ -1,17 +1,17 @@
-import { Button, Drawer, Select, Space } from 'antd';
+import { Select, Space } from 'antd';
 import { Feature, FeatureLanguageChoiceData } from '@/models/feature';
 import { Collections } from '@/utils/collections';
 import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { HeroLogic } from '@/logic/hero-logic';
-import { LanguageSelectModal } from '@/components/modals/select/language-select/language-select-modal';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
-import { SelectionBox } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { Utils } from '@/utils/utils';
 import { useState } from 'react';
+
+import './choice.scss';
 
 interface InfoProps {
 	data: FeatureLanguageChoiceData;
@@ -106,61 +106,58 @@ interface ConfigProps {
 }
 
 export const ConfigLanguageChoice = (props: ConfigProps) => {
-	const [ languageSelectorOpen, setLanguageSelectorOpen ] = useState<boolean>(false);
+	const heroLanguages = HeroLogic.getLanguages(props.hero, props.sourcebooks).map(l => l.name);
+	const selectedLanguages = props.data.selected;
+	const count = props.data.count;
+	const isSingle = count === 1;
 
-	const currentLanguages = HeroLogic.getLanguages(props.hero, props.sourcebooks).map(l => l.name);
-	const languages = SourcebookLogic.getLanguages(props.sourcebooks as Sourcebook[])
-		.filter(l => !currentLanguages.includes(l.name));
-	const distinctLanguages = Collections.distinct(languages, l => l.name);
-	const sortedLanguages = Collections.sort(distinctLanguages, l => l.name);
+	const allLanguages = Collections.sort(
+		Collections.distinct(SourcebookLogic.getLanguages(props.sourcebooks), l => l.name),
+		l => l.name
+	);
 
-	const getAddButton = () => {
-		// We can always add a custom language, so we always show the Add button
-		return (
-			<Button className='status-warning' block={true} onClick={() => setLanguageSelectorOpen(true)}>
-				Choose a language
-			</Button>
-		);
+	const toggleLanguage = (name: string) => {
+		const isSelected = selectedLanguages.includes(name);
+		const dataCopy = Utils.copy(props.data);
+		if (isSelected) {
+			dataCopy.selected = dataCopy.selected.filter(l => l !== name);
+		} else if (isSingle) {
+			dataCopy.selected = [ name ];
+		} else if (count === -1 || selectedLanguages.length < count) {
+			dataCopy.selected.push(name);
+		} else {
+			return;
+		}
+		props.setData(dataCopy);
 	};
 
 	return (
 		<Space orientation='vertical' style={{ width: '100%' }}>
-			{props.data.count > 1 ? <div className='ds-text'>Choose {props.data.count}:</div> : null}
+			<div className='ds-text'>
+				{count === 1 ? 'Choose 1 language.' : `Choose ${count} languages.`}
+			</div>
 			{
-				props.data.selected.map((language, n) => {
-					const lang = SourcebookLogic.getLanguage(language, props.sourcebooks!);
+				allLanguages.map(lang => {
+					const isSelected = selectedLanguages.includes(lang.name);
+					const alreadyKnown = !isSelected && heroLanguages.includes(lang.name);
+					const overLimit = !isSelected && !alreadyKnown && !isSingle && count !== -1 && selectedLanguages.length >= count;
+					const disabled = alreadyKnown || overLimit;
 					return (
-						<SelectionBox
-							key={n}
-							content={
-								lang ?
-									<Field label={lang.name} value={lang.description} style={{ flex: '1 1 0' }} />
-									:
-									<div className='ds-text' style={{ flex: '1 1 0' }}>{language}</div>
-							}
-							onRemove={() => {
-								const dataCopy = Utils.copy(props.data);
-								dataCopy.selected = dataCopy.selected.filter(l => l !== language);
-								props.setData(dataCopy);
-							}}
-						/>
+						<div
+							key={lang.name}
+							className={`choice-option${isSelected ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
+							onClick={() => !disabled && toggleLanguage(lang.name)}
+							title={alreadyKnown ? 'You already know this language' : undefined}
+						>
+							<div className='choice-option-indicator'>{isSelected ? '●' : '○'}</div>
+							<div className='choice-option-body'>
+								<div className='choice-option-name'>{lang.name}</div>
+								<div className='choice-option-content'>{lang.description}</div>
+							</div>
+						</div>
 					);
 				})
 			}
-			{(props.data.selected.length < props.data.count) || (props.data.count === -1) ? getAddButton() : null}
-			<Drawer open={languageSelectorOpen} onClose={() => setLanguageSelectorOpen(false)} closeIcon={null} size={500}>
-				<LanguageSelectModal
-					languages={sortedLanguages}
-					onSelect={l => {
-						setLanguageSelectorOpen(false);
-
-						const dataCopy = Utils.copy(props.data);
-						dataCopy.selected.push(l.name);
-						props.setData(dataCopy);
-					}}
-					onClose={() => setLanguageSelectorOpen(false)}
-				/>
-			</Drawer>
 		</Space>
 	);
 };

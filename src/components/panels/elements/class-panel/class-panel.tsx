@@ -1,23 +1,21 @@
 import { AbilityPanel } from '@/components/panels/elements/ability-panel/ability-panel';
 import { Collections } from '@/utils/collections';
-import { Empty } from '@/components/controls/empty/empty';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
-import { Expander } from '@/components/controls/expander/expander';
+import { Feature, FeatureData } from '@/models/feature';
+import { FeatureConfigPanel } from '@/components/panels/feature-config-panel/feature-config-panel';
+import { FeatureLogic } from '@/logic/feature-logic';
 import { FeaturePanel } from '@/components/panels/elements/feature-panel/feature-panel';
+import { FeatureType } from '@/enums/feature-type';
 import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { HeroClass } from '@/models/class';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { PanelMode } from '@/enums/panel-mode';
-import { Segmented } from 'antd';
-import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
+import { ReactNode } from 'react';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
-import { SubclassPanel } from '@/components/panels/elements/subclass-panel/subclass-panel';
-import { useState } from 'react';
 
 import './class-panel.scss';
 
@@ -26,158 +24,17 @@ interface Props {
 	sourcebooks: Sourcebook[];
 	hero?: Hero;
 	mode?: PanelMode;
+	setFeatureData?: (featureID: string, data: FeatureData) => void;
 }
 
 export const ClassPanel = (props: Props) => {
-	const [ page, setPage ] = useState<string>('overview');
-
-	const getOverview = () => {
-		return (
-			<>
-				<Markdown text={props.heroClass.description} />
-				{
-					props.heroClass.subclasses.length > 0 ?
-						<Field label={`${props.heroClass.subclassName}s`} value={props.heroClass.subclasses.map(c => c.name).join(', ')} />
-						: null
-				}
-				<Field label='Primary Characteristics' value={props.heroClass.primaryCharacteristics.join(', ') || props.heroClass.primaryCharacteristicsOptions.map(array => array.join(', ') || 'None').join(' or ') || 'None'} />
-			</>
-		);
-	};
-
-	const getFeatures = () => {
-		return (
-			<div className='class-features-list'>
-				{
-					props.heroClass.featuresByLevel.filter(lvl => lvl.features.length > 0).map(lvl => {
-						return (
-							<Expander
-								key={lvl.level}
-								title={
-									<Field
-										label={`Level ${lvl.level.toString()}`}
-										value={lvl.features.map(f => f.name).join(', ')}
-									/>
-								}
-							>
-								{
-									lvl.features.map(f => <FeaturePanel key={f.id} feature={f} hero={props.hero} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />)
-								}
-							</Expander>
-						);
-					})
-				}
-			</div>
-		);
-	};
-
-	const getAbilities = () => {
-		const costs = Collections.distinct(
-			props.heroClass.abilities
-				.map(a => a.cost)
-				.filter(c => c !== 'signature')
-				.sort((a, b) => a - b),
-			x => x
-		);
-
-		return (
-			<div className='class-abilities-list'>
-				{
-					[ 'signature', ...costs ].map(cost => {
-						const abilities = props.heroClass.abilities.filter(a => a.cost === cost);
-						if (abilities.length === 0) {
-							return null;
-						}
-						return (
-							<Expander key={cost} title={cost === 'signature' ? 'Signature Abilities' : `${cost}pt Abilities`}>
-								<div className='class-abilities-grid'>
-									{
-										abilities.map(a => (
-											<SelectablePanel key={a.id}>
-												<AbilityPanel ability={a} hero={props.hero} mode={PanelMode.Full} />
-											</SelectablePanel>
-										))
-									}
-								</div>
-							</Expander>
-						);
-					})
-				}
-				{props.heroClass.abilities.length === 0 ? <Empty /> : null}
-			</div>
-		);
-	};
-
-	const getSubclasses = () => {
-		return (
-			<div className='class-subclasses-list'>
-				{
-					props.heroClass.subclasses.map(sc => (
-						<Expander key={sc.id} title={sc.name}>
-							<SubclassPanel key={sc.id} subclass={sc} sourcebooks={props.sourcebooks} hero={props.hero} mode={PanelMode.Full} style={{ padding: '5px' }} />
-						</Expander>
-					))
-				}
-				{
-					props.heroClass.subclasses.length === 0 ?
-						<Empty />
-						: null
-				}
-			</div>
-		);
-	};
-
-	const getContent = () => {
-		let content = null;
-		switch (page) {
-			case 'overview':
-				content = getOverview();
-				break;
-			case 'features':
-				content = getFeatures();
-				break;
-			case 'abilities':
-				content = getAbilities();
-				break;
-			case 'subclasses':
-				content = getSubclasses();
-				break;
-		}
-
-		const pages = [
-			{ value: 'overview', label: 'Overview' },
-			{ value: 'features', label: 'Features' }
-		];
-
-		if (props.heroClass.abilities.length > 0) {
-			pages.push({ value: 'abilities', label: 'Abilities' });
-		}
-
-		if (props.heroClass.subclasses.length > 0) {
-			pages.push({ value: 'subclasses', label: 'Subclasses' });
-		}
-
-		return (
-			<>
-				<Segmented
-					style={{ marginBottom: '20px' }}
-					block={true}
-					options={pages}
-					value={page}
-					onChange={setPage}
-					onClick={e => e.stopPropagation()}
-				/>
-				{content}
-			</>
-		);
-	};
-
 	const tags = [];
 	if (props.heroClass.type === 'master') {
 		tags.push('Master Class');
 	}
-	const minLevel = Collections.min(props.heroClass.featuresByLevel.filter(lvl => lvl.features.length > 0).map(lvl => lvl.level), x => x);
-	const maxLevel = Collections.max(props.heroClass.featuresByLevel.filter(lvl => lvl.features.length > 0).map(lvl => lvl.level), x => x);
+	const levels = props.heroClass.featuresByLevel.filter(lvl => lvl.features.length > 0).map(lvl => lvl.level);
+	const minLevel = Collections.min(levels, x => x);
+	const maxLevel = Collections.max(levels, x => x);
 	if ((minLevel !== 1) || (maxLevel !== 10)) {
 		if (minLevel === maxLevel) {
 			tags.push(`Level ${minLevel}`);
@@ -203,13 +60,97 @@ export const ClassPanel = (props: Props) => {
 		);
 	}
 
+	const editing = !!(props.setFeatureData && props.hero);
+	const visibleMax = editing ? props.heroClass.level : 10;
+
+	const renderFeature = (feature: Feature): ReactNode[] => {
+		if (editing && FeatureLogic.isChoice(feature)) {
+			return [
+				<FeatureConfigPanel
+					key={feature.id}
+					feature={feature}
+					hero={props.hero!}
+					sourcebooks={props.sourcebooks}
+					setData={props.setFeatureData!}
+				/>
+			];
+		}
+
+		if (editing && feature.type === FeatureType.Multiple) {
+			return feature.data.features.flatMap(sub => renderFeature(sub));
+		}
+
+		return [
+			<FeaturePanel
+				key={feature.id}
+				feature={feature}
+				hero={props.hero}
+				sourcebooks={props.sourcebooks}
+				mode={PanelMode.Full}
+			/>
+		];
+	};
+
+	const abilityCosts = Collections.distinct(
+		props.heroClass.abilities
+			.map(a => a.cost)
+			.filter(c => c !== 'signature')
+			.sort((a, b) => a - b),
+		x => x
+	);
+
 	return (
 		<ErrorBoundary>
-			<div className='class-panel' id={SheetFormatter.getPageId('class', props.heroClass.id)}>
+			<div className='class-panel'>
 				<HeaderText level={1} tags={tags}>
 					{props.heroClass.name || 'Unnamed Class'}
 				</HeaderText>
-				{getContent()}
+				<Markdown text={props.heroClass.description} />
+				<Field
+					label='Primary Characteristics'
+					value={props.heroClass.primaryCharacteristics.join(', ') || props.heroClass.primaryCharacteristicsOptions.map(arr => arr.join(', ') || 'None').join(' or ') || 'None'}
+				/>
+				{
+					props.heroClass.subclasses.length > 0 ?
+						<Field
+							label={`${props.heroClass.subclassName}s`}
+							value={props.heroClass.subclasses.map(c => c.name).join(', ')}
+						/>
+						: null
+				}
+				{
+					props.heroClass.featuresByLevel
+						.filter(lvl => lvl.features.length > 0 && lvl.level <= visibleMax)
+						.map(lvl => (
+							<div key={lvl.level} className='class-level-block'>
+								<HeaderText>Level {lvl.level}</HeaderText>
+								{lvl.features.flatMap(f => renderFeature(f))}
+							</div>
+						))
+				}
+				{
+					!editing && props.heroClass.abilities.length > 0 ?
+						<div className='class-abilities-block'>
+							<HeaderText>Abilities</HeaderText>
+							{
+								[ 'signature' as const, ...abilityCosts ].map(cost => {
+									const abilities = props.heroClass.abilities.filter(a => a.cost === cost);
+									if (abilities.length === 0) {
+										return null;
+									}
+									return (
+										<div key={cost} className='class-abilities-cost-group'>
+											<HeaderText level={3}>{cost === 'signature' ? 'Signature Abilities' : `${cost}pt Abilities`}</HeaderText>
+											{abilities.map(a => (
+												<AbilityPanel key={a.id} ability={a} hero={props.hero} mode={PanelMode.Full} />
+											))}
+										</div>
+									);
+								})
+							}
+						</div>
+						: null
+				}
 			</div>
 		</ErrorBoundary>
 	);

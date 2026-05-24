@@ -84,83 +84,73 @@ export const timeRaider: Ancestry = {
 					value: 2
 				},
 				{
-					feature: FactoryLogic.feature.createChoice({
-						id: 'time-raider-feature-2-5',
-						name: 'Psionic Gift',
-						count: 1,
-						options: [
-							{
-								feature: FactoryLogic.feature.createAbility({
-									ability: FactoryLogic.createAbility({
-										id: 'time-raider-feature-2-5-1',
-										name: 'Concussive Slam',
-										description: 'You slam an invisible force down upon the target.',
-										type: FactoryLogic.type.createMain(),
-										cost: 'signature',
-										keywords: [ AbilityKeyword.Psionic, AbilityKeyword.Ranged, AbilityKeyword.Strike ],
-										distance: [ FactoryLogic.distance.createRanged(10) ],
-										target: 'One creature or object',
-										sections: [
-											FactoryLogic.createAbilitySectionRoll(
-												FactoryLogic.createPowerRoll({
-													characteristic: [ Characteristic.Reason, Characteristic.Intuition, Characteristic.Presence ],
-													tier1: '2 + R, I, or P damage',
-													tier2: '5 + R, I, or P damage; push 1',
-													tier3: '7 + R, I, or P damage; push 2; M < [strong] prone'
-												})
-											)
-										]
+					feature: FactoryLogic.feature.createAbility({
+						ability: FactoryLogic.createAbility({
+							id: 'time-raider-feature-2-5-1',
+							name: 'Concussive Slam',
+							description: 'You slam an invisible force down upon the target.',
+							type: FactoryLogic.type.createMain(),
+							cost: 'signature',
+							keywords: [ AbilityKeyword.Psionic, AbilityKeyword.Ranged, AbilityKeyword.Strike ],
+							distance: [ FactoryLogic.distance.createRanged(10) ],
+							target: 'One creature or object',
+							sections: [
+								FactoryLogic.createAbilitySectionRoll(
+									FactoryLogic.createPowerRoll({
+										characteristic: [ Characteristic.Reason, Characteristic.Intuition, Characteristic.Presence ],
+										tier1: '2 + R, I, or P damage',
+										tier2: '5 + R, I, or P damage; push 1',
+										tier3: '7 + R, I, or P damage; push 2; M < [strong] prone'
 									})
-								}),
-								value: 1
-							},
-							{
-								feature: FactoryLogic.feature.createAbility({
-									ability: FactoryLogic.createAbility({
-										id: 'time-raider-feature-2-5-2',
-										name: 'Psionic Bolt',
-										description: 'You shoot forth a purple beam of psychic force that grips your target.',
-										type: FactoryLogic.type.createMain(),
-										keywords: [ AbilityKeyword.Psionic, AbilityKeyword.Ranged, AbilityKeyword.Strike ],
-										distance: [ FactoryLogic.distance.createRanged(10) ],
-										target: 'One creature or object',
-										cost: 'signature',
-										sections: [
-											FactoryLogic.createAbilitySectionRoll(
-												FactoryLogic.createPowerRoll({
-													characteristic: [ Characteristic.Reason, Characteristic.Intuition, Characteristic.Presence ],
-													tier1: '2 + R, I, or P psychic damage; slide 1',
-													tier2: '5 + R, I, or P psychic damage; slide 2',
-													tier3: '7 + R, I, or P psychic damage; slide 3'
-												})
-											)
-										]
+								)
+							]
+						})
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.createAbility({
+						ability: FactoryLogic.createAbility({
+							id: 'time-raider-feature-2-5-2',
+							name: 'Psionic Bolt',
+							description: 'You shoot forth a purple beam of psychic force that grips your target.',
+							type: FactoryLogic.type.createMain(),
+							keywords: [ AbilityKeyword.Psionic, AbilityKeyword.Ranged, AbilityKeyword.Strike ],
+							distance: [ FactoryLogic.distance.createRanged(10) ],
+							target: 'One creature or object',
+							cost: 'signature',
+							sections: [
+								FactoryLogic.createAbilitySectionRoll(
+									FactoryLogic.createPowerRoll({
+										characteristic: [ Characteristic.Reason, Characteristic.Intuition, Characteristic.Presence ],
+										tier1: '2 + R, I, or P psychic damage; slide 1',
+										tier2: '5 + R, I, or P psychic damage; slide 2',
+										tier3: '7 + R, I, or P psychic damage; slide 3'
 									})
-								}),
-								value: 1
-							},
-							{
-								feature: FactoryLogic.feature.createAbility({
-									ability: FactoryLogic.createAbility({
-										id: 'time-raider-feature-2-5-3',
-										name: 'Minor Acceleration',
-										description: 'You fill yourself or an ally with a burst of speed.',
-										type: FactoryLogic.type.createManeuver(),
-										keywords: [ AbilityKeyword.Psionic, AbilityKeyword.Melee ],
-										distance: [
-											FactoryLogic.distance.createSelf(),
-											FactoryLogic.distance.createMelee()
-										],
-										target: 'Self or one ally',
-										cost: 'signature',
-										sections: [
-											FactoryLogic.createAbilitySectionText('The target gains a bonus to speed equal to your Reason, Intuition, or Presence score (your choice) until the start of your next turn.')
-										]
-									})
-								}),
-								value: 1
-							}
-						]
+								)
+							]
+						})
+					}),
+					value: 2
+				},
+				{
+					feature: FactoryLogic.feature.createAbility({
+						ability: FactoryLogic.createAbility({
+							id: 'time-raider-feature-2-5-3',
+							name: 'Minor Acceleration',
+							description: 'You fill yourself or an ally with a burst of speed.',
+							type: FactoryLogic.type.createManeuver(),
+							keywords: [ AbilityKeyword.Psionic, AbilityKeyword.Melee ],
+							distance: [
+								FactoryLogic.distance.createSelf(),
+								FactoryLogic.distance.createMelee()
+							],
+							target: 'Self or one ally',
+							cost: 'signature',
+							sections: [
+								FactoryLogic.createAbilitySectionText('The target gains a bonus to speed equal to your Reason, Intuition, or Presence score (your choice) until the start of your next turn.')
+							]
+						})
 					}),
 					value: 2
 				},

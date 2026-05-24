@@ -2,18 +2,13 @@ import { Ancestry } from '@/models/ancestry';
 import { AncestryPanel } from '@/components/panels/elements/ancestry-panel/ancestry-panel';
 import { Element } from '@/models/element';
 import { EmptyMessage } from '@/components/pages/heroes/hero-edit/empty-message/empty-message';
-import { FeatureConfigPanel } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { FeatureData } from '@/models/feature';
-import { FeatureLogic } from '@/logic/feature-logic';
-import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { PanelMode } from '@/enums/panel-mode';
-import { ReactNode } from 'react';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { Utils } from '@/utils/utils';
-import { useIsSmall } from '@/hooks/use-is-small';
 
 import './ancestry-section.scss';
 
@@ -35,8 +30,6 @@ interface Props {
 }
 
 export const AncestrySection = (props: Props) => {
-	const isSmall = useIsSmall();
-
 	const ancestries = SourcebookLogic.getAncestries(props.sourcebooks).map(Utils.copy).filter(a => matchElement(a, props.searchTerm));
 	const options = ancestries.map(a => (
 		<SelectablePanel key={a.id} onSelect={() => props.selectAncestry(a)}>
@@ -44,31 +37,18 @@ export const AncestrySection = (props: Props) => {
 		</SelectablePanel>
 	));
 
-	let choices: ReactNode[] = [];
-	if (props.hero.ancestry) {
-		choices = FeatureLogic.getFeaturesFromAncestry(props.hero.ancestry, props.hero)
-			.map(f => f.feature)
-			.filter(f => FeatureLogic.isChoice(f))
-			.map(f => (
-				<SelectablePanel key={f.id}>
-					<FeatureConfigPanel feature={f} hero={props.hero} sourcebooks={props.sourcebooks} setData={props.setFeatureData} />
-				</SelectablePanel>
-			));
-	}
-
-	let columnClassName = 'hero-edit-content-column selected';
-	if (choices.length === 0) {
-		columnClassName += ' single-column';
-	}
-
 	return (
 		<div className='hero-edit-content ancestry-section'>
 			{
-				props.hero.ancestry && (!isSmall || (choices.length === 0)) ?
-					<div className={columnClassName} id='ancestry-selected'>
-						<SelectablePanel>
-							<AncestryPanel ancestry={props.hero.ancestry} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
-						</SelectablePanel>
+				props.hero.ancestry ?
+					<div className='hero-edit-content-column selected single-column' id='ancestry-selected'>
+						<AncestryPanel
+							ancestry={props.hero.ancestry}
+							sourcebooks={props.sourcebooks}
+							hero={props.hero}
+							mode={PanelMode.Full}
+							setFeatureData={props.setFeatureData}
+						/>
 					</div>
 					: null
 			}
@@ -83,14 +63,6 @@ export const AncestrySection = (props: Props) => {
 				!props.hero.ancestry && (options.length === 0) ?
 					<div className='hero-edit-content-column' id='ancestry-list'>
 						<EmptyMessage hero={props.hero} />
-					</div>
-					: null
-			}
-			{
-				choices.length > 0 ?
-					<div className='hero-edit-content-column choices' id='ancestry-choices'>
-						<HeaderText>Choices</HeaderText>
-						{choices}
 					</div>
 					: null
 			}

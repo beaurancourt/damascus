@@ -20,7 +20,6 @@ import { OptionsLogic } from '@/logic/options-logic';
 import { PanelMode } from '@/enums/panel-mode';
 import { Pill } from '@/components/controls/pill/pill';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -314,7 +313,7 @@ export const EncounterPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='encounter-panel' id={SheetFormatter.getPageId('encounter', props.encounter.id)}>
+			<div className='encounter-panel'>
 				<HeaderText
 					level={1}
 					tags={tags}

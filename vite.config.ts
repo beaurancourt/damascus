@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react';
 
 // Base manifest template
 const BASE_MANIFEST = {
-	name: 'Forge Steel',
-	short_name: 'Forge Steel',
+	name: 'Damascus',
+	short_name: 'Damascus',
 	description: 'Heroes, monsters, encounters ... everything you need for Draw Steel.',
 	start_url: '/',
 	display: 'standalone',

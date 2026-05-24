@@ -1,5 +1,6 @@
-import { Alert, Button, Divider, Drawer, Segmented, Space } from 'antd';
+import { Button, Segmented, Space } from 'antd';
 import { CaretDownOutlined, CaretUpOutlined, PlusOutlined } from '@ant-design/icons';
+import { AbilityPanel } from '@/components/panels/elements/ability-panel/ability-panel';
 import { Feature, FeatureChoiceData } from '@/models/feature';
 import { Collections } from '@/utils/collections';
 import { DangerButton } from '@/components/controls/danger-button/danger-button';
@@ -8,21 +9,20 @@ import { Expander } from '@/components/controls/expander/expander';
 import { FactoryLogic } from '@/logic/factory-logic';
 import { FeatureEditPanel } from '@/components/panels/edit/feature-edit/feature-edit-panel';
 import { FeaturePanel } from '@/components/panels/elements/feature-panel/feature-panel';
-import { FeatureSelectModal } from '@/components/modals/select/feature-select/feature-select-modal';
+import { InfoFeature } from '@/components/features/feature';
 import { FeatureType } from '@/enums/feature-type';
-import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { HeroLogic } from '@/logic/hero-logic';
 import { Markdown } from '@/components/controls/markdown/markdown';
-import { Modal } from '@/components/modals/modal/modal';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { PanelMode } from '@/enums/panel-mode';
-import { SelectionBox } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { Sourcebook } from '@/models/sourcebook';
 import { Toggle } from '@/components/controls/toggle/toggle';
 import { Utils } from '@/utils/utils';
 import { useState } from 'react';
+
+import './choice.scss';
 
 interface InfoProps {
 	data: FeatureChoiceData;
@@ -195,20 +195,67 @@ interface ConfigProps {
 	setData: (data: FeatureChoiceData) => void;
 }
 
-export const ConfigChoice = (props: ConfigProps) => {
-	const [ comprehensive, setComprehensive ] = useState<boolean>(false);
-	const [ choiceSelectorOpen, setChoiceSelectorOpen ] = useState<boolean>(false);
-	const [ selectedFeature, setSelectedFeature ] = useState<Feature | null>(null);
-
-	let allOptions = [ ...props.data.options ];
-	if ((props.data.count === 'ancestry') && comprehensive) {
-		allOptions = props.sourcebooks
-			.flatMap(sb => sb.ancestries)
-			.flatMap(a => a.features)
-			.filter(f => f.type === FeatureType.Choice)
-			.filter(f => f.data.count === 'ancestry')
-			.flatMap(f => f.data.options);
+// Render the option's full content: description + mechanical details.
+// AbilityPanel handles Ability/MaliceAbility specifically (it provides name+mechanics+cost).
+// Multiple containers (e.g. Devil's Wings) are unwrapped — render each sub-feature inline so
+// there's no "Features" expander nested inside the row.
+// Choice sub-features (e.g. Time Raider's Psionic Gift) render their sub-options as a flat
+// preview list rather than collapsible expanders.
+// For other types, render the description text alongside InfoFeature, which formats
+// data-bearing features (DamageModifier, Speed, SaveThreshold) into readable text.
+const renderOptionContent = (feature: Feature, hero: Hero, sourcebooks: Sourcebook[]) => {
+	if ((feature.type === FeatureType.Ability) || (feature.type === FeatureType.MaliceAbility)) {
+		return <AbilityPanel ability={feature.data.ability} hero={hero} mode={PanelMode.Full} />;
 	}
+	if (feature.type === FeatureType.Multiple) {
+		return (
+			<>
+				{feature.data.features.map(sub => (
+					<div key={sub.id}>{renderOptionContent(sub, hero, sourcebooks)}</div>
+				))}
+			</>
+		);
+	}
+	if (feature.type === FeatureType.Choice) {
+		const count = feature.data.count;
+		return (
+			<>
+				{feature.description ? <Markdown text={feature.description} useSpan={true} /> : null}
+				<div className='ds-text'>
+					{count === 'ancestry' ? 'Sub-options:' : `Choose ${count} of the following:`}
+				</div>
+				{feature.data.options.map(o => (
+					<div key={o.feature.id} className='choice-sub-option'>
+						{hasMeaningfulName(o.feature) && !isAbilityFeature(o.feature)
+							? <div className='choice-option-name'>{o.feature.name}</div>
+							: null}
+						{renderOptionContent(o.feature, hero, sourcebooks)}
+					</div>
+				))}
+			</>
+		);
+	}
+	return (
+		<>
+			{feature.description ? <Markdown text={feature.description} useSpan={true} /> : null}
+			<InfoFeature feature={feature} hero={hero} sourcebooks={sourcebooks} />
+		</>
+	);
+};
+
+const isAbilityFeature = (feature: Feature) => (feature.type === FeatureType.Ability) || (feature.type === FeatureType.MaliceAbility);
+
+// Suppress the feature.name when it matches the default-type label set by the factory
+// (e.g. "Damage Modifier" for a DamageModifier feature with no custom name).
+const GENERIC_NAMES = new Set([
+	'Damage Modifier', 'Speed', 'Save Threshold', 'Bonus', 'Characteristic Bonus',
+	'Skill', 'Skill Choice', 'Language', 'Language Choice', 'Movement Mode',
+	'Size', 'Proficiency', 'Heroic Resource'
+]);
+const hasMeaningfulName = (feature: Feature) => !!feature.name && !GENERIC_NAMES.has(feature.name);
+
+export const ConfigChoice = (props: ConfigProps) => {
+	let allOptions = [ ...props.data.options ];
 	if (allOptions.some(opt => opt.feature.type === FeatureType.AncestryFeatureChoice)) {
 		allOptions = allOptions.filter(opt => opt.feature.type !== FeatureType.AncestryFeatureChoice);
 		const additionalOptions = HeroLogic.getFormerAncestries(props.hero)
@@ -219,6 +266,7 @@ export const ConfigChoice = (props: ConfigProps) => {
 		allOptions.push(...additionalOptions);
 	}
 	allOptions = Collections.distinct(allOptions, opt => opt.feature.id);
+	const sortedOptions = Collections.sort(allOptions, opt => opt.feature.name);
 
 	const selectedIDs = props.data.selected.map(f => f.id);
 	const pointsUsed = Collections.sum(selectedIDs, id => {
@@ -228,98 +276,61 @@ export const ConfigChoice = (props: ConfigProps) => {
 	const pointsMax = props.data.count === 'ancestry' ? HeroLogic.getAncestryPoints(props.hero) : props.data.count;
 	const pointsLeft = pointsMax - pointsUsed;
 
-	let unavailableIDs: string[] = [];
-	if (props.data.options.some(opt => opt.value > 1)) {
-		unavailableIDs = allOptions
-			.filter(opt => !selectedIDs.includes(opt.feature.id) && (opt.value > pointsLeft))
-			.map(opt => opt.feature.id);
-	}
-
-	const availableOptions = allOptions
-		.filter(f => !unavailableIDs.includes(f.feature.id))
-		.filter(f => !selectedIDs.includes(f.feature.id));
-	const sortedOptions = Collections.sort(availableOptions, opt => opt.feature.name);
-
 	const showCosts = props.data.options.some(opt => opt.value > 1);
+	const isSingle = props.data.count === 1 && !showCosts;
+
+	const toggleOption = (opt: { feature: Feature; value: number }) => {
+		const dataCopy = Utils.copy(props.data);
+		const isSelected = selectedIDs.includes(opt.feature.id);
+		if (isSelected) {
+			dataCopy.selected = dataCopy.selected.filter(x => x.id !== opt.feature.id);
+		} else {
+			if (isSingle) {
+				dataCopy.selected = [ opt.feature ];
+			} else {
+				if (opt.value > pointsLeft) return;
+				dataCopy.selected.push(opt.feature);
+			}
+		}
+		props.setData(dataCopy);
+	};
+
+	if (sortedOptions.length === 0) {
+		return <Empty text='There are no options to choose for this feature.' />;
+	}
 
 	return (
 		<Space orientation='vertical' style={{ width: '100%' }}>
 			<div className='ds-text'>
 				{
-					showCosts ?
-						(pointsLeft > 0) ? `You have ${pointsLeft} point(s) to spend.` : null
-						:
-						`Choose ${props.data.count} option(s).`
+					showCosts
+						? `You have ${pointsLeft} of ${pointsMax} point(s) left.`
+						: `Choose ${props.data.count} option(s).`
 				}
 			</div>
 			{
-				props.data.selected.map(f => (
-					<SelectionBox
-						key={f.id}
-						content={
-							<Field
-								style={{ flex: '1 1 0' }}
-								label={f.name}
-								value={<Markdown text={f.description} useSpan={true} />}
-							/>
-						}
-						onSelect={() => setSelectedFeature(f)}
-						onRemove={() => {
-							const dataCopy = Utils.copy(props.data);
-							dataCopy.selected = dataCopy.selected.filter(x => x.id !== f.id);
-							props.setData(dataCopy);
-						}}
-					/>
-				))
+				sortedOptions.map(opt => {
+					const isSelected = selectedIDs.includes(opt.feature.id);
+					const overBudget = !isSelected && showCosts && opt.value > pointsLeft;
+					const disabled = overBudget;
+					// AbilityPanel renders the feature name itself; suppress the row-level name in that case.
+					const showName = !isAbilityFeature(opt.feature) && hasMeaningfulName(opt.feature);
+					return (
+						<div
+							key={opt.feature.id}
+							className={`choice-option${isSelected ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
+							onClick={() => !disabled && toggleOption(opt)}
+						>
+							<div className='choice-option-indicator'>{isSelected ? '●' : '○'}</div>
+							<div className='choice-option-body'>
+								{showName ? <div className='choice-option-name'>{opt.feature.name}</div> : null}
+								<div className='choice-option-content'>{renderOptionContent(opt.feature, props.hero, props.sourcebooks)}</div>
+							</div>
+							{showCosts ? <div className='choice-option-cost'>{opt.value}</div> : null}
+						</div>
+					);
+				})
 			}
-			{
-				pointsLeft > 0 ?
-					sortedOptions.length === 0 ?
-						<Empty text='There are no options to choose for this feature.' />
-						:
-						<Button className='status-warning' block={true} onClick={() => setChoiceSelectorOpen(true)}>
-							{comprehensive ? 'Choose an option (extended)' : 'Choose an option'}
-						</Button>
-					: null
-			}
-			{
-				(pointsLeft > 0) && (props.data.count === 'ancestry') ?
-					<>
-						<Divider />
-						<Toggle label='Choose a feature from any ancestry' value={comprehensive} onChange={setComprehensive} />
-					</>
-					: null
-			}
-			{
-				comprehensive ?
-					<Alert
-						type='warning'
-						showIcon={true}
-						title='This is typically against the rules.'
-					/>
-					: null
-			}
-			<Drawer open={choiceSelectorOpen} onClose={() => setChoiceSelectorOpen(false)} closeIcon={null} size={500}>
-				<FeatureSelectModal
-					features={sortedOptions}
-					hero={props.hero}
-					sourcebooks={props.sourcebooks}
-					onSelect={feature => {
-						setChoiceSelectorOpen(false);
-
-						const dataCopy = Utils.copy(props.data);
-						dataCopy.selected.push(feature);
-						props.setData(dataCopy);
-					}}
-					onClose={() => setChoiceSelectorOpen(false)}
-				/>
-			</Drawer>
-			<Drawer open={!!selectedFeature} onClose={() => setSelectedFeature(null)} closeIcon={null} size={500}>
-				<Modal
-					content={selectedFeature ? <FeaturePanel style={{ padding: '0 20px 20px 20px' }} feature={selectedFeature} mode={PanelMode.Full} /> : null}
-					onClose={() => setSelectedFeature(null)}
-				/>
-			</Drawer>
 		</Space>
 	);
 };

@@ -7,7 +7,6 @@ import { Hero } from '@/models/hero';
 import { Imbuement } from '@/models/imbuement';
 import { PanelMode } from '@/enums/panel-mode';
 import { ProjectPanel } from '@/components/panels/elements/project-panel/project-panel';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -33,7 +32,7 @@ export const ImbuementPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className={props.mode === PanelMode.Full ? 'imbuement-panel' : 'imbuement-panel compact'} id={props.mode === PanelMode.Full ? SheetFormatter.getPageId('imbuement', props.imbuement.id) : undefined}>
+			<div className={props.mode === PanelMode.Full ? 'imbuement-panel' : 'imbuement-panel compact'}>
 				<HeaderText
 					level={1}
 					tags={tags}

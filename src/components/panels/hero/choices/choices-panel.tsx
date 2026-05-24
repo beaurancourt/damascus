@@ -12,9 +12,11 @@ import { HeroClass } from '@/models/class';
 import { HeroLogic } from '@/logic/hero-logic';
 import { HeroModalType } from '@/enums/hero-modal-type';
 import { Kit } from '@/models/kit';
+import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { ProjectLogic } from '@/logic/project-logic';
 import { Sourcebook } from '@/models/sourcebook';
 import { Title } from '@/models/title';
+import { Utils } from '@/utils/utils';
 import { useOptions } from '@/contexts/data-context';
 
 import './choices-panel.scss';
@@ -31,6 +33,7 @@ interface Props {
 	onSelectKit: (kit: Kit) => void;
 	onSelectTitle: (title: Title) => void;
 	onShowState: (state: HeroModalType) => void;
+	updateHero?: (hero: Hero) => void;
 }
 
 export const ChoicesPanel = (props: Props) => {
@@ -190,18 +193,63 @@ export const ChoicesPanel = (props: Props) => {
 				}
 				{
 					props.hero.state.projects.length > 0 ?
-						props.hero.state.projects.map(project =>
-							useRows ?
-								<div key={project.id} className='selectable-row clickable' onClick={() => props.onShowState(HeroModalType.Projects)}>
-									<div>Project: <b>{project.name}</b></div>
-								</div>
-								:
-								<div key={project.id} className='overview-tile clickable' onClick={() => props.onShowState(HeroModalType.Projects)}>
+						props.hero.state.projects.map(project => {
+							const setProjectPoints = (value: number) => {
+								if (!props.updateHero) return;
+								const copy = Utils.copy(props.hero);
+								const target = copy.state.projects.find(p => p.id === project.id);
+								if (target && target.progress) {
+									target.progress.points = value;
+									props.updateHero(copy);
+								}
+							};
+
+							const editable = !!props.updateHero && !!project.progress;
+
+							if (useRows) {
+								return (
+									<div key={project.id} className='selectable-row'>
+										<div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', gap: 4 }}>
+											<div>Project: <b>{project.name}</b> — {ProjectLogic.getStatus(project)}</div>
+											{
+												editable && project.progress ? (
+													<div onClick={e => e.stopPropagation()}>
+														<NumberSpin
+															label={`Progress${project.goal ? ` (goal ${project.goal})` : ''}`}
+															value={project.progress.points}
+															min={0}
+															steps={[ 1, 5 ]}
+															onChange={setProjectPoints}
+														/>
+													</div>
+												) : null
+											}
+										</div>
+									</div>
+								);
+							}
+
+							return (
+								<div key={project.id} className='overview-tile'>
 									<HeaderText>Project</HeaderText>
 									<Field label='Project' value={project.name} />
 									{project.progress ? <Field label='State' value={ProjectLogic.getStatus(project)} /> : null}
+									{
+										editable && project.progress ? (
+											<div style={{ marginTop: 6 }} onClick={e => e.stopPropagation()}>
+												<NumberSpin
+													label={`Progress${project.goal ? ` (goal ${project.goal})` : ''}`}
+													value={project.progress.points}
+													min={0}
+													steps={[ 1, 5 ]}
+													onChange={setProjectPoints}
+												/>
+											</div>
+										) : null
+									}
 								</div>
-						)
+							);
+						})
 						:
 						null
 				}

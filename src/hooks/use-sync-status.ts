@@ -41,7 +41,7 @@ export const useSyncStatus = () => {
 	const checkSyncStatus = useCallback(async () => {
 		if ('serviceWorker' in navigator && 'caches' in window) {
 			try {
-				const cache = await caches.open('forgesteel-v1');
+				const cache = await caches.open('damascus-v1');
 				const keys = await cache.keys();
 
 				// Check if we have the essential files cached
@@ -87,7 +87,7 @@ export const useSyncStatus = () => {
 			}));
 
 			try {
-				const cache = await caches.open('forgesteel-v1');
+				const cache = await caches.open('damascus-v1');
 
 				// Cache essential files
 				const urlsToCache = [

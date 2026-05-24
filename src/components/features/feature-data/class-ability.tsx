@@ -1,25 +1,22 @@
-import { Button, Drawer, Select, Space } from 'antd';
+import { Select, Space } from 'antd';
 import { Feature, FeatureClassAbilityData } from '@/models/feature';
 import { Ability } from '@/models/ability';
-import { AbilityModal } from '@/components/modals/ability/ability-modal';
 import { AbilityPanel } from '@/components/panels/elements/ability-panel/ability-panel';
-import { AbilitySelectModal } from '@/components/modals/select/ability-select/ability-select-modal';
 import { Collections } from '@/utils/collections';
 import { Empty } from '@/components/controls/empty/empty';
-import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { HeroClass } from '@/models/class';
 import { HeroLogic } from '@/logic/hero-logic';
-import { Markdown } from '@/components/controls/markdown/markdown';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { PanelMode } from '@/enums/panel-mode';
-import { SelectionBox } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { Toggle } from '@/components/controls/toggle/toggle';
 import { Utils } from '@/utils/utils';
 import { useState } from 'react';
+
+import './choice.scss';
 
 interface InfoProps {
 	data: FeatureClassAbilityData;
@@ -213,9 +210,6 @@ interface ConfigProps {
 }
 
 export const ConfigClassAbility = (props: ConfigProps) => {
-	const [ abilitySelectorOpen, setAbilitySelectorOpen ] = useState<boolean>(false);
-	const [ selectedAbility, setSelectedAbility ] = useState<Ability | null>(null);
-
 	let heroClass: HeroClass | null = props.hero.class;
 	if (props.data.classID) {
 		// You get an ability from a different class
@@ -225,77 +219,76 @@ export const ConfigClassAbility = (props: ConfigProps) => {
 		return null;
 	}
 
-	const currentAbilityIDs = HeroLogic.getAbilities(props.hero, props.sourcebooks, []).map(a => a.ability.id);
+	// Abilities the hero already has from elsewhere (other ClassAbility features, signature progression, etc.)
+	// Filter out the ones this picker has selected so they stay clickable in this picker.
+	const otherAbilityIDs = HeroLogic.getAbilities(props.hero, props.sourcebooks, [])
+		.map(a => a.ability.id)
+		.filter(id => !props.data.selectedIDs.includes(id));
 
-	const abilities = SourcebookLogic.getAbilitiesFromClass(heroClass, props.data.source.fromClassAbilities, props.data.source.fromSelectedSubclassAbilities, props.data.source.fromUnselectedSubclassAbilities, props.data.source.fromClassLevels, props.data.source.fromSelectedSubclassLevels, props.data.source.fromUnselectedSubclassLevels)
+	const abilities = SourcebookLogic.getAbilitiesFromClass(
+		heroClass,
+		props.data.source.fromClassAbilities,
+		props.data.source.fromSelectedSubclassAbilities,
+		props.data.source.fromUnselectedSubclassAbilities,
+		props.data.source.fromClassLevels,
+		props.data.source.fromSelectedSubclassLevels,
+		props.data.source.fromUnselectedSubclassLevels
+	)
 		.filter(a => a.cost === props.data.cost)
 		.filter(a => a.minLevel <= props.data.minLevel);
-	const distinctAbilities = Collections.distinct(abilities.filter(a => !currentAbilityIDs.includes(a.id)), a => a.name);
-	const sortedAbilities = Collections.sort(distinctAbilities, a => a.name);
+	const allAbilities = Collections.sort(Collections.distinct(abilities, a => a.id), a => a.name);
 
-	const getAddButton = () => {
-		if (sortedAbilities.length === 0) {
-			return (
-				<Empty text='There are no options to choose for this feature.' />
-			);
+	const selectedIDs = props.data.selectedIDs;
+	const count = props.data.count;
+	const isSingle = count === 1;
+
+	const toggleAbility = (ability: Ability) => {
+		const isSelected = selectedIDs.includes(ability.id);
+		const dataCopy = Utils.copy(props.data);
+		if (isSelected) {
+			dataCopy.selectedIDs = dataCopy.selectedIDs.filter(id => id !== ability.id);
+		} else if (isSingle) {
+			dataCopy.selectedIDs = [ ability.id ];
+		} else if (selectedIDs.length < count) {
+			dataCopy.selectedIDs.push(ability.id);
+		} else {
+			return;
 		}
-
-		return (
-			<Button className='status-warning' block={true} onClick={() => setAbilitySelectorOpen(true)}>
-				Choose an ability
-			</Button>
-		);
+		props.setData(dataCopy);
 	};
+
+	if (allAbilities.length === 0) {
+		return <Empty text='There are no options to choose for this feature.' />;
+	}
+
+	const label = props.data.cost === 'signature' ? 'signature' : `${props.data.cost}pt`;
 
 	return (
 		<Space orientation='vertical' style={{ width: '100%' }}>
 			<div className='ds-text'>
-				Choose {props.data.count > 1 ? props.data.count : 'a'} {props.data.cost === 'signature' ? 'signature' : `${props.data.cost}pt`} {props.data.count > 1 ? 'abilities' : 'ability'}.
+				Choose {count > 1 ? count : 1} {label} {count > 1 ? 'abilities' : 'ability'}.
 			</div>
 			{
-				props.data.selectedIDs.map(id => {
-					const ability = abilities.find(a => a.id === id) as Ability;
-					if (!ability) {
-						return null;
-					}
+				allAbilities.map(ability => {
+					const isSelected = selectedIDs.includes(ability.id);
+					const alreadyTaken = !isSelected && otherAbilityIDs.includes(ability.id);
+					const overLimit = !isSelected && !alreadyTaken && !isSingle && selectedIDs.length >= count;
+					const disabled = alreadyTaken || overLimit;
 					return (
-						<SelectionBox
+						<div
 							key={ability.id}
-							content={
-								<Field
-									style={{ flex: '1 1 0' }}
-									label={ability.name}
-									value={<Markdown text={ability.description} useSpan={true} />}
-								/>
-							}
-							onSelect={() => setSelectedAbility(ability)}
-							onRemove={() => {
-								const dataCopy = Utils.copy(props.data);
-								dataCopy.selectedIDs = dataCopy.selectedIDs.filter(id => id !== ability.id);
-								props.setData(dataCopy);
-							}}
-						/>
+							className={`choice-option${isSelected ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
+							onClick={() => !disabled && toggleAbility(ability)}
+							title={alreadyTaken ? 'You already have this ability' : undefined}
+						>
+							<div className='choice-option-indicator'>{isSelected ? '●' : '○'}</div>
+							<div className='choice-option-body'>
+								<AbilityPanel ability={ability} hero={props.hero} mode={PanelMode.Full} />
+							</div>
+						</div>
 					);
 				})
 			}
-			{props.data.selectedIDs.length < props.data.count ? getAddButton() : null}
-			<Drawer open={abilitySelectorOpen} onClose={() => setAbilitySelectorOpen(false)} closeIcon={null} size={500}>
-				<AbilitySelectModal
-					abilities={sortedAbilities}
-					hero={props.hero}
-					onSelect={ability => {
-						setAbilitySelectorOpen(false);
-
-						const dataCopy = Utils.copy(props.data);
-						dataCopy.selectedIDs.push(ability.id);
-						props.setData(dataCopy);
-					}}
-					onClose={() => setAbilitySelectorOpen(false)}
-				/>
-			</Drawer>
-			<Drawer open={!!selectedAbility} onClose={() => setSelectedAbility(null)} closeIcon={null} size={500}>
-				{selectedAbility ? <AbilityModal ability={selectedAbility} hero={props.hero} onClose={() => setSelectedAbility(null)} /> : null}
-			</Drawer>
 		</Space>
 	);
 };

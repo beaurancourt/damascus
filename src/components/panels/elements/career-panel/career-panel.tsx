@@ -1,99 +1,33 @@
-import { Segmented, Space } from 'antd';
 import { Career } from '@/models/career';
+import { Element } from '@/models/element';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
+import { Feature, FeatureData } from '@/models/feature';
+import { FeatureConfigPanel } from '@/components/panels/feature-config-panel/feature-config-panel';
+import { FeatureLogic } from '@/logic/feature-logic';
 import { FeaturePanel } from '@/components/panels/elements/feature-panel/feature-panel';
-import { Field } from '@/components/controls/field/field';
+import { FeatureType } from '@/enums/feature-type';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { PanelMode } from '@/enums/panel-mode';
-import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
+import { ReactNode } from 'react';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
-import { useState } from 'react';
 
 import './career-panel.scss';
+import '@/components/features/feature-data/choice.scss';
 
 interface Props {
 	career: Career;
 	sourcebooks: Sourcebook[];
 	hero?: Hero;
 	mode?: PanelMode;
+	setFeatureData?: (featureID: string, data: FeatureData) => void;
+	onSelectIncitingIncident?: (incident: Element | null) => void;
 }
 
 export const CareerPanel = (props: Props) => {
-	const [ page, setPage ] = useState<string>('overview');
-
-	const getOverview = () => {
-		return (
-			<Markdown text={props.career.description} />
-		);
-	};
-
-	const getFeatures = () => {
-		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				{
-					props.career.features.map(f => (
-						<SelectablePanel key={f.id}>
-							<FeaturePanel feature={f} hero={props.hero} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
-						</SelectablePanel>
-					))
-				}
-			</Space>
-		);
-	};
-
-	const getIncidents = () => {
-		const option = props.career.incitingIncidents.selected;
-		if (option) {
-			return (
-				<Field key={option.id} label={option.name} value={option.description} />
-			);
-		}
-
-		return (
-			<div>
-				{props.career.incitingIncidents.options.map(option => <Field key={option.id} label={option.name} value={option.description} />)}
-			</div>
-		);
-	};
-
-	const getContent = () => {
-		let content = null;
-		switch (page) {
-			case 'overview':
-				content = getOverview();
-				break;
-			case 'features':
-				content = getFeatures();
-				break;
-			case 'incidents':
-				content = getIncidents();
-				break;
-		}
-
-		return (
-			<>
-				<Segmented
-					style={{ marginBottom: '20px' }}
-					block={true}
-					options={[
-						{ value: 'overview', label: 'Overview' },
-						{ value: 'features', label: 'Features' },
-						{ value: 'incidents', label: 'Inciting Incidents' }
-					]}
-					value={page}
-					onChange={setPage}
-					onClick={e => e.stopPropagation()}
-				/>
-				{content}
-			</>
-		);
-	};
-
 	const tags = [];
 	if (props.sourcebooks.length > 0) {
 		const sourcebookType = SourcebookLogic.getCareerSourcebook(props.sourcebooks, props.career)?.type || SourcebookType.Official;
@@ -113,13 +47,73 @@ export const CareerPanel = (props: Props) => {
 		);
 	}
 
+	// Render a feature: config panel if it's a choice in edit mode, otherwise the info panel.
+	// Mirrors AncestryPanel / CulturePanel.
+	const renderFeature = (feature: Feature): ReactNode[] => {
+		const editing = !!(props.setFeatureData && props.hero);
+
+		if (editing && FeatureLogic.isChoice(feature)) {
+			return [
+				<FeatureConfigPanel
+					key={feature.id}
+					feature={feature}
+					hero={props.hero!}
+					sourcebooks={props.sourcebooks}
+					setData={props.setFeatureData!}
+				/>
+			];
+		}
+
+		if (editing && feature.type === FeatureType.Multiple) {
+			return feature.data.features.flatMap(sub => renderFeature(sub));
+		}
+
+		return [
+			<FeaturePanel
+				key={feature.id}
+				feature={feature}
+				hero={props.hero}
+				sourcebooks={props.sourcebooks}
+				mode={PanelMode.Full}
+			/>
+		];
+	};
+
+	const editing = !!(props.setFeatureData && props.hero && props.onSelectIncitingIncident);
+	const selectedIncident = props.career.incitingIncidents.selected;
+
 	return (
 		<ErrorBoundary>
-			<div className='class-panel' id={SheetFormatter.getPageId('career', props.career.id)}>
+			<div className='career-panel'>
 				<HeaderText level={1} tags={tags}>
 					{props.career.name || 'Unnamed Career'}
 				</HeaderText>
-				{getContent()}
+				<Markdown text={props.career.description} />
+				{props.career.features.flatMap(f => renderFeature(f))}
+				<HeaderText>Inciting Incident</HeaderText>
+				<div className='ds-text'>Choose 1 of the following:</div>
+				{
+					props.career.incitingIncidents.options.map(opt => {
+						const isSelected = selectedIncident?.id === opt.id;
+						return (
+							<div
+								key={opt.id}
+								className={`choice-option${isSelected ? ' selected' : ''}`}
+								onClick={() => {
+									if (!editing) return;
+									props.onSelectIncitingIncident!(isSelected ? null : opt);
+								}}
+								style={editing ? undefined : { cursor: 'default' }}
+							>
+								<div className='choice-option-indicator'>{isSelected ? '●' : '○'}</div>
+								<div className='choice-option-body'>
+									<div className='choice-option-name'>{opt.name}</div>
+									<div className='choice-option-content'><Markdown text={opt.description} useSpan={true} /></div>
+								</div>
+							</div>
+						);
+					})
+				}
 			</div>
 		</ErrorBoundary>
 	);

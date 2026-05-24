@@ -17,7 +17,72 @@
 
 			.hero-edit-content {
 				gap: 5px;
+				flex-direction: column;
+
+				.hero-edit-content-column {
+					flex: 0 1 auto;
+				}
 			}
+
+			.hero-edit-mobile-search {
+				padding: 2px 4px;
+			}
+		}
+
+		.hero-edit-chip-strip {
+			flex: 1 1 auto;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			overflow-x: auto;
+			padding: 4px 2px;
+			min-height: 44px;
+			scroll-snap-type: x proximity;
+			-webkit-overflow-scrolling: touch;
+			&::-webkit-scrollbar { height: 3px; }
+
+			.hero-edit-chip {
+				flex: 0 0 auto;
+				display: inline-flex;
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 1px;
+				padding: 5px 12px;
+				border-radius: 999px;
+				border: 1px solid rgba(127, 127, 127, 0.3);
+				background: white;
+				cursor: pointer;
+				white-space: nowrap;
+				scroll-snap-align: start;
+				min-height: 38px;
+				justify-content: center;
+
+				.chip-title {
+					font-size: 0.82em;
+					font-weight: 600;
+					text-transform: uppercase;
+					letter-spacing: 0.04em;
+				}
+
+				.chip-state {
+					font-size: 0.65em;
+					opacity: 0.6;
+				}
+
+				&.selected {
+					background: rgb(22, 119, 255);
+					color: white;
+					border-color: rgb(22, 119, 255);
+					.chip-state { opacity: 0.85; }
+				}
+				&.not-started:not(.selected) { color: rgb(160, 0, 0); }
+				&.in-progress:not(.selected) { color: rgb(255, 160, 0); }
+			}
+		}
+
+		.hero-edit-unselect {
+			flex: 0 0 auto;
+			margin-left: 4px;
 		}
 
 		.page-controls {
@@ -67,15 +132,14 @@
 		.hero-edit-content {
 			flex: 1 1 0;
 			display: flex;
-			overflow: hidden;
+			overflow-x: hidden;
+			overflow-y: auto;
 
 			.hero-edit-content-column {
 				flex: 1 1 0;
-				overflow-x: hidden;
-				overflow-y: auto;
 
 				&.single-column {
-					max-width: 600px;
+					max-width: 1100px;
 					margin: 0 auto;
 				}
 
@@ -100,7 +164,7 @@
 				}
 
 				&.selected {
-					padding: 5px 20px 20px 20px;
+					padding: 5px 10px 20px 10px;
 					display: flex;
 					flex-direction: column;
 					gap: 10px;
@@ -108,12 +172,10 @@
 
 				&.choices {
 					margin-top: 5px;
-					padding: 5px 20px 20px 20px;
+					padding: 5px 10px 20px 10px;
 					display: flex;
 					flex-direction: column;
-					gap: 10px;
-					background-color: rgb(245, 245, 245);
-					border-radius: 10px;
+					gap: 20px;
 				}
 			}
 		}
@@ -124,14 +186,6 @@ html[data-theme="dark"] {
 	.hero-edit-page {
 		.hero-edit-page-content {
 			background-color: rgb(55, 55, 55);
-
-			.hero-edit-content {
-				.hero-edit-content-column {
-					&.choices {
-						background-color: rgb(10, 10, 10);
-					}
-				}
-			}
 		}
 	}
 }

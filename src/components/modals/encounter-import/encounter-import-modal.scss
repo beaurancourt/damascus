@@ -1,0 +1,115 @@
+.encounter-import-modal {
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+
+	.import-help {
+		font-size: 0.9em;
+		opacity: 0.75;
+		code {
+			padding: 1px 4px;
+			border-radius: 3px;
+			background: rgba(127, 127, 127, 0.15);
+		}
+	}
+
+	.import-body {
+		align-items: stretch;
+	}
+
+	.import-paste {
+		flex: 1 1 360px;
+		min-width: 280px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+
+		.yaml-textarea {
+			font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+			font-size: 0.85em;
+			min-height: 360px;
+		}
+	}
+
+	.import-preview {
+		flex: 1 1 360px;
+		min-width: 280px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+
+		.preview-empty {
+			opacity: 0.6;
+			font-style: italic;
+		}
+
+		.issue-list {
+			margin: 4px 0 0 0;
+			padding-left: 18px;
+			code {
+				padding: 0 3px;
+				border-radius: 2px;
+				background: rgba(127, 127, 127, 0.18);
+				font-size: 0.85em;
+			}
+		}
+
+		.preview-card {
+			border: 1px solid rgba(127, 127, 127, 0.25);
+			border-radius: 6px;
+			padding: 12px;
+			display: flex;
+			flex-direction: column;
+			gap: 12px;
+
+			.preview-title {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 8px;
+			}
+
+			.preview-desc {
+				font-size: 0.9em;
+				opacity: 0.8;
+				white-space: pre-wrap;
+			}
+
+			.preview-group {
+				.group-header {
+					display: flex;
+					align-items: center;
+					gap: 6px;
+					margin-bottom: 6px;
+				}
+
+				.slot-list {
+					margin: 0;
+					padding-left: 18px;
+					li {
+						display: flex;
+						gap: 6px;
+						align-items: baseline;
+						flex-wrap: wrap;
+						.slot-count { font-weight: 600; }
+						.slot-id { opacity: 0.55; font-size: 0.85em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+					}
+				}
+			}
+
+			.preview-notes {
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+				border-top: 1px solid rgba(127, 127, 127, 0.2);
+				padding-top: 8px;
+
+				.note {
+					.note-title { font-weight: 600; margin-bottom: 2px; }
+					.note-body { white-space: pre-wrap; font-size: 0.9em; opacity: 0.85; }
+				}
+			}
+		}
+	}
+}

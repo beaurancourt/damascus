@@ -452,32 +452,4 @@ describe('LocalService', () => {
 		});
 	});
 
-	const testSourcebookIDs = [ 'test-sourcebook-x', 'test-sourcebook-y' ];
-	describe('getHiddenSourcebookIDs', () => {
-		test('retrieves session stored at correct key', async () => {
-			localforage.getItem = vi.fn().mockImplementation(() => Promise.resolve(testSourcebookIDs));
-
-			await service.getHiddenSourcebookIDs()
-				.then(thenFn)
-				.catch(catchFn);
-
-			expect(localforage.getItem).toHaveBeenCalledWith(DataStorageKeys.HiddenSourcebookIDs);
-			expect(thenFn).toHaveBeenCalledWith(testSourcebookIDs);
-			expect(catchFn).not.toHaveBeenCalled();
-		});
-	});
-
-	describe('putHiddenSourcebookIDs', () => {
-		test('sets session at correct key', async () => {
-			localforage.setItem = vi.fn().mockImplementation(() => Promise.resolve(testSourcebookIDs));
-
-			await service.putHiddenSourcebookIDs(testSourcebookIDs)
-				.then(thenFn)
-				.catch(catchFn);
-
-			expect(localforage.setItem).toHaveBeenCalledWith(DataStorageKeys.HiddenSourcebookIDs, testSourcebookIDs);
-			expect(thenFn).toHaveBeenCalledWith(testSourcebookIDs);
-			expect(catchFn).not.toHaveBeenCalled();
-		});
-	});
 });

@@ -12,7 +12,6 @@ import { Markdown } from '@/components/controls/markdown/markdown';
 import { PanelMode } from '@/enums/panel-mode';
 import { Segmented } from 'antd';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
@@ -161,7 +160,7 @@ export const SubclassPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='subclass-panel' id={SheetFormatter.getPageId('subclass', props.subclass.id)} style={props.style}>
+			<div className='subclass-panel' style={props.style}>
 				<HeaderText level={1} tags={tags}>
 					{props.subclass.name || 'Unnamed Subclass'}
 				</HeaderText>

@@ -4,8 +4,10 @@ import { Characteristic } from '@/enums/characteristic';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { FormatLogic } from '@/logic/format-logic';
 import { Hero } from '@/models/hero';
+import { HeroHealthPanel } from '@/components/panels/health/health-panel';
 import { HeroLogic } from '@/logic/hero-logic';
 import { HeroModalType } from '@/enums/hero-modal-type';
+import { QuickResourcesPanel } from '@/components/panels/hero/quick-resources/quick-resources-panel';
 import { StatsRow } from '@/components/panels/stats-row/stats-row';
 import { useIsSmall } from '@/hooks/use-is-small';
 import { useOptions } from '@/contexts/data-context';
@@ -16,8 +18,14 @@ interface Props {
 	hero: Hero;
 	onSelectCharacteristic: (characteristic: Characteristic) => void;
 	onShowState: (type: HeroModalType) => void;
+	updateHero?: (hero: Hero) => void;
 }
 
+// Renders the Stats group (1) + Resources group (2) from the hero view.
+// Stats: characteristic tiles + size/speed/stability/etc strip.
+// Resources: heroic resources +/- + stamina dial + 6 stamina/recovery action buttons.
+// Conditions are deliberately NOT rendered here — the hero panel renders them as a separate
+// downstream section so the page order is stats → resources → conditions.
 export const StatsPanel = (props: Props) => {
 	const isSmall = useIsSmall();
 	const options = useOptions();
@@ -63,7 +71,42 @@ export const StatsPanel = (props: Props) => {
 				</Flex>
 				{
 					useRows ?
-						<>
+						<div className='selectable-row'>
+							<div>Size: <b>{FormatLogic.getSize(size)}</b></div>
+							<div>{speedStr}: <b>{speed.value}</b></div>
+							<div>Stability: <b>{HeroLogic.getStability(props.hero)}</b></div>
+							<div>Disengage: <b>{HeroLogic.getDisengage(props.hero)}</b></div>
+							<div>Save: <b>{HeroLogic.getSaveThreshold(props.hero)}</b></div>
+						</div>
+						:
+						<Flex gap={10}>
+							<StatsRow caption='Statistics' style={{ flex: props.updateHero ? '1 1 0' : '5 5 0' }}>
+								<Statistic title='Size' value={size.value} suffix={sizeSuffix} />
+								<Statistic title={speedStr} value={speed.value} suffix={speedSuffix} />
+								<Statistic title='Stability' value={HeroLogic.getStability(props.hero)} />
+								<Statistic title='Disengage' value={HeroLogic.getDisengage(props.hero)} />
+								<Statistic title='Save' value={HeroLogic.getSaveThreshold(props.hero)} suffix={HeroLogic.getSaveBonus(props.hero) ? `+${HeroLogic.getSaveBonus(props.hero)}` : undefined} />
+							</StatsRow>
+							{
+								!props.updateHero && (
+									<StatsRow caption='Vitals' onClick={() => props.onShowState(HeroModalType.Vitals)} style={{ flex: '3 3 0' }}>
+										<Statistic title='Stamina' value={stamina} suffix={staminaSuffix} />
+										<Statistic title='Recoveries' value={recoveries} suffix={recoveriesSuffix} />
+										<Statistic title='Recovery Value' value={HeroLogic.getRecoveryValue(props.hero)} />
+									</StatsRow>
+								)
+							}
+						</Flex>
+				}
+				{
+					props.updateHero ? (
+						<QuickResourcesPanel
+							hero={props.hero}
+							onChange={props.updateHero}
+							onShowState={props.onShowState}
+						/>
+					) : (
+						useRows ?
 							<div className='selectable-row clickable' onClick={() => props.onShowState(HeroModalType.Resources)}>
 								{
 									HeroLogic.getHeroicResources(props.hero).map(hr => (
@@ -76,21 +119,7 @@ export const StatsPanel = (props: Props) => {
 								<div>Renown: <b>{HeroLogic.getRenown(props.hero)}</b></div>
 								<div>Wealth: <b>{HeroLogic.getWealth(props.hero)}</b></div>
 							</div>
-							<div className='selectable-row'>
-								<div>Size: <b>{FormatLogic.getSize(size)}</b></div>
-								<div>{speedStr}: <b>{speed.value}</b></div>
-								<div>Stability: <b>{HeroLogic.getStability(props.hero)}</b></div>
-								<div>Disengage: <b>{HeroLogic.getDisengage(props.hero)}</b></div>
-								<div>Save: <b>{HeroLogic.getSaveThreshold(props.hero)}</b></div>
-							</div>
-							<div className='selectable-row clickable' onClick={() => props.onShowState(HeroModalType.Vitals)}>
-								<div>Stamina: <b>{stamina}</b></div>
-								<div>Recoveries: <b>{recoveries}</b></div>
-								<div>Recovery Value: <b>{HeroLogic.getRecoveryValue(props.hero)}</b></div>
-							</div>
-						</>
-						:
-						<>
+							:
 							<StatsRow caption='Resources' onClick={() => props.onShowState(HeroModalType.Resources)}>
 								{
 									HeroLogic.getHeroicResources(props.hero).map(hr => (
@@ -103,21 +132,28 @@ export const StatsPanel = (props: Props) => {
 								<Statistic title='Renown' value={HeroLogic.getRenown(props.hero)} />
 								<Statistic title='Wealth' value={HeroLogic.getWealth(props.hero)} />
 							</StatsRow>
-							<Flex gap={10}>
-								<StatsRow caption='Statistics' style={{ flex: '5 5 0' }}>
-									<Statistic title='Size' value={size.value} suffix={sizeSuffix} />
-									<Statistic title={speedStr} value={speed.value} suffix={speedSuffix} />
-									<Statistic title='Stability' value={HeroLogic.getStability(props.hero)} />
-									<Statistic title='Disengage' value={HeroLogic.getDisengage(props.hero)} />
-									<Statistic title='Save' value={HeroLogic.getSaveThreshold(props.hero)} suffix={HeroLogic.getSaveBonus(props.hero) ? `+${HeroLogic.getSaveBonus(props.hero)}` : undefined} />
-								</StatsRow>
-								<StatsRow caption='Vitals' onClick={() => props.onShowState(HeroModalType.Vitals)} style={{ flex: '3 3 0' }}>
-									<Statistic title='Stamina' value={stamina} suffix={staminaSuffix} />
-									<Statistic title='Recoveries' value={recoveries} suffix={recoveriesSuffix} />
-									<Statistic title='Recovery Value' value={HeroLogic.getRecoveryValue(props.hero)} />
-								</StatsRow>
-							</Flex>
-						</>
+					)
+				}
+				{
+					!props.updateHero && useRows && (
+						<div className='selectable-row clickable' onClick={() => props.onShowState(HeroModalType.Vitals)}>
+							<div>Stamina: <b>{stamina}</b></div>
+							<div>Recoveries: <b>{recoveries}</b></div>
+							<div>Recovery Value: <b>{HeroLogic.getRecoveryValue(props.hero)}</b></div>
+						</div>
+					)
+				}
+				{
+					props.updateHero && (
+						<div className='stats-section-vitals-inline'>
+							<HeroHealthPanel
+								hero={props.hero}
+								showEncounterControls={false}
+								sections={[ 'stamina' ]}
+								onChange={props.updateHero}
+							/>
+						</div>
+					)
 				}
 			</div>
 		</ErrorBoundary>

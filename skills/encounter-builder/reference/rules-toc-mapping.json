@@ -1,0 +1,511 @@
+{
+  "rulesCount": 39,
+  "mapping": [
+    {
+      "key": "abilityDistance",
+      "label": "Ability Distance",
+      "matched": true,
+      "matchedTitle": "Distance",
+      "page": 86,
+      "depth": 2,
+      "parents": [
+        "Classes",
+        "Abilities"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "abilityTarget",
+      "label": "Ability Target",
+      "matched": true,
+      "matchedTitle": "Target",
+      "page": 88,
+      "depth": 2,
+      "parents": [
+        "Classes",
+        "Abilities"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "assist",
+      "label": "Assisting a Test",
+      "matched": true,
+      "matchedTitle": "Assist a Test",
+      "page": 273,
+      "depth": 1,
+      "parents": [
+        "Tests"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "burrowing",
+      "label": "Burrowing",
+      "matched": true,
+      "matchedTitle": "Burrow",
+      "page": 283,
+      "depth": 3,
+      "parents": [
+        "Combat",
+        "Movement",
+        "Movement Types"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "climbingAndSwimming",
+      "label": "Climbing / Swimming",
+      "matched": true,
+      "matchedTitle": "Climb or Swim",
+      "page": 284,
+      "depth": 3,
+      "parents": [
+        "Combat",
+        "Movement",
+        "Movement Types"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "concealment",
+      "label": "Concealment",
+      "matched": true,
+      "matchedTitle": "Concealment",
+      "page": 291,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "cover",
+      "label": "Cover",
+      "matched": true,
+      "matchedTitle": "Cover",
+      "page": 291,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "crawling",
+      "label": "Crawling",
+      "matched": true,
+      "matchedTitle": "Crawl",
+      "page": 284,
+      "depth": 3,
+      "parents": [
+        "Combat",
+        "Movement",
+        "Movement Types"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "criticalHit",
+      "label": "Critical Hit",
+      "matched": true,
+      "matchedTitle": "Critical Hit",
+      "page": 90,
+      "depth": 2,
+      "parents": [
+        "Classes",
+        "Abilities"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "damagingTerrain",
+      "label": "Damaging Terrain",
+      "matched": true,
+      "matchedTitle": "Damaging Terrain",
+      "page": 285,
+      "depth": 2,
+      "parents": [
+        "Combat",
+        "Movement"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "damageAndEffect",
+      "label": "Damage and Effect",
+      "matched": true,
+      "matchedTitle": "Damage",
+      "page": 292,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "difficultTerrain",
+      "label": "Difficult Terrain",
+      "matched": true,
+      "matchedTitle": "Difficult Terrain",
+      "page": 285,
+      "depth": 2,
+      "parents": [
+        "Combat",
+        "Movement"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "duringTheMove",
+      "label": "During the Move",
+      "matched": true,
+      "matchedTitle": "Movement",
+      "page": 282,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "dyingAndDeath",
+      "label": "Dying and Death",
+      "matched": true,
+      "matchedTitle": "Dying and Death",
+      "page": 293,
+      "depth": 2,
+      "parents": [
+        "Combat",
+        "Stamina"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "falling",
+      "label": "Falling",
+      "matched": true,
+      "matchedTitle": "Falling",
+      "page": 284,
+      "depth": 2,
+      "parents": [
+        "Combat",
+        "Movement"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "flanking",
+      "label": "Flanking",
+      "matched": true,
+      "matchedTitle": "Flanking",
+      "page": 291,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "flying",
+      "label": "Flying",
+      "matched": true,
+      "matchedTitle": "Fly",
+      "page": 284,
+      "depth": 3,
+      "parents": [
+        "Combat",
+        "Movement",
+        "Movement Types"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "forcedMovement",
+      "label": "Forced Movement",
+      "matched": true,
+      "matchedTitle": "Forced Movement",
+      "page": 285,
+      "depth": 2,
+      "parents": [
+        "Combat",
+        "Movement"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "hiding",
+      "label": "Hiding",
+      "matched": true,
+      "matchedTitle": "Hiding",
+      "page": 273,
+      "depth": 2,
+      "parents": [
+        "Tests",
+        "Hide and Sneak"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "highGround",
+      "label": "High Ground",
+      "matched": true,
+      "matchedTitle": "High Ground",
+      "page": 285,
+      "depth": 2,
+      "parents": [
+        "Combat",
+        "Movement"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "hover",
+      "label": "Hover",
+      "matched": true,
+      "matchedTitle": "Hover",
+      "page": 284,
+      "depth": 3,
+      "parents": [
+        "Combat",
+        "Movement",
+        "Movement Types"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "invisibility",
+      "label": "Invisible Creatures",
+      "matched": true,
+      "matchedTitle": "Invisible Creatures",
+      "page": 291,
+      "depth": 2,
+      "parents": [
+        "Combat",
+        "Concealment"
+      ],
+      "parentInRules": "Concealment"
+    },
+    {
+      "key": "jumping",
+      "label": "Jumping",
+      "matched": true,
+      "matchedTitle": "Jump",
+      "page": 284,
+      "depth": 3,
+      "parents": [
+        "Combat",
+        "Movement",
+        "Movement Types"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "mainAction",
+      "label": "Main Action",
+      "matched": true,
+      "matchedTitle": "Main Actions",
+      "page": 289,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "mountedCombat",
+      "label": "Mounted Combat",
+      "matched": true,
+      "matchedTitle": "Mounted Combat",
+      "page": 294,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "movement",
+      "label": "Movement",
+      "matched": true,
+      "matchedTitle": "Movement",
+      "page": 282,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "naturalRoll",
+      "label": "Natural Roll",
+      "matched": true,
+      "matchedTitle": "Natural Roll",
+      "page": 20,
+      "depth": 3,
+      "parents": [
+        "The Basics",
+        "Power Rolls",
+        "Making a Power Roll"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "opportunityAttack",
+      "label": "Opportunity Attack",
+      "matched": true,
+      "matchedTitle": "Opportunity Attacks",
+      "page": 290,
+      "depth": 2,
+      "parents": [
+        "Combat",
+        "Free Strikes"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "rollVsMultipleCreatures",
+      "label": "Roll vs Multiple Creatures",
+      "matched": true,
+      "matchedTitle": "Roll Against Multiple Creatures",
+      "page": 90,
+      "depth": 2,
+      "parents": [
+        "Classes",
+        "Abilities"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "shifting",
+      "label": "Shifting",
+      "matched": true,
+      "matchedTitle": "Shifting",
+      "page": 283,
+      "depth": 2,
+      "parents": [
+        "Combat",
+        "Movement"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "slammingCreatures",
+      "label": "Slamming into Creatures",
+      "matched": true,
+      "matchedTitle": "Slamming into Creatures",
+      "page": 286,
+      "depth": 3,
+      "parents": [
+        "Combat",
+        "Movement",
+        "Forced Movement"
+      ],
+      "parentInRules": "Forced Movement"
+    },
+    {
+      "key": "slammingObjects",
+      "label": "Slamming into Objects",
+      "matched": true,
+      "matchedTitle": "Slamming Into Objects",
+      "page": 287,
+      "depth": 3,
+      "parents": [
+        "Combat",
+        "Movement",
+        "Forced Movement"
+      ],
+      "parentInRules": "Forced Movement"
+    },
+    {
+      "key": "sneaking",
+      "label": "Sneaking",
+      "matched": true,
+      "matchedTitle": "Sneaking",
+      "page": 274,
+      "depth": 2,
+      "parents": [
+        "Tests",
+        "Hide and Sneak"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "suffocating",
+      "label": "Suffocating",
+      "matched": true,
+      "matchedTitle": "Suffocating",
+      "page": 293,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "surprise",
+      "label": "Surprise",
+      "matched": true,
+      "matchedTitle": "Determine Surprise",
+      "page": 281,
+      "depth": 2,
+      "parents": [
+        "Combat",
+        "Combat Round"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "takingATurn",
+      "label": "Taking a Turn",
+      "matched": true,
+      "matchedTitle": "Taking a Turn",
+      "page": 282,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "teleporting",
+      "label": "Teleporting",
+      "matched": true,
+      "matchedTitle": "Teleport",
+      "page": 284,
+      "depth": 3,
+      "parents": [
+        "Combat",
+        "Movement",
+        "Movement Types"
+      ],
+      "parentInRules": "Movement"
+    },
+    {
+      "key": "underwaterCombat",
+      "label": "Underwater Combat",
+      "matched": true,
+      "matchedTitle": "Underwater Combat",
+      "page": 293,
+      "depth": 1,
+      "parents": [
+        "Combat"
+      ],
+      "parentInRules": null
+    },
+    {
+      "key": "wieldingTreasures",
+      "label": "Wielding Treasures",
+      "matched": true,
+      "matchedTitle": "Wielding Treasures",
+      "page": 329,
+      "depth": 3,
+      "parents": [
+        "Rewards",
+        "Treasures",
+        "Found, Earned, or Crafted"
+      ],
+      "parentInRules": null
+    }
+  ]
+}

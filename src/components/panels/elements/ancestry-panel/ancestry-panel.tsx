@@ -1,22 +1,18 @@
-import { Segmented, Space } from 'antd';
 import { Ancestry } from '@/models/ancestry';
-import { AncestryLogic } from '@/logic/ancestry-logic';
-import { Collections } from '@/utils/collections';
-import { CulturePanel } from '@/components/panels/elements/culture-panel/culture-panel';
-import { Empty } from '@/components/controls/empty/empty';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
+import { Feature, FeatureData } from '@/models/feature';
+import { FeatureConfigPanel } from '@/components/panels/feature-config-panel/feature-config-panel';
+import { FeatureLogic } from '@/logic/feature-logic';
 import { FeaturePanel } from '@/components/panels/elements/feature-panel/feature-panel';
-import { Field } from '@/components/controls/field/field';
+import { FeatureType } from '@/enums/feature-type';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { PanelMode } from '@/enums/panel-mode';
-import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
-import { SheetFormatter } from '@/logic/classic-sheet/sheet-formatter';
+import { ReactNode } from 'react';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
-import { useState } from 'react';
 
 import './ancestry-panel.scss';
 
@@ -25,101 +21,10 @@ interface Props {
 	sourcebooks: Sourcebook[];
 	hero?: Hero;
 	mode?: PanelMode;
+	setFeatureData?: (featureID: string, data: FeatureData) => void;
 }
 
 export const AncestryPanel = (props: Props) => {
-	const [ page, setPage ] = useState<string>('overview');
-
-	const getOverview = () => {
-		return (
-			<Markdown text={props.ancestry.description} />
-		);
-	};
-
-	const getSignatureFeatures = () => {
-		const features = Collections.sort(AncestryLogic.getSignatureFeatures(props.ancestry), f => f.name);
-
-		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				{
-					features.map(f => (
-						<SelectablePanel key={f.id}>
-							<FeaturePanel feature={f} hero={props.hero} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
-						</SelectablePanel>
-					))
-				}
-				{features.length === 0 ? <Empty /> : null}
-			</Space>
-		);
-	};
-
-	const getPurchasedFeatures = () => {
-		const features = Collections.sort(AncestryLogic.getPurchasedFeatures(props.ancestry), f => f.feature.name);
-
-		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				<Field label='Ancestry Points' value={props.ancestry.ancestryPoints} />
-				{
-					features.map(f => (
-						<SelectablePanel key={f.feature.id}>
-							<FeaturePanel feature={f.feature} cost={f.value} hero={props.hero} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
-						</SelectablePanel>
-					))
-				}
-				{features.length === 0 ? <Empty /> : null}
-			</Space>
-		);
-	};
-
-	const getCulture = () => {
-		return props.ancestry.culture ?
-			<CulturePanel culture={props.ancestry.culture} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
-			:
-			<Empty />;
-	};
-
-	const getContent = () => {
-		let content = null;
-		switch (page) {
-			case 'overview':
-				content = getOverview();
-				break;
-			case 'signature':
-				content = getSignatureFeatures();
-				break;
-			case 'purchased':
-				content = getPurchasedFeatures();
-				break;
-			case 'culture':
-				content = getCulture();
-				break;
-		}
-
-		const pages = [
-			{ value: 'overview', label: 'Overview' },
-			{ value: 'signature', label: 'Signature' },
-			{ value: 'purchased', label: 'Purchased' }
-		];
-
-		if (props.ancestry.culture) {
-			pages.push({ value: 'culture', label: 'Culture' });
-		}
-
-		return (
-			<>
-				<Segmented
-					style={{ marginBottom: '20px' }}
-					block={true}
-					options={pages}
-					value={page}
-					onChange={setPage}
-					onClick={e => e.stopPropagation()}
-				/>
-				{content}
-			</>
-		);
-	};
-
 	const tags = [];
 	if (props.sourcebooks.length > 0) {
 		const sourcebookType = SourcebookLogic.getAncestrySourcebook(props.sourcebooks, props.ancestry)?.type || SourcebookType.Official;
@@ -139,13 +44,57 @@ export const AncestryPanel = (props: Props) => {
 		);
 	}
 
+	// Render a single feature, choosing config-panel vs info-panel based on edit mode + feature type.
+	// For Multiple containers, recurse into sub-features so nested choices appear inline as configurators.
+	const renderFeature = (feature: Feature, cost?: number): ReactNode[] => {
+		const editing = !!(props.setFeatureData && props.hero);
+
+		if (editing && FeatureLogic.isChoice(feature)) {
+			return [
+				<FeatureConfigPanel
+					key={feature.id}
+					feature={feature}
+					hero={props.hero!}
+					sourcebooks={props.sourcebooks}
+					setData={props.setFeatureData!}
+				/>
+			];
+		}
+
+		if (editing && feature.type === FeatureType.Multiple) {
+			return feature.data.features.flatMap(sub => renderFeature(sub));
+		}
+
+		return [
+			<FeaturePanel
+				key={feature.id}
+				feature={feature}
+				cost={cost}
+				hero={props.hero}
+				sourcebooks={props.sourcebooks}
+				mode={PanelMode.Full}
+			/>
+		];
+	};
+
 	return (
 		<ErrorBoundary>
-			<div className='ancestry-panel' id={SheetFormatter.getPageId('ancestry', props.ancestry.id)}>
+			<div className='ancestry-panel'>
 				<HeaderText level={1} tags={tags}>
 					{props.ancestry.name || 'Unnamed Ancestry'}
 				</HeaderText>
-				{getContent()}
+				<Markdown text={props.ancestry.description} />
+				{props.ancestry.features.flatMap(f => renderFeature(f))}
+				{
+					props.ancestry.culture ?
+						<FeaturePanel
+							feature={props.ancestry.culture.language}
+							hero={props.hero}
+							sourcebooks={props.sourcebooks}
+							mode={PanelMode.Full}
+						/>
+						: null
+				}
 			</div>
 		</ErrorBoundary>
 	);

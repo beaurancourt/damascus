@@ -6,10 +6,9 @@ import { Utils } from '@/utils/utils';
 import localforage from 'localforage';
 
 export enum DataStorageKeys {
-	Heroes = 'forgesteel-heroes',
-	Sourcebooks = 'forgesteel-homebrew-settings',
-	Session = 'forgesteel-session',
-	HiddenSourcebookIDs = 'forgesteel-hidden-setting-ids'
+	Heroes = 'damascus-heroes',
+	Sourcebooks = 'damascus-homebrew-settings',
+	Session = 'damascus-session'
 };
 
 export class LocalService implements StorageService {
@@ -122,18 +121,5 @@ export class LocalService implements StorageService {
 
 	putSession(session: Session): Promise<Session> {
 		return localforage.setItem<Session>(DataStorageKeys.Session, session);
-	}
-
-	getHiddenSourcebookIDs(): Promise<string[] | null> {
-		try {
-			return localforage.getItem<string[]>(DataStorageKeys.HiddenSourcebookIDs);
-		} catch (error) {
-			console.error('Error getting hidden sourcebook ids', error);
-			return Promise.resolve(null);
-		}
-	}
-
-	putHiddenSourcebookIDs(ids: string[]): Promise<string[]> {
-		return localforage.setItem<string[]>(DataStorageKeys.HiddenSourcebookIDs, ids);
 	}
 };

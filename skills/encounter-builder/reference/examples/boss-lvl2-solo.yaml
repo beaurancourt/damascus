@@ -1,0 +1,37 @@
+# Solo boss fight for 4 level-2 heroes.
+# Hero value = 8, effectiveHeroes = 4, maxHard = (4+3)*8 = 56.
+# The Thorn Dragon is EV 48 — sits just under Hard, leaves no room for adds.
+# This is the textbook "Solo monster of EV ~ Standard budget" pattern.
+
+name: The Thornwood Wyrm
+description: |
+  Hard solo encounter for 4 level-2 heroes. EV 48 / maxHard 56.
+  Final encounter for the "Thornwood Hunt" arc.
+
+groups:
+  - name: The wyrm
+    slots:
+      - monster: dragon-thorn-1
+        count: 1
+
+notes:
+  tactics: |
+    The dragon opens with a flyover; the heroes hear her *before* they see her.
+    Round 1 she stays high, picking off whoever moved out of cover.
+    Round 2+ she drops in to grapple the tank.
+    If reduced below half stamina, she retreats to the canopy to recover.
+  ending: |
+    The wyrm is too cunning to fight to the death. At one-quarter stamina she
+    flees north; she becomes a recurring antagonist if the heroes don't pursue.
+
+sections:
+  - title: Terrain
+    body: |
+      Thornwood clearing, 12 squares across. Heavy bramble walls (cover, difficult).
+      A toppled menhir in the center (Large object, climbable). Mist obscures sight
+      beyond 6 squares.
+  - title: Stakes
+    body: |
+      The wyrm has stolen 3 children from the village. If the fight goes past
+      round 5 without progress, she calls in two giant-spider mounts as a second
+      group — convert this encounter to Extreme.
