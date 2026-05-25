@@ -283,7 +283,7 @@ export const EncounterEditPanel = (props: Props) => {
 				}
 				{
 					encounter.groups.length === 0 ?
-						<div className='ds-text dimmed-text centered-text'>No groups yet — pick a monster below.</div>
+						<div className='ds-text dimmed-text centered-text'>No groups yet — pick a monster from the picker.</div>
 						: null
 				}
 			</Space>
@@ -336,7 +336,7 @@ export const EncounterEditPanel = (props: Props) => {
 							{encounter.terrain.map(slot => getTerrain(slot))}
 							{
 								encounter.terrain.length === 0 ?
-									<div className='ds-text dimmed-text centered-text'>Add terrain from the list below.</div>
+									<div className='ds-text dimmed-text centered-text'>Add terrain from the picker.</div>
 									: null
 							}
 						</div>
@@ -588,56 +588,67 @@ export const EncounterEditPanel = (props: Props) => {
 						}
 					</div>
 
-					<section className='encounter-section'>
-						<HeaderText>Encounter</HeaderText>
-						{getNameAndDescriptionSection()}
-					</section>
+					<div className='encounter-grid'>
+						<div className='encounter-workspace'>
+							<section className='encounter-section'>
+								<HeaderText>Encounter</HeaderText>
+								{getNameAndDescriptionSection()}
+							</section>
 
-					<section className='encounter-section'>
-						<HeaderText
-							extra={
-								<Button
-									type='text'
-									size='small'
-									icon={<PlusOutlined />}
-									onClick={addGroup}
+							<section className='encounter-section'>
+								<HeaderText
+									extra={
+										<Button
+											type='text'
+											size='small'
+											icon={<PlusOutlined />}
+											onClick={addGroup}
+										>
+											Add group
+										</Button>
+									}
 								>
-									Add group
-								</Button>
-							}
-						>
-							Monster Groups
-						</HeaderText>
-						{getMonstersSection()}
-						<HeaderText
-							level={3}
-							extra={
-								<Button
-									type='text'
-									size='small'
-									icon={filterVisible ? <FilterFilled style={{ color: '#c9a45a' }} /> : <FilterOutlined />}
-									onClick={() => setFilterVisible(!filterVisible)}
+									Monster Groups
+								</HeaderText>
+								{getMonstersSection()}
+							</section>
+
+							<section className='encounter-section'>
+								<HeaderText>Terrain</HeaderText>
+								{getTerrainSection()}
+							</section>
+
+							<section className='encounter-section'>
+								<HeaderText>Malice</HeaderText>
+								{getMaliceSection()}
+							</section>
+						</div>
+
+						<aside className='encounter-pickers'>
+							<section className='encounter-section'>
+								<HeaderText
+									extra={
+										<Button
+											type='text'
+											size='small'
+											icon={filterVisible ? <FilterFilled style={{ color: '#c9a45a' }} /> : <FilterOutlined />}
+											onClick={() => setFilterVisible(!filterVisible)}
+										>
+											Filter
+										</Button>
+									}
 								>
-									Filter
-								</Button>
-							}
-						>
-							Add a monster
-						</HeaderText>
-						{getMonsterListSection()}
-					</section>
+									Add a Monster
+								</HeaderText>
+								{getMonsterListSection()}
+							</section>
 
-					<section className='encounter-section'>
-						<HeaderText>Terrain</HeaderText>
-						{getTerrainSection()}
-						<HeaderText level={3}>Add terrain</HeaderText>
-						{getTerrainListSection()}
-					</section>
-
-					<section className='encounter-section'>
-						<HeaderText>Malice</HeaderText>
-						{getMaliceSection()}
-					</section>
+							<section className='encounter-section'>
+								<HeaderText>Add Terrain</HeaderText>
+								{getTerrainListSection()}
+							</section>
+						</aside>
+					</div>
 				</div>
 			</div>
 		</ErrorBoundary>

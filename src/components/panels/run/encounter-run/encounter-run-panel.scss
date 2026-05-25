@@ -1,8 +1,160 @@
+// =============================================================================
+// Encounter Runner — Tactical Field Dossier (GM combat tracker)
+// =============================================================================
+// Same visual grammar as the builder and hero sheet: Merriweather serif,
+// bronze accents, dark surface, color-coded threat tiers carried over from
+// the builder. Two-column on wide screens already (Flex inline in TSX) —
+// this stylesheet pulls the columns and their controls into the dossier
+// aesthetic without touching the layout structure.
+
+@import '@/colors.scss';
+
 .encounter-run-panel {
 	display: flex;
 	flex-direction: column;
 	padding: 0 20px;
 	height: 100%;
+
+	// --- Encounter name plate -------------------------------------------------
+	// Big serif uppercase title with bronze double-rule, matching the builder
+	// and hero sheet name headers.
+	> .ant-flex > div > .header-text-panel {
+		margin: 4px 0 14px !important;
+		padding: 6px 0 10px !important;
+		border-bottom: 1px solid $bronze !important;
+		position: relative;
+
+		&::after {
+			content: '';
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: -4px;
+			height: 1px;
+			background: $bronze-dim;
+		}
+
+		.header-text {
+			font-family: 'Merriweather', 'PT Sans', serif !important;
+			font-weight: 700;
+			font-size: 20px;
+			letter-spacing: 4px;
+			text-transform: uppercase;
+			color: rgba(255, 255, 255, 0.95);
+		}
+	}
+
+	// --- Round / Malice control row -------------------------------------------
+	// Three-column row at the top of the main column. Make it feel like a
+	// tactical readout: bronze-bordered card with serif uppercase labels.
+	.encounter-control-section,
+	.ant-flex > div > .stats-row {
+		background: linear-gradient(180deg, rgba(201, 164, 90, 0.06), rgba(201, 164, 90, 0.01));
+		border: 1px solid $bronze-dim;
+		border-radius: 3px;
+	}
+
+	// --- Combatants tab section ----------------------------------------------
+	// The Combatants/Terrain tab strip. Bronze accent for the active tab.
+	.ant-tabs {
+		.ant-tabs-nav::before {
+			border-bottom-color: $bronze-dim !important;
+		}
+
+		.ant-tabs-tab {
+			font-family: 'Merriweather', serif;
+			font-size: 11px;
+			letter-spacing: 2px;
+			text-transform: uppercase;
+			padding: 8px 0;
+
+			.ant-tabs-tab-btn {
+				color: rgba(255, 255, 255, 0.6) !important;
+			}
+
+			&:hover .ant-tabs-tab-btn {
+				color: rgba(255, 255, 255, 0.85) !important;
+			}
+
+			&.ant-tabs-tab-active .ant-tabs-tab-btn {
+				color: $bronze !important;
+			}
+		}
+
+		.ant-tabs-ink-bar {
+			background: $bronze !important;
+		}
+	}
+
+	// --- Section headers inside the combatants column -------------------------
+	// ACTING NOW / READY TO ACT / FINISHED — match the dossier section rule.
+	.ant-tabs-content > .ant-tabs-tabpane,
+	.ant-tabs-tabpane > .ant-space,
+	.ant-tabs-tabpane > div > .ant-space {
+		.header-text-panel {
+			margin: 16px 0 10px;
+			padding-bottom: 6px;
+			border-bottom: 1px solid $bronze;
+			position: relative;
+
+			&::after {
+				content: '';
+				position: absolute;
+				left: 0;
+				right: 0;
+				bottom: -4px;
+				height: 1px;
+				background: $bronze-dim;
+			}
+
+			.header-text {
+				font-family: 'Merriweather', 'PT Sans', serif;
+				font-weight: 700;
+				font-size: 12px;
+				letter-spacing: 2.5px;
+				text-transform: uppercase;
+				color: rgba(255, 255, 255, 0.92);
+			}
+		}
+	}
+
+	// --- Add hero / Add monster buttons --------------------------------------
+	// Wide screens use .ant-tabs-extra-content; narrow screens render a plain
+	// flex div inside the tab body — cover both.
+	.ant-tabs-extra-content .ant-btn,
+	.ant-tabs-tabpane > div > .ant-flex .ant-btn,
+	.ant-tabs-tabpane > .ant-tabs-tabpane-active > div > .ant-btn,
+	.ant-tabs-tabpane > div[style*="flex"] > .ant-btn {
+		font-family: 'Merriweather', serif;
+		font-size: 10px;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+		color: $bronze;
+		border: 1px solid $bronze-dim;
+		background: transparent;
+		border-radius: 3px;
+
+		&:hover:not(:disabled) {
+			border-color: $bronze;
+			background: rgba(201, 164, 90, 0.08);
+			color: $bronze;
+		}
+	}
+
+	// --- Sidebar (Reminders / Notes / Difficulty) ----------------------------
+	// The right column on wide screens. Soft vertical separator + reminders
+	// alert in bronze tint so it doesn't shout from a blue background.
+	.ant-flex > div:last-child {
+		.ant-alert-info {
+			background: rgba(201, 164, 90, 0.06);
+			border: 1px solid rgba(201, 164, 90, 0.3);
+			color: rgba(255, 235, 200, 0.9);
+
+			.ant-alert-icon {
+				color: $bronze;
+			}
+		}
+	}
 
 	&.is-small {
 		.encounter-groups {
@@ -24,14 +176,28 @@
 	.initiative-button {
 		flex: 0 0 270px;
 		height: 60px;
+		font-family: 'Merriweather', serif;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+		background: transparent;
+		border: 1px solid $bronze;
+		color: $bronze;
 
 		.maintext {
-			font-weight: 600;
+			font-weight: 700;
+			font-size: 12px;
 		}
 
 		.subtext {
+			font-family: 'PT Sans', sans-serif;
 			font-size: 10px;
+			text-transform: none;
+			letter-spacing: 0.3px;
 			opacity: 0.75;
+		}
+
+		&:hover:not(:disabled) {
+			background: rgba(201, 164, 90, 0.1);
 		}
 	}
 
@@ -39,5 +205,20 @@
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
+	}
+}
+
+// =============================================================================
+// LIGHT THEME — softer surfaces, same bronze accents
+// =============================================================================
+html:not([data-theme="dark"]) {
+	.encounter-run-panel {
+		> .ant-flex > div > .header-text-panel .header-text { color: rgba(0, 0, 0, 0.88); }
+		.ant-tabs-tabpane .header-text-panel .header-text { color: rgba(0, 0, 0, 0.88); }
+
+		.ant-flex > div:last-child .ant-alert-info {
+			background: rgba(201, 164, 90, 0.06);
+			color: rgba(120, 90, 30, 0.9);
+		}
 	}
 }

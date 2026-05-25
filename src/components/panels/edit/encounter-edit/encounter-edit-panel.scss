@@ -35,6 +35,56 @@ $bronze-dim: rgba(201, 164, 90, 0.4);
 			padding: 16px 16px 80px;
 		}
 
+		// On wide screens (GM laptop/desktop) split the builder into
+		// workspace (left) + picker (right). Stacks back to one column
+		// below 1024px so it still works on tablet/phone.
+		@media (min-width: 1024px) {
+			max-width: 1400px;
+		}
+
+		.encounter-grid {
+			display: flex;
+			flex-direction: column;
+			gap: 28px;
+
+			@media (min-width: 1024px) {
+				flex-direction: row;
+				align-items: flex-start;
+				gap: 40px;
+			}
+		}
+
+		.encounter-workspace {
+			display: flex;
+			flex-direction: column;
+			gap: 28px;
+
+			@media (min-width: 1024px) {
+				flex: 1 1 0;
+				min-width: 0;
+			}
+		}
+
+		.encounter-pickers {
+			display: flex;
+			flex-direction: column;
+			gap: 28px;
+
+			@media (min-width: 1024px) {
+				flex: 0 0 420px;
+				position: sticky;
+				top: 96px;  // sits below the pinned Threat Assessment
+				max-height: calc(100vh - 120px);
+				overflow-y: auto;
+				padding-right: 4px;
+
+				// Subtle vertical separator from the workspace column.
+				border-left: 1px solid rgba(201, 164, 90, 0.15);
+				padding-left: 40px;
+				margin-left: 0;
+			}
+		}
+
 		// Override generic HeaderText inside the encounter stream to feel like
 		// dossier section labels: serif, wider letter-spacing, double-rule below.
 		.encounter-section > .header-text-panel.level-2 {
