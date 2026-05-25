@@ -1,7 +1,78 @@
+// =============================================================================
+// Hero Sheet — Tactical Field Dossier
+// =============================================================================
+// Same visual grammar as the encounter builder: Merriweather serif, warm bronze
+// accents, dark-first surfaces. Ability cards keep their color-coded left edge
+// (red main / blue maneuver / green trigger / orange move) so a player can
+// thumb the sheet and find the section they want by color alone.
+
+@import '@/colors.scss';
+
 .hero-panel {
 	height: 100%;
 	display: flex;
 	flex-direction: column;
+
+	// --- Hero name plate ------------------------------------------------------
+	// The top HeaderText becomes the "name plate" — serif, generous tracking,
+	// bronze double-rule below, hero portrait pinned to the right via ribbon.
+	> .header-text-panel {
+		margin: 4px 6px 14px !important;
+		padding: 6px 0 10px !important;
+		border-bottom: 1px solid $bronze !important;
+		position: relative;
+
+		&::after {
+			content: '';
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: -4px;
+			height: 1px;
+			background: $bronze-dim;
+		}
+
+		.header-text {
+			font-family: 'Merriweather', 'PT Sans', serif !important;
+			font-weight: 700;
+			font-size: 22px;
+			letter-spacing: 4px;
+			text-transform: uppercase;
+			color: rgba(255, 255, 255, 0.95);
+		}
+
+		.ant-tag {
+			font-family: 'Merriweather', serif;
+			font-size: 9px;
+			letter-spacing: 2px;
+			text-transform: uppercase;
+			padding: 2px 8px;
+			background: transparent;
+			border: 1px solid $bronze-dim;
+			color: $bronze;
+		}
+
+		// "Tools" button → bronze outline pill instead of stark white.
+		.ant-btn {
+			font-family: 'Merriweather', serif;
+			font-size: 10px;
+			letter-spacing: 1.5px;
+			text-transform: uppercase;
+			padding: 4px 12px;
+			height: auto;
+			border-radius: 3px;
+			border: 1px solid $bronze-dim;
+			background: transparent;
+			color: $bronze;
+			box-shadow: none;
+
+			&:hover {
+				border-color: $bronze;
+				background: rgba(201, 164, 90, 0.08);
+				color: $bronze;
+			}
+		}
+	}
 
 	.hero-main-section {
 		flex: 1 1 0;
@@ -20,59 +91,77 @@
 				flex: 0 0 auto;
 			}
 
-			.hero-sheet-chip-strip {
-				flex: 1 1 auto;
-				display: flex;
-				align-items: center;
-				gap: 6px;
-				overflow-x: auto;
-				padding: 4px 2px;
-				min-height: 40px;
-				scroll-snap-type: x proximity;
-				-webkit-overflow-scrolling: touch;
-				&::-webkit-scrollbar { height: 3px; }
-
-				.hero-sheet-chip {
-					flex: 0 0 auto;
-					padding: 6px 14px;
-					border-radius: 999px;
-					border: 1px solid rgba(127, 127, 127, 0.3);
-					background: white;
-					color: rgba(0, 0, 0, 0.88);
-					font-size: 0.85em;
-					cursor: pointer;
-					white-space: nowrap;
-					scroll-snap-align: start;
-					font-weight: 600;
-
-					&.selected {
-						background: rgb(22, 119, 255);
-						color: white;
-						border-color: rgb(22, 119, 255);
-					}
-				}
-			}
-
 			.center-content {
 				flex: 1 1 0;
 				overflow-x: hidden;
 				overflow-y: auto;
+				padding: 0 6px 80px;
+				max-width: 1100px;
+				width: 100%;
+				margin: 0 auto;
+
+				// All inner section labels — CONDITIONS, MAIN ACTIONS, TRIGGERED
+				// ACTIONS, FREE STRIKES, FEATURES, SKILLS, LANGUAGES — pick up
+				// the dossier section treatment automatically.
+				> .header-text-panel,
+				> .abilities-section > .header-text-panel,
+				> .hero-skills-section > .header-text-panel,
+				> .hero-languages-section > .header-text-panel,
+				.health-panel > .header-text-panel {
+					margin: 18px 0 12px;
+					padding-bottom: 6px;
+					border-bottom: 1px solid $bronze;
+					position: relative;
+
+					&::after {
+						content: '';
+						position: absolute;
+						left: 0;
+						right: 0;
+						bottom: -4px;
+						height: 1px;
+						background: $bronze-dim;
+					}
+
+					.header-text {
+						font-family: 'Merriweather', 'PT Sans', serif;
+						font-weight: 700;
+						font-size: 13px;
+						letter-spacing: 3px;
+						text-transform: uppercase;
+						color: rgba(255, 255, 255, 0.95);
+					}
+
+					.ant-btn {
+						font-family: 'Merriweather', serif;
+						font-size: 10px;
+						letter-spacing: 1.5px;
+						text-transform: uppercase;
+						color: rgba(201, 164, 90, 0.85);
+
+						&:hover {
+							color: $bronze;
+							background: rgba(201, 164, 90, 0.08);
+						}
+					}
+				}
 			}
 		}
 
+		// Hover/clickable tiles pick up bronze instead of antd blue.
 		.overview-tile {
 			padding: 0 10px 10px 10px;
 			border: 1px solid transparent;
-			border-radius: 10px;
+			border-radius: 6px;
 
 			&.danger {
-				border-color: red;
-				background-color: rgba(255, 0, 0, 0.2);
+				border-color: rgba(220, 70, 70, 0.5);
+				background-color: rgba(181, 74, 74, 0.08);
 			}
 
 			&.warning {
-				border-color: orange;
-				background-color: rgba(255, 166, 0, 0.2);
+				border-color: rgba(201, 164, 90, 0.5);
+				background-color: rgba(201, 164, 90, 0.08);
 			}
 
 			&.clickable {
@@ -80,8 +169,8 @@
 
 				@media (hover: hover) {
 					&:hover {
-						border-color: rgb(22, 119, 255);
-						background-color: rgb(230, 244, 255);
+						border-color: $bronze;
+						background-color: rgba(201, 164, 90, 0.1);
 					}
 				}
 			}
@@ -94,20 +183,20 @@
 			flex-wrap: wrap;
 			align-items: center;
 			gap: 6px 14px;
-			border: 1px solid rgba(5, 5, 5, 0.06);
-			border-radius: 5px;
-			background: linear-gradient(rgb(255, 255, 255), rgb(250, 250, 250));
+			border: 1px solid rgba(201, 164, 90, 0.2);
+			border-radius: 3px;
+			background: rgba(0, 0, 0, 0.18);
 			padding: 10px;
-			box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 3px 6px 0 rgba(0, 0, 0, 0.12);
+			box-shadow: none;
 
 			&.danger {
-				border-color: red;
-				background: rgba(255, 0, 0, 0.2);
+				border-color: rgba(220, 70, 70, 0.5);
+				background: rgba(181, 74, 74, 0.08);
 			}
 
 			&.warning {
-				border-color: orange;
-				background: rgba(255, 166, 0, 0.2);
+				border-color: rgba(201, 164, 90, 0.5);
+				background: rgba(201, 164, 90, 0.08);
 			}
 
 			&.clickable {
@@ -115,40 +204,92 @@
 
 				@media (hover: hover) {
 					&:hover {
-						border-color: rgb(22, 119, 255);
-						background: rgb(230, 244, 255);
+						border-color: $bronze;
+						background: rgba(201, 164, 90, 0.08);
 					}
 				}
 			}
 		}
 	}
+
+	// --- Ability metadata tags ------------------------------------------------
+	// Tags inside ability/feature cards — level pills like "Null (level 1)",
+	// resource tags like "Heroic Resource", keyword chips like "Melee/Psionic".
+	// All bronze, all serif uppercase, so they sit consistently against the
+	// dark surface without AntD's default high-contrast white.
+	.center-content {
+		.ant-tag {
+			font-family: 'Merriweather', serif;
+			font-size: 9px;
+			letter-spacing: 1.5px;
+			text-transform: uppercase;
+			padding: 2px 8px;
+			margin: 0 4px 0 0;
+			background: transparent;
+			border: 1px solid rgba(201, 164, 90, 0.4);
+			color: rgba(201, 164, 90, 0.95);
+			border-radius: 2px;
+		}
+
+		// Markdown / running text shouldn't get the chip treatment when it
+		// contains inline antd Tags — those use a 'variant' that we want to
+		// preserve. The above rule already wins for default tags; this just
+		// makes sure inline outlined variants look the same.
+		.ant-tag-borderless,
+		.ant-tag.ant-tag-has-color {
+			background: transparent;
+			border: 1px solid rgba(201, 164, 90, 0.4);
+			color: rgba(201, 164, 90, 0.95);
+		}
+	}
+
+	// --- Skills / Languages ---------------------------------------------------
+	.hero-skills-section,
+	.hero-languages-section {
+		.ds-text {
+			padding: 4px 0;
+			font-family: 'PT Sans', sans-serif;
+			color: rgba(255, 255, 255, 0.85);
+		}
+
+		.ant-tag {
+			font-family: 'Merriweather', serif;
+			font-size: 9px;
+			letter-spacing: 1.5px;
+			text-transform: uppercase;
+			padding: 1px 6px;
+			margin-inline-start: 6px;
+			background: rgba(201, 164, 90, 0.1);
+			border: 1px solid rgba(201, 164, 90, 0.4);
+			color: rgba(201, 164, 90, 0.95);
+		}
+	}
 }
 
-html[data-theme="dark"] {
+// =============================================================================
+// LIGHT THEME — softer surfaces, same bronze accents
+// =============================================================================
+html:not([data-theme="dark"]) {
 	.hero-panel {
-		.hero-main-section {
-			.overview-tile {
-				&.clickable {
-					@media (hover: hover) {
-						&:hover {
-							background-color: rgba(22, 119, 255, 0.2);
-						}
-					}
-				}
+		> .header-text-panel .header-text { color: rgba(0, 0, 0, 0.88); }
+		.center-content {
+			> .header-text-panel .header-text,
+			> .abilities-section > .header-text-panel .header-text,
+			> .hero-skills-section > .header-text-panel .header-text,
+			> .hero-languages-section > .header-text-panel .header-text {
+				color: rgba(0, 0, 0, 0.88);
 			}
+		}
 
-			.selectable-row {
-				border-color: rgba(250, 250, 250, 0.6);
-				background: linear-gradient(rgb(25, 25, 25), rgb(0, 0, 0));
+		.selectable-row {
+			background: linear-gradient(rgb(255, 255, 255), rgb(250, 250, 250));
+			border-color: rgba(201, 164, 90, 0.35);
+		}
 
-				&.clickable {
-					@media (hover: hover) {
-						&:hover {
-							background: linear-gradient(rgb(25, 25, 25), rgb(0, 0, 0));
-						}
-					}
-				}
-			}
+		.hero-skills-section,
+		.hero-languages-section {
+			.ds-text { color: rgba(0, 0, 0, 0.85); }
+			.ant-tag { color: darken($bronze, 22%); }
 		}
 	}
 }

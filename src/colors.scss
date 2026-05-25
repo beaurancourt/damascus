@@ -1,3 +1,9 @@
+// Damascus dossier palette — warm bronze replaces AntD's default blue accent
+// across hero, encounter, and library surfaces.
+$bronze: #c9a45a;
+$bronze-dim: rgba(201, 164, 90, 0.4);
+$bronze-faint: rgba(201, 164, 90, 0.18);
+
 $ability-default: rgb(0, 0, 0);
 $ability-main: rgb(220, 0, 0);
 $ability-maneuver: rgb(0, 128, 255);

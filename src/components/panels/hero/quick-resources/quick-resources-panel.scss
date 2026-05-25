@@ -38,15 +38,18 @@
 	.quick-resources-more {
 		grid-column: 1 / -1;
 		background: transparent;
-		border: 1px dashed rgba(127, 127, 127, 0.35);
-		border-radius: 6px;
+		border: 1px dashed rgba(201, 164, 90, 0.45);
+		border-radius: 3px;
 		padding: 6px 10px;
-		font-size: 0.85em;
+		font-family: 'Merriweather', serif;
+		font-size: 10px;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
 		cursor: pointer;
-		color: rgb(22, 119, 255);
+		color: #c9a45a;
 
 		&:hover {
-			background: rgba(22, 119, 255, 0.08);
+			background: rgba(201, 164, 90, 0.1);
 			border-style: solid;
 		}
 	}

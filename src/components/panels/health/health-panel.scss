@@ -1,4 +1,46 @@
+@import '@/colors.scss';
+
 .health-panel {
+	// Recolor the action stack (Take Damage / Regain Stamina / Spend a Recovery /
+	// Regain a Recovery) to read as dossier-style outlined buttons rather than
+	// AntD's default high-contrast white pill.
+	.ant-btn {
+		font-family: 'Merriweather', serif;
+		font-size: 11px;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+		border: 1px solid $bronze-dim;
+		background: transparent;
+		color: $bronze;
+		border-radius: 3px;
+		box-shadow: none;
+
+		&:hover:not(:disabled) {
+			border-color: $bronze;
+			background: rgba(201, 164, 90, 0.08);
+			color: $bronze;
+		}
+
+		&:disabled {
+			border-color: rgba(201, 164, 90, 0.15);
+			color: rgba(201, 164, 90, 0.35);
+			background: transparent;
+		}
+
+		&.tall-button {
+			.subtext {
+				margin-top: 4px;
+				border-top: 1px solid rgba(201, 164, 90, 0.2);
+				padding-top: 4px;
+				font-family: 'PT Sans', sans-serif;
+				font-size: 10px;
+				letter-spacing: 0.3px;
+				text-transform: none;
+				opacity: 0.7;
+			}
+		}
+	}
+
 	.health-panel-stamina {
 		margin: 20px 0;
 		display: flex;

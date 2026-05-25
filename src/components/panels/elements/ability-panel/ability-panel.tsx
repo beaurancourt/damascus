@@ -311,7 +311,7 @@ export const AbilityPanel = (props: Props) => {
 							<Button
 								type='text'
 								title='Auto-calculate damage, potency, etc'
-								icon={autoCalc ? <ThunderboltFilled style={{ color: 'rgb(22, 119, 255)' }} /> : <ThunderboltOutlined />}
+								icon={autoCalc ? <ThunderboltFilled style={{ color: '#c9a45a' }} /> : <ThunderboltOutlined />}
 								onClick={e => { e.stopPropagation(); setAutoCalc(!autoCalc); }}
 							/>
 							: null

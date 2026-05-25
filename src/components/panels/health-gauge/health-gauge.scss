@@ -1,3 +1,5 @@
+@import '@/colors.scss';
+
 .health-gauge {
 	width: 200px;
 	height: 180px;
@@ -25,12 +27,42 @@
 	.gauge-info {
 		position: absolute;
 		text-align: center;
+		font-family: 'Merriweather', serif;
 		font-size: 13px;
+		letter-spacing: 1px;
+
+		b {
+			font-size: 18px;
+			color: $bronze;
+			letter-spacing: 0;
+		}
+	}
+
+	// Recolor AntD's progress rings from electric blue to warm bronze. The
+	// "exception" (winded) ring keeps its red so it reads as a danger signal.
+	.ant-progress-circle-path {
+		stroke: $bronze !important;
+	}
+
+	.ant-progress-circle-trail {
+		stroke: rgba(255, 255, 255, 0.08) !important;
+	}
+
+	.ant-progress-status-exception .ant-progress-circle-path {
+		stroke: #b54a4a !important;
 	}
 }
 
 html[data-theme="dark"] {
 	.gauge-info {
-		color: rgb(255, 255, 255);
+		color: rgba(255, 255, 255, 0.92);
+	}
+}
+
+html:not([data-theme="dark"]) {
+	.health-gauge {
+		.ant-progress-circle-trail {
+			stroke: rgba(0, 0, 0, 0.08) !important;
+		}
 	}
 }

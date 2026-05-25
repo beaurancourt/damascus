@@ -1,32 +1,35 @@
+@import '@/colors.scss';
+
 .pill {
 	margin: -2px 0;
-	border: 1px solid rgb(22, 119, 255);
+	border: 1px solid $bronze;
 	border-radius: 10px;
-	background-color: rgb(230, 244, 255);
-	padding: 2px 6px;
+	background-color: rgba(201, 164, 90, 0.18);
+	color: $bronze;
+	padding: 2px 8px;
 	font-size: 10px;
-	font-weight: 600;
+	font-weight: 700;
+	letter-spacing: 0.5px;
 	min-width: 38px;
+	white-space: nowrap;
+	flex: 0 0 auto;
 	text-align: center;
-	overflow: hidden;
-	text-overflow: ellipsis;
 
 	&.satisfied {
-		border-color: rgb(22, 119, 0);
-		background-color: rgb(230, 244, 230);
-		color: rgb(22, 119, 0);
+		border-color: #4a9978;
+		background-color: rgba(74, 153, 120, 0.18);
+		color: #6abf99;
 	}
 }
 
-html[data-theme="dark"] {
+html:not([data-theme="dark"]) {
 	.pill {
-		background-color: rgb(230, 244, 255);
-		color: rgba(0, 0, 0, 0.88);
+		background-color: rgba(201, 164, 90, 0.12);
+		color: darken($bronze, 22%);
 
 		&.satisfied {
-			border-color: rgb(22, 119, 0);
-			background-color: rgb(230, 244, 230);
-			color: rgb(22, 119, 0);
+			background-color: rgba(74, 153, 120, 0.12);
+			color: darken(#4a9978, 8%);
 		}
 	}
 }
