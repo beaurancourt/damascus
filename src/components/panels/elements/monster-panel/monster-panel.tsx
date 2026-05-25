@@ -22,7 +22,6 @@ import { MonsterGroup } from '@/models/monster-group';
 import { MonsterLabel } from '@/components/panels/monster-label/monster-label';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterOrganizationType } from '@/enums/monster-organization-type';
-import { MonsterToken } from '@/components/panels/token/token';
 import { PanelMode } from '@/enums/panel-mode';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { Sourcebook } from '@/models/sourcebook';
@@ -123,7 +122,6 @@ export const MonsterPanel = (props: Props) => {
 			<div className={props.mode === PanelMode.Full ? 'monster-panel' : 'monster-panel compact'} style={props.style}>
 				<HeaderText
 					level={1}
-					ribbon={<MonsterToken monster={props.monster} monsterGroup={props.monsterGroup} size={28} />}
 					tags={tags}
 					extra={props.extra}
 				>

@@ -14,7 +14,6 @@ import { MonsterGroup } from '@/models/monster-group';
 import { MonsterHealthPanel } from '@/components/panels/health/health-panel';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
-import { MonsterToken } from '@/components/panels/token/token';
 import { PanelMode } from '@/enums/panel-mode';
 import { Sourcebook } from '@/models/sourcebook';
 import { SummoningInfo } from '@/models/summon';
@@ -109,7 +108,6 @@ export const MonsterModal = (props: Props) => {
 					<div style={{ padding: '0 20px' }}>
 						<HeaderText
 							level={1}
-							ribbon={<MonsterToken monster={monster} monsterGroup={props.monsterGroup} size={28} />}
 							extra={
 								props.updateMonster ?
 									<Button
