@@ -1,1059 +1,288 @@
-import { Alert, Button, Divider, Drawer, Flex, Space, Tabs } from 'antd';
-import { EditFilled, EditOutlined, InfoCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import { Encounter, EncounterGroup } from '@/models/encounter';
-import { EncounterGroupHero, EncounterGroupMonster, EncounterGroupTerrain } from '@/components/panels/encounter-group/encounter-group-panel';
-import { AbilityPanel } from '@/components/panels/elements/ability-panel/ability-panel';
-import { AbilityUsage } from '@/enums/ability-usage';
-import { ButtonGroup } from '@/components/controls/button-group/button-group';
-import { Element } from '@/models/element';
-import { ElementEditPanel } from '../../edit/element-edit/element-edit-panel';
-import { Empty } from '@/components/controls/empty/empty';
+import { Button, Drawer, Flex } from 'antd';
+import { CheckCircleFilled, CheckCircleOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Encounter } from '@/models/encounter';
 import { EncounterDifficultyPanel } from '@/components/panels/encounter-difficulty/encounter-difficulty-panel';
-import { EncounterLogic } from '@/logic/encounter-logic';
 import { EncounterSlot } from '@/models/encounter-slot';
-import { EncounterTurnModal } from '@/components/modals/encounter-turn/encounter-turn-modal';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { FactoryLogic } from '@/logic/factory-logic';
-import { FeaturePanel } from '@/components/panels/elements/feature-panel/feature-panel';
-import { FeatureType } from '@/enums/feature-type';
 import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
-import { Hero } from '@/models/hero';
-import { HeroLogic } from '@/logic/hero-logic';
-import { HeroSelectModal } from '@/components/modals/select/hero-select/hero-select-modal';
-import { HeroVitalsModal } from '@/components/modals/hero-vitals/hero-vitals-modal';
-import { ItemPanel } from '@/components/panels/elements/item-panel/item-panel';
-import { MalicePanel } from '@/components/panels/malice/malice-panel';
-import { Markdown } from '@/components/controls/markdown/markdown';
-import { MinionSlotModal } from '@/components/modals/minion-slot/minion-slot-modal';
 import { Monster } from '@/models/monster';
-import { MonsterGroup } from '@/models/monster-group';
 import { MonsterLogic } from '@/logic/monster-logic';
-import { MonsterModal } from '@/components/modals/monster/monster-modal';
-import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
 import { MonsterSelectModal } from '@/components/modals/select/monster-select/monster-select-modal';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { PanelMode } from '@/enums/panel-mode';
-import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
-import { StatsRow } from '@/components/panels/stats-row/stats-row';
 import { Terrain } from '@/models/terrain';
-import { TerrainModal } from '@/components/modals/terrain/terrain-modal';
+import { TerrainPanel } from '@/components/panels/elements/terrain-panel/terrain-panel';
 import { Utils } from '@/utils/utils';
-import { useIsSmall } from '@/hooks/use-is-small';
-import { useOptions } from '@/contexts/data-context';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import './encounter-run-panel.scss';
-
-interface SelectedMonsterInfo {
-	monster: Monster;
-	monsterGroup?: MonsterGroup;
-	isTeamHero: boolean;
-}
 
 interface Props {
 	encounter: Encounter;
 	sourcebooks: Sourcebook[];
 	onChange: (encounter: Encounter) => void;
-	showTools?: (tool: string) => void;
 }
 
-export const EncounterRunPanel = (props: Props) => {
-	const isSmall = useIsSmall();
-	const options = useOptions();
-	const [ encounter, setEncounter ] = useState<Encounter>(Utils.copy(props.encounter));
-	const [ tab, setTab ] = useState<string>('combatants');
-	const [ showSidebar, setShowSidebar ] = useState<boolean>(!isSmall);
-	const [ addingHeroes, setAddingHeroes ] = useState<boolean>(false);
-	const [ addingMonsters, setAddingMonsters ] = useState<boolean>(false);
-	const [ selectingGroup, setSelectingGroup ] = useState<boolean>(false);
-	const [ selectedMonster, setSelectedMonster ] = useState<SelectedMonsterInfo | null>(null);
-	const [ selectedHero, setSelectedHero ] = useState<Hero | null>(null);
-	const [ selectedTerrain, setSelectedTerrain ] = useState<Terrain | null>(null);
-	const [ selectedMinionSlot, setSelectedMinionSlot ] = useState<EncounterSlot | null>(null);
+// A flat row in the left-column tracker — either a monster slot (a unit:
+// solo, elite, leader, squad of minions, etc.) or a terrain piece.
+type Combatant =
+	| { kind: 'monster'; id: string; groupID: string; slot: EncounterSlot; monsters: Monster[]; name: string; count: number }
+	| { kind: 'terrain'; id: string; terrain: Terrain; name: string };
 
+export const EncounterRunPanel = (props: Props) => {
+	const [ encounter, setEncounter ] = useState<Encounter>(Utils.copy(props.encounter));
+	const [ addingMonsters, setAddingMonsters ] = useState<boolean>(false);
+	const [ focusedID, setFocusedID ] = useState<string | null>(null);
+
+	// Per-combatant refs so clicking the tracker row scrolls the matching stat block.
+	const blockRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+	const commit = (next: Encounter) => {
+		setEncounter(next);
+		props.onChange(next);
+	};
+
+	// Round +/- doubles as the "new round" affordance: bumping the round clears
+	// every group's acted flag so the next round starts clean.
 	const setRound = (value: number) => {
 		const copy = Utils.copy(encounter);
 		copy.round = value;
-		setEncounter(copy);
-		props.onChange(copy);
+		copy.groups.forEach(g => { g.encounterState = 'ready'; });
+		commit(copy);
 	};
 
 	const setMalice = (value: number) => {
 		const copy = Utils.copy(encounter);
 		copy.malice = value;
-		setEncounter(copy);
-		props.onChange(copy);
+		commit(copy);
 	};
 
-	const nextTurn = () => {
-		setSelectingGroup(true);
-	};
-
-	const addHeroes = (heroes: Hero[]) => {
+	const toggleGroupActed = (groupID: string) => {
 		const copy = Utils.copy(encounter);
-		heroes.forEach(h => {
-			h.state.controlledSlots = [];
-			copy.heroes.push(h);
-		});
-		setEncounter(copy);
-		props.onChange(copy);
+		const g = copy.groups.find(gg => gg.id === groupID);
+		if (g) {
+			g.encounterState = g.encounterState === 'finished' ? 'ready' : 'finished';
+		}
+		commit(copy);
 	};
 
-	const addSlot = (monster: Monster) => {
+	const addMonsterAsGroup = (monster: Monster) => {
 		const slot = FactoryLogic.createEncounterSlot(monster.id);
 		slot.count = MonsterLogic.getRoleMultiplier(monster.role.organization);
-
 		while (slot.monsters.length < slot.count) {
-			const monsterCopy = Utils.copy(monster);
-			monsterCopy.id = Utils.guid();
-			slot.monsters.push(monsterCopy);
+			const m = Utils.copy(monster);
+			m.id = Utils.guid();
+			slot.monsters.push(m);
 		}
-
 		const group = FactoryLogic.createEncounterGroup();
 		group.slots.push(slot);
 
 		const copy = Utils.copy(encounter);
 		copy.groups.push(group);
-
-		setEncounter(copy);
-		props.onChange(copy);
+		commit(copy);
 	};
 
-	const getControlSection = () => {
-		const getMainText = () => {
-			if (encounter.heroes.length === 0) {
-				return 'No Heroes';
-			}
-
-			if (!encounter.initiative) {
-				return 'Initiative';
-			}
-
-			if (encounter.groups.every(g => g.encounterState !== 'current') && encounter.heroes.every(h => h.state.encounterState !== 'current')) {
-				return 'Start Turn';
-			}
-
-			return 'End Turn';
-		};
-
-		const getSubText = () => {
-			if (encounter.heroes.length === 0) {
-				return 'To start, add your heroes';
-			}
-
-			if (!encounter.initiative) {
-				return 'Click here to set initiative';
-			}
-
-			if (encounter.groups.every(g => g.encounterState !== 'current') && encounter.heroes.every(h => h.state.encounterState !== 'current')) {
-				return 'Click here to start a turn';
-			}
-
-			return 'Click here to finish this turn';
-		};
-
-		const victory = EncounterLogic.getEncounterVictory(encounter);
-
-		return (
-			<StatsRow>
-				<NumberSpin style={{ flex: '0 0 120px' }} min={0} value={encounter.round} onChange={setRound}>
-					<Field orientation='vertical' label='Round' value={encounter.round || '-'} />
-				</NumberSpin>
-				{
-					victory ?
-						<Alert
-							className='initiative-button'
-							type='info'
-							showIcon={true}
-							title={(
-								<div>
-									The <b>{victory}</b> have won this encounter.
-								</div>
-							)}
-						/>
-						:
-						<Button className='initiative-button' type='primary' disabled={encounter.heroes.length === 0} onClick={nextTurn}>
-							<Space orientation='vertical'>
-								<div className='maintext'>
-									{getMainText()}
-								</div>
-								<div className='subtext'>
-									{getSubText()}
-								</div>
-							</Space>
-						</Button>
-				}
-				<NumberSpin style={{ flex: '0 0 120px' }} min={0} value={encounter.malice} onChange={setMalice}>
-					<Field orientation='vertical' label='Malice' value={encounter.malice} />
-				</NumberSpin>
-			</StatsRow>
-		);
+	const deleteGroup = (groupID: string) => {
+		const copy = Utils.copy(encounter);
+		copy.groups = copy.groups.filter(g => g.id !== groupID);
+		commit(copy);
 	};
 
-	const getCombatants = () => {
-		const getMonsterGroup = (group: EncounterGroup, index: number) => {
-			const duplicateGroup = () => {
-				const copy = Utils.copy(encounter);
-				const index = copy.groups.findIndex(g => g.id === group.id);
-				if (index !== -1) {
-					const groupCopy = Utils.copy(group);
-					groupCopy.id = Utils.guid();
-					groupCopy.slots.forEach(s => {
-						s.id = Utils.guid();
-						MonsterLogic.resetState(s.state);
-						s.monsters.forEach(m => {
-							m.id = Utils.guid();
-							MonsterLogic.resetState(m.state);
-						});
-					});
-					copy.groups.splice(index + 1, 0, groupCopy);
-				}
-				setEncounter(copy);
-				props.onChange(copy);
-			};
+	const deleteTerrain = (terrainID: string) => {
+		const copy = Utils.copy(encounter);
+		copy.terrain.forEach(ts => { ts.terrain = ts.terrain.filter(t => t.id !== terrainID); });
+		copy.terrain = copy.terrain.filter(ts => ts.terrain.length > 0);
+		commit(copy);
+	};
 
-			const deleteGroup = () => {
-				const copy = Utils.copy(encounter);
-				copy.groups = copy.groups.filter(g => g.id !== group.id);
-				setEncounter(copy);
-				props.onChange(copy);
-			};
+	const updateTerrain = (terrain: Terrain) => {
+		const copy = Utils.copy(encounter);
+		copy.terrain.forEach(ts => {
+			const i = ts.terrain.findIndex(t => t.id === terrain.id);
+			if (i !== -1) ts.terrain[i] = terrain;
+		});
+		commit(copy);
+	};
 
-			const setGroupName = (value: string) => {
-				const copy = Utils.copy(encounter);
-				copy.groups
-					.filter(g => g.id === group.id)
-					.forEach(g => g.name = value);
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			const setGroupEncounterState = (value: 'ready' | 'current' | 'finished') => {
-				const copy = Utils.copy(encounter);
-				copy.groups
-					.filter(g => g.id === group.id)
-					.forEach(g => g.encounterState = value);
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			const updateMonster = (monster: Monster) => {
-				const copy = Utils.copy(encounter);
-				copy.groups.forEach(g => {
-					g.slots.forEach(s => {
-						const idx = s.monsters.findIndex(m => m.id === monster.id);
-						if (idx !== -1) s.monsters[idx] = monster;
-					});
-				});
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			return (
-				<EncounterGroupMonster
-					key={group.id}
-					group={group}
-					index={index}
-					encounter={encounter}
-					sourcebooks={props.sourcebooks}
-					onSelectMonster={(monster, monsterGroupID) => {
-						const group = SourcebookLogic.getMonsterGroups(props.sourcebooks).find(g => g.id === monsterGroupID);
-						setSelectedMonster({ monster: monster, monsterGroup: group, isTeamHero: false });
-					}}
-					onSelectMinionSlot={setSelectedMinionSlot}
-					onSetName={(_group, value) => setGroupName(value)}
-					onSetState={(_group, value) => setGroupEncounterState(value)}
-					onDuplicate={duplicateGroup}
-					onDelete={deleteGroup}
-					onMonsterChange={updateMonster}
-				/>
-			);
-		};
-
-		const getHeroGroup = (hero: Hero) => {
-			const deleteHero = (hero: Hero) => {
-				const copy = Utils.copy(encounter);
-				copy.heroes = copy.heroes.filter(h => h.id !== hero.id);
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			const setEncounterState = (hero: Hero, value: 'ready' | 'current' | 'finished') => {
-				const copy = Utils.copy(encounter);
-				copy.heroes
-					.filter(h => h.id === hero.id)
-					.forEach(h => h.state.encounterState = value);
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			const addSquad = (hero: Hero, monster: Monster, count: number) => {
-				const copy = Utils.copy(encounter);
-				copy.heroes
-					.filter(h => h.id === hero.id)
-					.forEach(h => {
-						const slot = FactoryLogic.createEncounterSlotFromMonster(monster);
-						while (slot.monsters.length < count) {
-							const m = Utils.copy(monster);
-							m.id = Utils.guid();
-							slot.monsters.push(m);
-						}
-						h.state.controlledSlots.push(slot);
-					});
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			const removeSquad = (hero: Hero, slotID: string) => {
-				const copy = Utils.copy(encounter);
-				copy.heroes
-					.filter(h => h.id === hero.id)
-					.forEach(h => h.state.controlledSlots = h.state.controlledSlots.filter(s => s.id !== slotID));
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			const addMonsterToSquad = (hero: Hero, slotID: string) => {
-				const monsters = [
-					...HeroLogic.getCompanions(hero),
-					...HeroLogic.getRetainers(hero),
-					...HeroLogic.getSummons(hero).map(s => s.monster)
-				];
-
-				const copy = Utils.copy(encounter);
-				copy.heroes
-					.filter(h => h.id === hero.id)
-					.forEach(h => {
-						h.state.controlledSlots
-							.filter(s => s.id === slotID)
-							.forEach(slot => {
-								const original = monsters.find(m => m.id === slot.monsterID);
-								if (original) {
-									const m = Utils.copy(original);
-									m.id = Utils.guid();
-									slot.monsters.push(m);
-								}
-							});
-					});
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			const updateHero = (updated: Hero) => {
-				const copy = Utils.copy(encounter);
-				const index = copy.heroes.findIndex(h => h.id === updated.id);
-				if (index !== -1) {
-					copy.heroes[index] = updated;
-				}
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			return (
-				<EncounterGroupHero
-					key={hero.id}
-					hero={hero}
-					encounter={encounter}
-					sourcebooks={props.sourcebooks}
-					onSelect={setSelectedHero}
-					onSelectMonster={(monster, monsterGroupID) => {
-						const group = SourcebookLogic.getMonsterGroups(props.sourcebooks).find(g => g.id === monsterGroupID);
-						setSelectedMonster({ monster: monster, monsterGroup: group, isTeamHero: true });
-					}}
-					onSelectMinionSlot={setSelectedMinionSlot}
-					onSetState={setEncounterState}
-					onAddSquad={addSquad}
-					onAddMonsterToSquad={addMonsterToSquad}
-					onRemoveSquad={removeSquad}
-					onDelete={deleteHero}
-					onHeroChange={updateHero}
-				/>
-			);
-		};
-
-		const sections = [ 'current', 'ready', 'finished' ];
-		if (options.showDefeatedCombatants) {
-			sections.push('defeated');
+	const focusBlock = (id: string) => {
+		setFocusedID(id);
+		const el = blockRefs.current[id];
+		if (el) {
+			el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}
-
-		const combatants = EncounterLogic.getCombatants(encounter);
-
-		return (
-			<div className='encounter-groups'>
-				{
-					sections.map(section => {
-						let heading = '';
-						switch (section) {
-							case 'current':
-								heading = 'Acting Now';
-								break;
-							case 'ready':
-								heading = 'Ready To Act';
-								break;
-							case 'finished':
-								heading = 'Finished';
-								break;
-							case 'defeated':
-								heading = 'Defeated';
-								break;
-						}
-
-						return (
-							<div key={section}>
-								<HeaderText>{heading}</HeaderText>
-								{
-									combatants
-										.filter(c => c.section === section)
-										.map(c => {
-											switch (c.type) {
-												case 'group': {
-													const group = encounter.groups.find(g => g.id === c.id);
-													return group ? getMonsterGroup(group, encounter.groups.indexOf(group)) : null;
-												}
-												case 'hero': {
-													const hero = encounter.heroes.find(h => h.id === c.id);
-													return hero ? getHeroGroup(hero) : null;
-												}
-											}
-										})
-								}
-								{
-									combatants.filter(c => c.section === section).length === 0 ?
-										<div className='ds-text dimmed-text'>No one</div>
-										: null
-								}
-							</div>
-						);
-					})
-				}
-			</div>
-		);
 	};
 
-	const getTerrain = () => {
-		if (encounter.terrain.length === 0) {
-			return (
-				<Empty />
-			);
-		}
-
-		const getTerrainSlot = (terrain: Terrain) => {
-			const duplicateTerrain = () => {
-				const copy = Utils.copy(encounter);
-				copy.terrain.forEach(ts => {
-					if (ts.terrain.map(t => t.id).includes(terrain.id)) {
-						const terrainCopy = Utils.copy(terrain);
-						terrainCopy.id = Utils.guid();
-						terrainCopy.state.staminaDamage = 0;
-						ts.terrain.push(terrainCopy);
-					}
-				});
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			const deleteTerrain = () => {
-				const copy = Utils.copy(encounter);
-				copy.terrain.forEach(ts => {
-					ts.terrain = ts.terrain.filter(t => t.id !== terrain.id);
-				});
-				setEncounter(copy);
-				props.onChange(copy);
-			};
-
-			return (
-				<EncounterGroupTerrain
-					key={terrain.id}
-					terrain={terrain}
-					onSelect={terrain => setSelectedTerrain(terrain)}
-					onDuplicate={() => duplicateTerrain()}
-					onDelete={() => deleteTerrain()}
-				/>
-			);
-		};
-
-		return (
-			<div className='encounter-groups'>
-				<div>
-					{encounter.terrain.flatMap(ts => ts.terrain).map(getTerrainSlot)}
-				</div>
-			</div>
-		);
-	};
-
-	const getSidebar = () => {
-		const active: SelectedMonsterInfo[] = [];
-		encounter.groups
-			.filter(g => g.encounterState === 'current')
-			.flatMap(g => g.slots)
-			.forEach(s => {
-				const group = SourcebookLogic.getMonsterGroup(props.sourcebooks, s.monsterID);
-				s.monsters
-					.filter(m => !m.state.defeated)
-					.forEach(m => active.push({
-						monster: m,
-						monsterGroup: group || undefined,
-						isTeamHero: false
-					}));
+	// Build the left-column tracker rows in encounter order — one row per slot
+	// (a slot is a unit: solo monster, elite, minion squad of 4, etc.) so the
+	// GM tracks each combat unit once.
+	const trackerRows: Combatant[] = [];
+	encounter.groups.forEach((g, gIdx) => {
+		g.slots.forEach(slot => {
+			if (slot.monsters.length === 0) return;
+			const lead = slot.monsters[0];
+			trackerRows.push({
+				kind: 'monster',
+				id: slot.id,
+				groupID: g.id,
+				slot,
+				monsters: slot.monsters,
+				name: lead.name || g.name || `Group ${gIdx + 1}`,
+				count: slot.monsters.length
 			});
+		});
+	});
+	encounter.terrain.flatMap(ts => ts.terrain).forEach(t => {
+		trackerRows.push({ kind: 'terrain', id: t.id, terrain: t, name: t.name || 'Terrain' });
+	});
 
-		if (active.length > 0) {
-			return (
-				<Tabs
-					items={[
+	// Right column flattens to per-monster stat blocks (each minion needs its
+	// own HP tracking), sorted alphabetically by name.
+	const statBlocks: Combatant[] = [ ...trackerRows ].sort((a, b) => a.name.localeCompare(b.name));
+
+	return (
+		<ErrorBoundary>
+			<div className='encounter-run-panel' id={encounter.id}>
+				<Flex align='flex-start' gap={20} className='encounter-run-flex'>
+					<div className='encounter-run-column encounter-run-tracker'>
+						<HeaderText level={1}>{encounter.name || 'Unnamed Encounter'}</HeaderText>
+
+						<div className='encounter-run-controls'>
+							<NumberSpin min={0} value={encounter.round} onChange={setRound}>
+								<Field orientation='vertical' label='Round' value={encounter.round || '-'} />
+							</NumberSpin>
+							<NumberSpin min={0} value={encounter.malice} onChange={setMalice}>
+								<Field orientation='vertical' label='Malice' value={encounter.malice} />
+							</NumberSpin>
+						</div>
+
+						<div className='encounter-run-add'>
+							<Button icon={<PlusOutlined />} onClick={() => setAddingMonsters(true)}>Add monster</Button>
+						</div>
+
+						<HeaderText level={2}>Combatants</HeaderText>
+
 						{
-							key: 'active',
-							label: active.length > 1 ? 'Active Monsters' : 'Active Monster',
-							children: (
-								active.map(m => (
-									<MonsterPanel
-										key={m.monster.id}
-										monster={m.monster}
-										sourcebooks={props.sourcebooks}
-										mode={PanelMode.Full}
-										style={{ padding: '0 5px' }}
-										extra={[
-											<Button
-												key='select'
-												type='text'
-												title='Show stat block'
-												icon={<InfoCircleOutlined />}
-												onClick={() => setSelectedMonster(m)}
-											/>
-										]}
-									/>
-								))
-							)
-						},
-						{
-							key: 'malice',
-							label: 'Malice',
-							children: (
-								<Space orientation='vertical' style={{ width: '100%', padding: '0 5px 10px 5px' }}>
-									<div className='ds-text'>
-										At the beginning of this turn, spend malice to activate one of these options.
-									</div>
+							trackerRows.length === 0 ?
+								<div className='ds-text dimmed-text centered-text'>No combatants yet — add monsters or terrain to begin.</div>
+								:
+								<div className='tracker-rows'>
 									{
-										MonsterLogic.getMaliceOptions(active[0].monster, active[0].monsterGroup)
-											.filter(malice => !encounter.hiddenMaliceFeatures.includes(malice.id))
-											.map(malice => (
-												<MalicePanel
-													malice={malice}
-													currentMalice={encounter.malice}
-													updateCurrentMalice={value => {
-														const copy = Utils.copy(encounter);
-														copy.malice = value;
-														setEncounter(copy);
-													}}
-												/>
-											))
-									}
-								</Space>
-							)
-						}
-					]}
-				/>
-			);
-		}
-
-		return (
-			<Tabs
-				items={[
-					{
-						key: 'reminders',
-						label: 'Reminders',
-						children: getReminders()
-					},
-					{
-						key: 'notes',
-						label: 'Notes',
-						children: getNotes()
-					},
-					{
-						key: 'diff',
-						label: 'Difficulty',
-						children: getDifficulty()
-					}
-				]}
-			/>
-		);
-	};
-
-	const getReminders = () => {
-		const triggerMonsters = encounter.groups
-			.flatMap(g => g.slots)
-			.flatMap(s => s.monsters)
-			.filter(m => !m.state.defeated)
-			.filter(m => {
-				return MonsterLogic.getFeatures(m)
-					.filter(f => f.type === FeatureType.Ability)
-					.some(f => f.data.ability.type.usage === AbilityUsage.Trigger);
-			});
-
-		const villainMonsters = encounter.groups
-			.flatMap(g => g.slots)
-			.flatMap(s => s.monsters)
-			.filter(m => !m.state.defeated)
-			.filter(m => {
-				return MonsterLogic.getFeatures(m)
-					.filter(f => f.type === FeatureType.Ability)
-					.some(f => f.data.ability.type.usage === AbilityUsage.Trigger);
-			});
-
-		const triggerTerrain = encounter.terrain
-			.flatMap(s => s.terrain)
-			.filter(t => {
-				return t.sections
-					.flatMap(s => s.content)
-					.some(f => f.name === 'Trigger');
-			});
-
-		const itemSlots = encounter.groups
-			.flatMap(g => g.slots)
-			.filter(s => s.customization.itemIDs.length > 0);
-
-		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				<Alert
-					type='info'
-					showIcon={true}
-					title='Here are some things you might need to remember during this encounter.'
-				/>
-				{
-					triggerMonsters.map(m => (
-						MonsterLogic.getFeatures(m)
-							.filter(f => f.type === FeatureType.Ability)
-							.filter(f => f.data.ability.type.usage === AbilityUsage.Trigger)
-							.map(f => {
-								const copy = Utils.copy(f.data.ability);
-								copy.name = `${m.name}: ${f.data.ability.name}`;
-								return (
-									<AbilityPanel
-										key={`${m.id} ${copy.id}`}
-										ability={copy}
-										mode={PanelMode.Full}
-									/>
-								);
-							})
-					))
-				}
-				{
-					triggerTerrain.map(t => (
-						t.sections
-							.flatMap(s => s.content)
-							.filter(f => f.name === 'Trigger')
-							.map(f => {
-								const copy = Utils.copy(f);
-								copy.name = `${t.name}: ${f.name}`;
-								return (
-									<FeaturePanel
-										key={`${t.id} ${copy.id}`}
-										feature={copy}
-										mode={PanelMode.Full}
-									/>
-								);
-							})
-					))
-				}
-				{
-					villainMonsters.map(m => (
-						MonsterLogic.getFeatures(m)
-							.filter(f => f.type === FeatureType.Ability)
-							.filter(f => f.data.ability.type.usage === AbilityUsage.VillainAction)
-							.map(f => {
-								const copy = Utils.copy(f.data.ability);
-								copy.name = `${m.name}: ${f.data.ability.name}`;
-								return (
-									<AbilityPanel
-										key={`${m.id} ${copy.id}`}
-										ability={copy}
-										mode={PanelMode.Full}
-									/>
-								);
-							})
-					))
-				}
-				{
-					itemSlots.map(s => (
-						s.customization.itemIDs
-							.map(itemID => SourcebookLogic.getItems(props.sourcebooks).find(i => i.id === itemID))
-							.filter(i => !!i)
-							.map(i => {
-								const copy = Utils.copy(i);
-								copy.name = `${s.monsters.map(m => m.name).join(', ')} using ${i.name}`;
-								return (
-									<ItemPanel
-										key={`${s.id} ${copy.id}`}
-										item={copy}
-										sourcebooks={props.sourcebooks}
-										mode={PanelMode.Full}
-										style={{ paddingLeft: '0', paddingRight: '0' }}
-									/>
-								);
-							})
-					))
-				}
-				{
-					(triggerMonsters.length === 0) && (villainMonsters.length === 0) && (triggerTerrain.length === 0) && (itemSlots.length === 0) ?
-						<Empty />
-						: null
-				}
-			</Space>
-		);
-	};
-
-	const getNotes = () => {
-		const addNote = () => {
-			const copy = Utils.copy(encounter);
-			copy.notes.push({
-				id: Utils.guid(),
-				name: '',
-				description: ''
-			});
-			setEncounter(copy);
-			props.onChange(copy);
-		};
-
-		const setNote = (note: Element) => {
-			const copy = Utils.copy(encounter);
-			const index = copy.notes.findIndex(n => n.id === note.id);
-			if (index !== -1) {
-				copy.notes[index] = note;
-			}
-			setEncounter(copy);
-			props.onChange(copy);
-		};
-
-		return (
-			<div style={{ padding: '5px' }}>
-				{
-					encounter.description ?
-						<SelectablePanel>
-							<HeaderText level={1}>Encounter Description</HeaderText>
-							<Markdown text={encounter.description} />
-						</SelectablePanel>
-						: null
-				}
-				<Space orientation='vertical' style={{ width: '100%' }}>
-					{encounter.notes.map(note => <NotePanel key={note.id} note={note} onChange={setNote} />)}
-				</Space>
-				<Divider />
-				<Button block={true} icon={<PlusOutlined />} onClick={addNote}>Add a Note</Button>
-			</div>
-		);
-	};
-
-	const getDifficulty = () => {
-		return (
-			<div style={{ margin: '0 10px' }}>
-				<EncounterDifficultyPanel
-					encounter={encounter}
-					sourcebooks={props.sourcebooks}
-					showHeader={false}
-				/>
-			</div>
-		);
-	};
-
-	let className = 'encounter-run-panel';
-	if (isSmall) {
-		className += ' is-small';
-	}
-
-	const showSidebarOnly = isSmall && showSidebar;
-	const showMainOnly = isSmall && !showSidebar;
-	const sidebarToggleLabel = isSmall
-		? (showSidebar ? 'Combatants' : 'Reminders')
-		: (showSidebar ? 'Hide Sidebar' : 'Show Sidebar');
-
-	return (
-		<ErrorBoundary>
-			<div className={className} id={encounter.id}>
-				<Flex align='flex-start' gap={isSmall ? 0 : 20} style={{ height: '100%' }}>
-					{
-						!showSidebarOnly ? (
-							<div style={{ flex: '1 1 0', height: '100%', padding: '0 5px', overflowY: 'auto', overflowX: 'hidden', minWidth: 0 }}>
-								<HeaderText
-									level={1}
-									extra={
-										<ButtonGroup
-											buttons={[
-												{ type: 'button', label: 'Minis', disabled: !props.showTools, onClick: () => props.showTools!('minis') },
-												{ type: 'button', label: sidebarToggleLabel, onClick: () => setShowSidebar(!showSidebar) }
-											]}
-										/>
-									}
-								>
-									{encounter.name || 'Unnamed Encounter'}
-								</HeaderText>
-								{getControlSection()}
-								<Tabs
-									items={[
-										{
-											key: 'combatants',
-											label: 'Combatants',
-											children: (
-												<>
+										trackerRows.map(c => {
+											const acted = c.kind === 'monster'
+												? encounter.groups.find(g => g.id === c.groupID)?.encounterState === 'finished'
+												: false;
+											const focused = focusedID === c.id;
+											return (
+												<div
+													key={c.id}
+													className={[
+														'tracker-row',
+														acted ? 'acted' : '',
+														focused ? 'focused' : '',
+														c.kind === 'terrain' ? 'terrain' : ''
+													].filter(Boolean).join(' ')}
+													onClick={() => focusBlock(c.id)}
+												>
 													{
-														isSmall ? (
-															<div style={{ display: 'flex', gap: 6, padding: '0 0 12px 0' }}>
-																<Button block={true} onClick={() => setAddingHeroes(true)}>+ Hero</Button>
-																<Button block={true} onClick={() => setAddingMonsters(true)}>+ Monster</Button>
-															</div>
-														) : null
+														c.kind === 'monster' ?
+															<Button
+																type='text'
+																className='acted-toggle'
+																icon={acted ? <CheckCircleFilled /> : <CheckCircleOutlined />}
+																title={acted ? 'Mark as not yet acted' : 'Mark as acted this round'}
+																onClick={e => { e.stopPropagation(); toggleGroupActed(c.groupID); }}
+															/>
+															: <div className='acted-toggle terrain-spacer' />
 													}
-													{getCombatants()}
-												</>
-											)
-										},
+													<div className='row-info'>
+														<div className='row-name'>
+															{c.name}
+															{c.kind === 'monster' && c.count > 1 ? <span className='row-count'> ×{c.count}</span> : null}
+														</div>
+														<div className='row-sub'>
+															{
+																c.kind === 'monster'
+																	? MonsterLogic.getMonsterDescription(c.monsters[0])
+																	: 'Terrain'
+															}
+														</div>
+													</div>
+													<Button
+														type='text'
+														className='row-delete'
+														icon={<DeleteOutlined />}
+														title='Remove'
+														onClick={e => {
+															e.stopPropagation();
+															if (c.kind === 'monster') {
+																deleteGroup(c.groupID);
+															} else {
+																deleteTerrain(c.id);
+															}
+														}}
+													/>
+												</div>
+											);
+										})
+									}
+								</div>
+						}
+
+						<HeaderText level={2}>Difficulty</HeaderText>
+						<EncounterDifficultyPanel
+							encounter={encounter}
+							sourcebooks={props.sourcebooks}
+							showHeader={false}
+						/>
+					</div>
+
+					<div className='encounter-run-column encounter-run-stats'>
+						{
+							statBlocks.length === 0 ?
+								<div className='ds-text dimmed-text centered-text'>Stat blocks will appear here as combatants are added.</div>
+								:
+								statBlocks.map(c => (
+									<div
+										key={c.id}
+										ref={el => { blockRefs.current[c.id] = el; }}
+										className={`stat-block ${focusedID === c.id ? 'focused' : ''}`}
+									>
 										{
-											key: 'terrain',
-											label: 'Terrain',
-											children: getTerrain()
+											c.kind === 'monster' ?
+												<MonsterPanel
+													monster={c.monsters[0]}
+													monsterGroup={SourcebookLogic.getMonsterGroup(props.sourcebooks, c.monsters[0].id) || undefined}
+													sourcebooks={props.sourcebooks}
+													mode={PanelMode.Full}
+												/>
+												:
+												<TerrainPanel
+													terrain={c.terrain}
+													sourcebooks={props.sourcebooks}
+													mode={PanelMode.Full}
+													updateTerrain={updateTerrain}
+												/>
 										}
-									]}
-									activeKey={tab}
-									onChange={setTab}
-									tabBarExtraContent={
-										tab === 'combatants' && !isSmall ?
-											<ButtonGroup
-												buttons={[
-													{ type: 'button', label: 'Add hero(es)', onClick: () => setAddingHeroes(true) },
-													{ type: 'button', label: 'Add a monster', onClick: () => setAddingMonsters(true) }
-												]}
-											/>
-											: null
-									}
-								/>
-							</div>
-						) : null
-					}
-					{
-						showSidebar && !showMainOnly ?
-							<div style={{ flex: isSmall ? '1 1 0' : '0 0 400px', width: isSmall ? '100%' : undefined, height: '100%', overflowY: 'auto', overflowX: 'hidden', minWidth: 0, padding: isSmall ? '0 5px' : 0 }}>
-								{
-									isSmall && (
-										<ButtonGroup
-											buttons={[
-												{ type: 'button', label: 'Combatants', onClick: () => setShowSidebar(false) }
-											]}
-										/>
-									)
-								}
-								{getSidebar()}
-							</div>
-							: null
-					}
+									</div>
+								))
+						}
+					</div>
 				</Flex>
+
+				<Drawer open={addingMonsters} onClose={() => setAddingMonsters(false)} closeIcon={null} size={500}>
+					<MonsterSelectModal
+						monsters={props.sourcebooks.flatMap(sb => sb.monsterGroups).flatMap(g => g.monsters)}
+						sourcebooks={props.sourcebooks}
+						onClose={() => setAddingMonsters(false)}
+						onSelect={m => { setAddingMonsters(false); addMonsterAsGroup(m); }}
+					/>
+				</Drawer>
 			</div>
-			<Drawer open={addingHeroes} onClose={() => setAddingHeroes(false)} closeIcon={null} size={500}>
-				<HeroSelectModal
-					sourcebooks={props.sourcebooks}
-					onClose={() => setAddingHeroes(false)}
-					onSelect={heroes => {
-						setAddingHeroes(false);
-						addHeroes(heroes);
-					}}
-				/>
-			</Drawer>
-			<Drawer open={addingMonsters} onClose={() => setAddingMonsters(false)} closeIcon={null} size={500}>
-				<MonsterSelectModal
-					monsters={props.sourcebooks.flatMap(sb => sb.monsterGroups).flatMap(g => g.monsters)}
-					sourcebooks={props.sourcebooks}
-					onClose={() => setAddingMonsters(false)}
-					onSelect={m => {
-						setAddingMonsters(false);
-						addSlot(m);
-					}}
-				/>
-			</Drawer>
-			<Drawer open={selectingGroup} onClose={() => setSelectingGroup(false)} closeIcon={null} size={500}>
-				{
-					selectingGroup ?
-						<EncounterTurnModal
-							encounter={encounter}
-							updateEncounter={enc => {
-								setEncounter(enc);
-								props.onChange(enc);
-							}}
-							onClose={() => setSelectingGroup(false)}
-						/>
-						: null
-				}
-			</Drawer>
-			<Drawer open={!!selectedMonster} onClose={() => setSelectedMonster(null)} closeIcon={null} size={500}>
-				{
-					selectedMonster ?
-						<MonsterModal
-							monster={selectedMonster.monster}
-							monsterGroup={selectedMonster.monsterGroup}
-							encounter={selectedMonster.isTeamHero ? undefined : encounter}
-							sourcebooks={props.sourcebooks}
-							onClose={() => setSelectedMonster(null)}
-							updateMonster={monster => {
-								const copy = Utils.copy(encounter);
-
-								[
-									...copy.groups.flatMap(g => g.slots),
-									...copy.heroes.flatMap(h => h.state.controlledSlots)
-								].forEach(slot => {
-									const index = slot.monsters.findIndex(m => m.id === monster.id);
-									if (index !== -1) {
-										slot.monsters[index] = monster;
-									}
-								});
-
-								// Make sure no minion groups have a dead captain
-								const captainIDs = copy.groups
-									.flatMap(g => g.slots)
-									.flatMap(s => s.monsters)
-									.filter(m => m.role.organization !== MonsterOrganizationType.Minion)
-									.filter(m => !m.state.defeated)
-									.map(m => m.id);
-								copy.groups.forEach(g => {
-									g.slots.forEach(s => {
-										if (s.state.captainID && !captainIDs.includes(s.state.captainID)) {
-											s.state.captainID = undefined;
-										}
-									});
-								});
-
-								setEncounter(copy);
-								props.onChange(copy);
-							}}
-							updateEncounter={encounter => {
-								const copy = Utils.copy(encounter);
-								setEncounter(copy);
-							}}
-						/>
-						: null
-				}
-			</Drawer>
-			<Drawer open={!!selectedHero} onClose={() => setSelectedHero(null)} closeIcon={null} size={500}>
-				{
-					selectedHero ?
-						<HeroVitalsModal
-							hero={selectedHero}
-							showEncounterControls={true}
-							onClose={() => setSelectedHero(null)}
-							onChange={hero => {
-								const copy = Utils.copy(encounter);
-								const index = copy.heroes.findIndex(h => h.id === hero.id);
-								if (index !== -1) {
-									copy.heroes[index] = hero;
-								}
-								setEncounter(copy);
-								props.onChange(copy);
-							}}
-						/>
-						: null
-				}
-			</Drawer>
-			<Drawer open={!!selectedTerrain} onClose={() => setSelectedTerrain(null)} closeIcon={null} size={500}>
-				{
-					selectedTerrain ?
-						<TerrainModal
-							terrain={selectedTerrain}
-							upgradeIDs={[]}
-							sourcebooks={props.sourcebooks}
-							onClose={() => setSelectedTerrain(null)}
-							updateTerrain={terrain => {
-								const copy = Utils.copy(encounter);
-								copy.terrain.forEach(slot => {
-									const index = slot.terrain.findIndex(t => t.id === terrain.id);
-									if (index !== -1) {
-										slot.terrain[index] = terrain;
-									}
-								});
-								setEncounter(copy);
-								props.onChange(copy);
-							}}
-						/>
-						: null
-				}
-			</Drawer>
-			<Drawer open={!!selectedMinionSlot} onClose={() => setSelectedMinionSlot(null)} closeIcon={null} size={500}>
-				{
-					selectedMinionSlot ?
-						<MinionSlotModal
-							slot={selectedMinionSlot}
-							encounter={encounter}
-							updateSlot={slot => {
-								const copy = Utils.copy(encounter);
-
-								copy.groups.forEach(g => {
-									const index = g.slots.findIndex(s => s.id === slot.id);
-									if (index !== -1) {
-										g.slots[index] = slot;
-									}
-								});
-								copy.heroes.forEach(h => {
-									const index = h.state.controlledSlots.findIndex(s => s.id === slot.id);
-									if (index !== -1) {
-										h.state.controlledSlots[index] = slot;
-									}
-								});
-
-								setEncounter(copy);
-								props.onChange(copy);
-							}}
-							onClose={() => setSelectedMinionSlot(null)}
-						/>
-						: null
-				}
-			</Drawer>
-		</ErrorBoundary>
-	);
-};
-
-interface NotePanelProps {
-	note: Element;
-	onChange: (value: Element) => void;
-}
-
-const NotePanel = (props: NotePanelProps) => {
-	const [ note, setNote ] = useState<Element>(Utils.copy(props.note));
-	const [ editing, setEditing ] = useState<boolean>(false);
-
-	const onChange = (value: Element) => {
-		setNote(value);
-		props.onChange(value);
-	};
-
-	const editBtn = (
-		<Button
-			type='text'
-			icon={editing ? <EditFilled style={{ color: 'rgb(64, 150, 255)' }} /> : <EditOutlined />}
-			onClick={() => setEditing(!editing)}
-		/>
-	);
-
-	if (editing) {
-		return (
-			<ErrorBoundary>
-				<SelectablePanel key={note.id}>
-					<HeaderText level={1} extra={editBtn}>
-						Note
-					</HeaderText>
-					<ElementEditPanel element={note} onChange={onChange} />
-				</SelectablePanel>
-
-			</ErrorBoundary>
-		);
-	}
-
-	return (
-		<ErrorBoundary>
-			<SelectablePanel key={note.id}>
-				<HeaderText level={1} extra={editBtn}>
-					{note.name || 'Note'}
-				</HeaderText>
-				{note.description ? <Markdown text={note.description} /> : <Empty />}
-			</SelectablePanel>
 		</ErrorBoundary>
 	);
 };

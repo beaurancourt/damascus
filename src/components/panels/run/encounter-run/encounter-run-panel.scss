@@ -1,98 +1,65 @@
 // =============================================================================
-// Encounter Runner — Tactical Field Dossier (GM combat tracker)
+// Encounter Runner — GM Combat Tracker
 // =============================================================================
-// Same visual grammar as the builder and hero sheet: Merriweather serif,
-// bronze accents, dark surface, color-coded threat tiers carried over from
-// the builder. Two-column on wide screens already (Flex inline in TSX) —
-// this stylesheet pulls the columns and their controls into the dossier
-// aesthetic without touching the layout structure.
+// Two-column layout (50/50): left is the tracker (combatants with acted
+// checkboxes), right is the alphabetized stat-block stack. Clicking a tracker
+// row scrolls and highlights the matching stat block.
 
 @import '@/colors.scss';
 
 .encounter-run-panel {
-	display: flex;
-	flex-direction: column;
-	padding: 0 20px;
 	height: 100%;
+	padding: 0 20px;
+	overflow: hidden;
 
-	// --- Encounter name plate -------------------------------------------------
-	// Big serif uppercase title with bronze double-rule, matching the builder
-	// and hero sheet name headers.
-	> .ant-flex > div > .header-text-panel {
-		margin: 4px 0 14px !important;
-		padding: 6px 0 10px !important;
-		border-bottom: 1px solid $bronze !important;
-		position: relative;
-
-		&::after {
-			content: '';
-			position: absolute;
-			left: 0;
-			right: 0;
-			bottom: -4px;
-			height: 1px;
-			background: $bronze-dim;
-		}
-
-		.header-text {
-			font-family: 'Merriweather', 'PT Sans', serif !important;
-			font-weight: 700;
-			font-size: 20px;
-			letter-spacing: 4px;
-			text-transform: uppercase;
-			color: rgba(255, 255, 255, 0.95);
-		}
+	.encounter-run-flex {
+		height: 100%;
 	}
 
-	// --- Round / Malice control row -------------------------------------------
-	// Three-column row at the top of the main column. Make it feel like a
-	// tactical readout: bronze-bordered card with serif uppercase labels.
-	.encounter-control-section,
-	.ant-flex > div > .stats-row {
-		background: linear-gradient(180deg, rgba(201, 164, 90, 0.06), rgba(201, 164, 90, 0.01));
-		border: 1px solid $bronze-dim;
-		border-radius: 3px;
+	// --- Shared column structure --------------------------------------------
+	.encounter-run-column {
+		flex: 1 1 0;
+		min-width: 0;
+		height: 100%;
+		overflow-y: auto;
+		overflow-x: hidden;
+		padding: 0 10px 40px;
 	}
 
-	// --- Combatants tab section ----------------------------------------------
-	// The Combatants/Terrain tab strip. Bronze accent for the active tab.
-	.ant-tabs {
-		.ant-tabs-nav::before {
-			border-bottom-color: $bronze-dim !important;
-		}
+	// --- Tracker (left column) -----------------------------------------------
+	.encounter-run-tracker {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
 
-		.ant-tabs-tab {
-			font-family: 'Merriweather', serif;
-			font-size: 11px;
-			letter-spacing: 2px;
-			text-transform: uppercase;
-			padding: 8px 0;
+		> .header-text-panel.level-1 {
+			margin: 4px 0 0;
+			padding: 6px 0 10px;
+			border-bottom: 1px solid $bronze;
+			position: relative;
 
-			.ant-tabs-tab-btn {
-				color: rgba(255, 255, 255, 0.6) !important;
+			&::after {
+				content: '';
+				position: absolute;
+				left: 0;
+				right: 0;
+				bottom: -4px;
+				height: 1px;
+				background: $bronze-dim;
 			}
 
-			&:hover .ant-tabs-tab-btn {
-				color: rgba(255, 255, 255, 0.85) !important;
-			}
-
-			&.ant-tabs-tab-active .ant-tabs-tab-btn {
-				color: $bronze !important;
+			.header-text {
+				font-family: 'Merriweather', serif;
+				font-weight: 700;
+				font-size: 20px;
+				letter-spacing: 4px;
+				text-transform: uppercase;
+				color: rgba(255, 255, 255, 0.95);
 			}
 		}
 
-		.ant-tabs-ink-bar {
-			background: $bronze !important;
-		}
-	}
-
-	// --- Section headers inside the combatants column -------------------------
-	// ACTING NOW / READY TO ACT / FINISHED — match the dossier section rule.
-	.ant-tabs-content > .ant-tabs-tabpane,
-	.ant-tabs-tabpane > .ant-space,
-	.ant-tabs-tabpane > div > .ant-space {
-		.header-text-panel {
-			margin: 16px 0 10px;
+		> .header-text-panel.level-2 {
+			margin: 8px 0 0;
 			padding-bottom: 6px;
 			border-bottom: 1px solid $bronze;
 			position: relative;
@@ -108,7 +75,7 @@
 			}
 
 			.header-text {
-				font-family: 'Merriweather', 'PT Sans', serif;
+				font-family: 'Merriweather', serif;
 				font-weight: 700;
 				font-size: 12px;
 				letter-spacing: 2.5px;
@@ -118,107 +85,244 @@
 		}
 	}
 
-	// --- Add hero / Add monster buttons --------------------------------------
-	// Wide screens use .ant-tabs-extra-content; narrow screens render a plain
-	// flex div inside the tab body — cover both.
-	.ant-tabs-extra-content .ant-btn,
-	.ant-tabs-tabpane > div > .ant-flex .ant-btn,
-	.ant-tabs-tabpane > .ant-tabs-tabpane-active > div > .ant-btn,
-	.ant-tabs-tabpane > div[style*="flex"] > .ant-btn {
-		font-family: 'Merriweather', serif;
-		font-size: 10px;
-		letter-spacing: 1.5px;
-		text-transform: uppercase;
-		color: $bronze;
+	.encounter-run-controls {
+		display: flex;
+		gap: 16px;
+		padding: 14px 16px;
+		background: linear-gradient(180deg, rgba(201, 164, 90, 0.06), rgba(201, 164, 90, 0.01));
 		border: 1px solid $bronze-dim;
-		background: transparent;
 		border-radius: 3px;
 
-		&:hover:not(:disabled) {
-			border-color: $bronze;
-			background: rgba(201, 164, 90, 0.08);
-			color: $bronze;
+		> * {
+			flex: 1 1 0;
+			min-width: 0;
 		}
 	}
 
-	// --- Sidebar (Reminders / Notes / Difficulty) ----------------------------
-	// The right column on wide screens. Soft vertical separator + reminders
-	// alert in bronze tint so it doesn't shout from a blue background.
-	.ant-flex > div:last-child {
-		.ant-alert-info {
-			background: rgba(201, 164, 90, 0.06);
-			border: 1px solid rgba(201, 164, 90, 0.3);
-			color: rgba(255, 235, 200, 0.9);
+	.encounter-run-add {
+		display: flex;
+		gap: 8px;
 
-			.ant-alert-icon {
+		.ant-btn {
+			flex: 1 1 0;
+			font-family: 'Merriweather', serif;
+			font-size: 10px;
+			letter-spacing: 1.5px;
+			text-transform: uppercase;
+			color: $bronze;
+			border: 1px solid $bronze-dim;
+			background: transparent;
+			border-radius: 3px;
+			box-shadow: none;
+			height: auto;
+			padding: 8px 12px;
+
+			&:hover:not(:disabled) {
+				border-color: $bronze;
+				background: rgba(201, 164, 90, 0.08);
 				color: $bronze;
 			}
 		}
 	}
 
-	&.is-small {
-		.encounter-groups {
-			.encounter-group {
-				flex-direction: column;
+	// --- Tracker rows --------------------------------------------------------
+	.tracker-rows {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
 
-				.group-column {
-					flex: 0 0 auto;
-					border-radius: 5px 5px 0 0;
-				}
+	.tracker-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px 10px;
+		border: 1px solid rgba(201, 164, 90, 0.18);
+		border-radius: 3px;
+		background: rgba(0, 0, 0, 0.18);
+		cursor: pointer;
+		transition: border-color 0.15s, background 0.15s, opacity 0.2s;
 
-				.encounter-slots {
-					border-radius: 0 0 5px 5px;
-				}
+		.acted-toggle {
+			flex: 0 0 auto;
+			width: 32px;
+			height: 32px;
+			padding: 0;
+			color: rgba(201, 164, 90, 0.55);
+			background: transparent;
+			border: none;
+
+			.anticon {
+				font-size: 22px;
+			}
+
+			&:hover {
+				color: $bronze;
+				background: rgba(201, 164, 90, 0.08);
+			}
+		}
+
+		.terrain-spacer {
+			width: 32px;
+			height: 32px;
+		}
+
+		.row-info {
+			flex: 1 1 0;
+			min-width: 0;
+		}
+
+		.row-name {
+			font-family: 'Merriweather', serif;
+			font-weight: 700;
+			font-size: 14px;
+			letter-spacing: 0.3px;
+			line-height: 1.25;
+			color: rgba(255, 255, 255, 0.92);
+
+			.row-count {
+				font-weight: 400;
+				color: $bronze;
+				margin-left: 4px;
+				font-variant-numeric: tabular-nums;
+			}
+		}
+
+		.row-sub {
+			margin-top: 3px;
+			font-size: 10px;
+			letter-spacing: 0.8px;
+			text-transform: uppercase;
+			color: rgba(255, 255, 255, 0.5);
+		}
+
+		.row-delete {
+			flex: 0 0 auto;
+			color: rgba(255, 255, 255, 0.3);
+
+			&:hover {
+				color: #d97a7a;
+				background: rgba(181, 74, 74, 0.1);
+			}
+		}
+
+		@media (hover: hover) {
+			&:hover {
+				border-color: rgba(201, 164, 90, 0.5);
+				background: rgba(201, 164, 90, 0.05);
+			}
+		}
+
+		&.focused {
+			border-color: $bronze;
+			background: rgba(201, 164, 90, 0.1);
+			box-shadow: 0 0 0 1px rgba(201, 164, 90, 0.3);
+		}
+
+		// Acted rows fade and show the filled check icon in bronze.
+		&.acted {
+			opacity: 0.45;
+
+			.acted-toggle {
+				color: $bronze;
+			}
+
+			.row-name {
+				text-decoration: line-through;
+				text-decoration-color: rgba(255, 255, 255, 0.4);
+			}
+		}
+
+		&.terrain {
+			border-style: dashed;
+			background: rgba(0, 0, 0, 0.12);
+
+			.row-name {
+				font-style: italic;
 			}
 		}
 	}
 
-	.initiative-button {
-		flex: 0 0 270px;
-		height: 60px;
-		font-family: 'Merriweather', serif;
-		letter-spacing: 1.5px;
-		text-transform: uppercase;
-		background: transparent;
-		border: 1px solid $bronze;
-		color: $bronze;
+	// --- Stat block column (right) ------------------------------------------
+	.encounter-run-stats {
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
 
-		.maintext {
-			font-weight: 700;
-			font-size: 12px;
+		.stat-block {
+			border: 1px solid transparent;
+			border-radius: 3px;
+			padding: 4px;
+			transition: border-color 0.2s, box-shadow 0.2s;
+
+			&.focused {
+				border-color: $bronze;
+				box-shadow: 0 0 0 1px rgba(201, 164, 90, 0.25), 0 4px 16px rgba(0, 0, 0, 0.3);
+				background: rgba(201, 164, 90, 0.04);
+			}
 		}
 
-		.subtext {
-			font-family: 'PT Sans', sans-serif;
-			font-size: 10px;
-			text-transform: none;
-			letter-spacing: 0.3px;
-			opacity: 0.75;
-		}
-
-		&:hover:not(:disabled) {
-			background: rgba(201, 164, 90, 0.1);
+		.centered-text {
+			padding: 60px 20px;
+			text-align: center;
+			font-family: 'Merriweather', serif;
+			font-style: italic;
+			color: rgba(255, 255, 255, 0.4);
 		}
 	}
 
-	.encounter-groups {
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
+	// NumberSpin in the control row picks up bronze tone via the field label.
+	.encounter-run-controls {
+		.field {
+			.field-label {
+				font-family: 'Merriweather', serif;
+				font-size: 10px;
+				letter-spacing: 2px;
+				text-transform: uppercase;
+				color: $bronze;
+			}
+
+			.field-value {
+				font-family: 'Merriweather', serif;
+				font-size: 22px;
+				font-weight: 700;
+				color: rgba(255, 255, 255, 0.95);
+			}
+		}
 	}
 }
 
-// =============================================================================
-// LIGHT THEME — softer surfaces, same bronze accents
-// =============================================================================
+// --- Narrow viewport: stack columns -----------------------------------------
+@media (max-width: 1000px) {
+	.encounter-run-panel {
+		padding: 0 12px;
+		overflow-y: auto;
+
+		.encounter-run-flex {
+			flex-direction: column;
+			height: auto;
+		}
+
+		.encounter-run-column {
+			height: auto;
+			overflow: visible;
+			padding: 0;
+		}
+
+		.encounter-run-stats {
+			margin-top: 24px;
+		}
+	}
+}
+
+// --- Light theme ------------------------------------------------------------
 html:not([data-theme="dark"]) {
 	.encounter-run-panel {
-		> .ant-flex > div > .header-text-panel .header-text { color: rgba(0, 0, 0, 0.88); }
-		.ant-tabs-tabpane .header-text-panel .header-text { color: rgba(0, 0, 0, 0.88); }
-
-		.ant-flex > div:last-child .ant-alert-info {
-			background: rgba(201, 164, 90, 0.06);
-			color: rgba(120, 90, 30, 0.9);
+		.encounter-run-tracker > .header-text-panel .header-text { color: rgba(0, 0, 0, 0.88); }
+		.tracker-row {
+			background: rgba(0, 0, 0, 0.03);
+			.row-name { color: rgba(0, 0, 0, 0.88); }
+			.row-sub { color: rgba(0, 0, 0, 0.5); }
 		}
 	}
 }

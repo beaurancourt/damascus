@@ -69,7 +69,6 @@ import { Montage } from '@/models/montage';
 import { Negotiation } from '@/models/negotiation';
 import { PartyModal } from '@/components/modals/party/party-modal';
 import { Perk } from '@/models/perk';
-import { PlayerViewModal } from '@/components/modals/player-view/player-view-modal';
 import { Plot } from '@/models/plot';
 import { Project } from '@/models/project';
 import { ReferenceModal } from '@/components/modals/reference/reference-modal';
@@ -111,7 +110,7 @@ export const Main = () => {
 
 	const [ errors, setErrors ] = useState<Event[]>([]);
 	const [ drawer, setDrawer ] = useState<ReactNode>(null);
-	const [ playerView, setPlayerView ] = useState<Window | null>(null);
+	const [ playerView ] = useState<Window | null>(null);
 
 	useErrorListener(event => setErrors([ ...errors, event ]));
 
@@ -1663,15 +1662,6 @@ export const Main = () => {
 		}
 	};
 
-	const showPlayerView = () => {
-		setDrawer(
-			<PlayerViewModal
-				updateSession={persistSession}
-				openPlayerView={setPlayerView}
-				onClose={() => setDrawer(null)}
-			/>
-		);
-	};
 
 	// #endregion
 
@@ -1822,7 +1812,6 @@ export const Main = () => {
 								<SessionDirectorPage
 									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
 									params={footerParams}
-									showPlayerView={showPlayerView}
 									startEncounter={startEncounter}
 									startMontage={startMontage}
 									startNegotiation={startNegotiation}

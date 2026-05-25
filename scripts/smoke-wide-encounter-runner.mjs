@@ -63,20 +63,32 @@ log(`url after start: ${page.url()}`);
 await page.screenshot({ path: 'tmp/audit/run-wide-01-runner.png', fullPage: false });
 log('saved tmp/audit/run-wide-01-runner.png');
 
-// Add hero to runner
-const addHeroBtn = page.locator('button').filter({ hasText: /Add hero/i }).first();
-if (await addHeroBtn.count()) {
-	await addHeroBtn.click().catch(() => {});
+// Add a monster via the runner's "Add monster" button
+const addMonsterBtn = page.locator('button').filter({ hasText: /Add monster/i }).first();
+if (await addMonsterBtn.count()) {
+	await addMonsterBtn.click().catch(() => {});
 	await page.waitForTimeout(500);
-	// Select first hero in modal
-	await page.locator('.ant-drawer button, .ant-modal button').filter({ hasText: /Select|Add|Use/i }).first().click().catch(() => {});
-	await page.waitForTimeout(400);
-	await page.locator('.ant-drawer-close, .ant-modal-close').first().click().catch(() => {});
-	await page.waitForTimeout(400);
+	const firstSelectable = page.locator('.ant-drawer .selectable-panel').first();
+	if (await firstSelectable.count()) {
+		await firstSelectable.click().catch(() => {});
+		await page.waitForTimeout(500);
+	}
 }
 
-await page.screenshot({ path: 'tmp/audit/run-wide-02-with-hero.png', fullPage: false });
-log('saved tmp/audit/run-wide-02-with-hero.png');
+// Add a second monster (different one) so the alphabetized stat block stack is meaningful.
+const addMonsterBtn2 = page.locator('button').filter({ hasText: /Add monster/i }).first();
+if (await addMonsterBtn2.count()) {
+	await addMonsterBtn2.click().catch(() => {});
+	await page.waitForTimeout(500);
+	const secondSelectable = page.locator('.ant-drawer .selectable-panel').nth(2);
+	if (await secondSelectable.count()) {
+		await secondSelectable.click().catch(() => {});
+		await page.waitForTimeout(500);
+	}
+}
+
+await page.screenshot({ path: 'tmp/audit/run-wide-02-with-monster.png', fullPage: false });
+log('saved tmp/audit/run-wide-02-with-monster.png');
 
 await page.evaluate(() => {
 	const scrollers = Array.from(document.querySelectorAll('*')).filter(el => {

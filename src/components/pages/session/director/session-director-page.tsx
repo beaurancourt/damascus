@@ -39,7 +39,6 @@ import './session-director-page.scss';
 interface Props {
 	sourcebooks: Sourcebook[];
 	params: FooterParams;
-	showPlayerView: () => void;
 	startEncounter: (encounter: Encounter) => Promise<string>;
 	startMontage: (montage: Montage) => Promise<string>;
 	startNegotiation: (negotiation: Negotiation) => Promise<string>;
@@ -102,7 +101,6 @@ export const SessionDirectorPage = (props: Props) => {
 							encounter={encounter}
 							sourcebooks={props.sourcebooks}
 							onChange={props.updateEncounter}
-							showTools={tool => props.showEncounterTools(encounter, tool)}
 						/>
 					</div>
 				);
@@ -392,8 +390,7 @@ export const SessionDirectorPage = (props: Props) => {
 									</div>
 								)
 							},
-							{ type: 'danger', label: isSmall ? undefined : 'Finish', disabled: !selectedElementID, onClick: finish },
-							{ type: 'button', label: isSmall ? undefined : 'Player View', icon: <PlayCircleOutlined />, onClick: props.showPlayerView }
+							{ type: 'danger', label: isSmall ? undefined : 'Finish', disabled: !selectedElementID, onClick: finish }
 						]}
 					/>
 				</AppHeader>
