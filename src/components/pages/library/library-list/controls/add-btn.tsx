@@ -1,4 +1,4 @@
-import { Alert, Button, Flex, Popover, Segmented, Select, Space, Upload } from 'antd';
+import { Alert, Button, Popover, Segmented, Select, Space, Upload } from 'antd';
 import { CodeOutlined, DownOutlined, DownloadOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
 import { useHeroes, useOptions } from '@/contexts/data-context';
@@ -11,11 +11,8 @@ import { EncounterDifficultyLogic } from '@/logic/encounter-difficulty-logic';
 import { EncounterLogic } from '@/logic/encounter-logic';
 import { Expander } from '@/components/controls/expander/expander';
 import { FactoryLogic } from '@/logic/factory-logic';
-import { Field } from '@/components/controls/field/field';
-import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { OptionsLogic } from '@/logic/options-logic';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
-import { TacticalMapLogic } from '@/logic/tactical-map-logic';
 import { useState } from 'react';
 
 interface Props {
@@ -34,12 +31,6 @@ export const AddBtn = (props: Props) => {
 	const [ popoverOpen, setPopoverOpen ] = useState(false);
 	const [ difficulty, setDifficulty ] = useState<EncounterDifficulty>(EncounterDifficulty.Standard);
 	const [ keywords, setKeywords ] = useState<string[]>([]);
-	const [ mapImportType, setMapImportType ] = useState<'image' | 'video'>('image');
-	const [ mapImportData, setMapImportData ] = useState<string>('');
-	const [ mapImportWidth, setMapImportWidth ] = useState<number>(10);
-	const [ mapImportHeight, setMapImportHeight ] = useState<number>(5);
-	const [ mapGenerateType, setMapGenerateType ] = useState<'dungeon' | 'cavern'>('dungeon');
-	const [ mapGenerateSize, setMapGenerateSize ] = useState<number>(5);
 	const options = useOptions();
 	const heroes = useHeroes();
 
@@ -91,35 +82,6 @@ export const AddBtn = (props: Props) => {
 		props.createElement(props.category, props.sourcebookID, enc);
 	};
 
-	const createImageMap = () => {
-		const map = FactoryLogic.createTacticalMap();
-		const tile = FactoryLogic.createMapTile();
-		tile.dimensions.width = mapImportWidth;
-		tile.dimensions.height = mapImportHeight;
-		switch (mapImportType) {
-			case 'image':
-				tile.content = { type: 'image', imageData: mapImportData };
-				break;
-			case 'video':
-				tile.content = { type: 'video', videoData: mapImportData };
-		}
-		map.items.push(tile);
-		props.createElement(props.category, props.sourcebookID, map);
-	};
-
-	const generateMap = () => {
-		const map = FactoryLogic.createTacticalMap();
-		switch (mapGenerateType) {
-			case 'dungeon':
-				TacticalMapLogic.generateDungeon(mapGenerateSize, map);
-				break;
-			case 'cavern':
-				TacticalMapLogic.generateCavern(mapGenerateSize * 50, map);
-				break;
-		}
-		props.createElement(props.category, props.sourcebookID, map);
-	};
-
 	const getOptions = () => {
 		switch (props.category) {
 			case 'encounter':
@@ -167,90 +129,6 @@ export const AddBtn = (props: Props) => {
 						<Button block={true} type='primary' icon={<ThunderboltOutlined />} onClick={generateEncounter}>Generate</Button>
 					</Expander>
 
-				];
-			case 'tactical-map':
-				return [
-					<Expander key='image' title='Use a battlemap'>
-						<Space orientation='vertical' style={{ width: '100%' }}>
-							<Segmented
-								block={true}
-								options={[
-									{ value: 'image', label: 'Image' },
-									{ value: 'video', label: 'Animated' }
-								]}
-								value={mapImportType}
-								onChange={setMapImportType}
-							/>
-							<Upload
-								style={{ width: '100%' }}
-								accept={mapImportType === 'image' ? '.png,.webp,.gif,.jpg,.jpeg,.svg' : '.mp4,.webm'}
-								showUploadList={false}
-								beforeUpload={file => {
-									const reader = new FileReader();
-									reader.onload = progress => {
-										if (progress.target) {
-											const content = progress.target.result as string;
-											setMapImportData(content);
-										}
-									};
-									reader.readAsDataURL(file);
-									return false;
-								}}
-							>
-								<Button block={true}>
-									<DownloadOutlined />
-									Choose file
-								</Button>
-							</Upload>
-							{
-								mapImportData ?
-									<>
-										{
-											mapImportType === 'image' ?
-												<img
-													style={{ width: '100%' }}
-													src={mapImportData}
-												/>
-												:
-												<video
-													style={{ width: '100%' }}
-													src={mapImportData}
-													autoPlay={true}
-													controls={false}
-													loop={true}
-													muted={true}
-												/>
-										}
-										<Flex align='center' justify='space-between' gap={10}>
-											<NumberSpin min={1} value={mapImportWidth} onChange={setMapImportWidth}>
-												<Field orientation='vertical' label='Width' value={mapImportWidth} />
-											</NumberSpin>
-											<NumberSpin min={1} value={mapImportHeight} onChange={setMapImportHeight}>
-												<Field orientation='vertical' label='Height' value={mapImportHeight} />
-											</NumberSpin>
-										</Flex>
-										<Button block={true} type='primary' onClick={createImageMap}>Create</Button>
-									</>
-									: null
-							}
-						</Space>
-					</Expander>,
-					<Expander key='random' title='Generate a random map'>
-						<Segmented
-							style={{ marginTop: '15px' }}
-							block={true}
-							options={[
-								{ value: 'dungeon', label: 'Dungeon' },
-								{ value: 'cavern', label: 'Cavern' }
-							]}
-							value={mapGenerateType}
-							onChange={setMapGenerateType}
-						/>
-						<NumberSpin min={1} value={mapGenerateSize} onChange={setMapGenerateSize}>
-							<Field orientation='vertical' label={mapGenerateType === 'dungeon' ? 'Rooms' : 'Size'} value={mapGenerateSize} />
-						</NumberSpin>
-						<Button block={true} type='primary' icon={<ThunderboltOutlined />} onClick={generateMap}>Generate</Button>
-					</Expander>
 				];
 			default:
 				return [];

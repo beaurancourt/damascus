@@ -42,9 +42,6 @@ import { Project } from '@/models/project';
 import { ProjectEditPanel } from '@/components/panels/edit/project-edit/project-edit';
 import { SubClass } from '@/models/subclass';
 import { SubClassEditPanel } from '@/components/panels/edit/subclass-edit/subclass-edit-panel';
-import { TacticalMap } from '@/models/tactical-map';
-import { TacticalMapDisplayType } from '@/enums/tactical-map-display-type';
-import { TacticalMapPanel } from '@/components/panels/elements/tactical-map-panel/tactical-map-panel';
 import { Terrain } from '@/models/terrain';
 import { TerrainEditPanel } from '@/components/panels/edit/terrain-edit/terrain-edit-panel';
 import { Title } from '@/models/title';
@@ -124,9 +121,6 @@ export const LibraryEditPage = (props: Props) => {
 				break;
 			case 'subclass':
 				original = sourcebook.subclasses.find(e => e.id === elementID)!;
-				break;
-			case 'tactical-map':
-				original = sourcebook.tacticalMaps.find(e => e.id === elementID)!;
 				break;
 			case 'terrain':
 				original = sourcebook.terrain.find(e => e.id === elementID)!;
@@ -326,19 +320,6 @@ export const LibraryEditPage = (props: Props) => {
 						mode={PanelMode.Full}
 						onChange={applyChanges}
 					/>
-				);
-			case 'tactical-map':
-				return (
-					<div className='tactical-map-container'>
-						<TacticalMapPanel
-							key={element.id}
-							map={element as TacticalMap}
-							display={TacticalMapDisplayType.DirectorEdit}
-							sourcebooks={props.sourcebooks}
-							mode={PanelMode.Full}
-							updateMap={applyChanges}
-						/>
-					</div>
 				);
 			case 'terrain':
 				return (

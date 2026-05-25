@@ -30,7 +30,6 @@ import { SkillList } from '@/enums/skill-list';
 import { SourcebookData } from '@/data/sourcebook-data';
 import { SourcebookUpdateLogic } from './update/sourcebook-update-logic';
 import { SubClass } from '@/models/subclass';
-import { TacticalMap } from '@/models/tactical-map';
 import { Terrain } from '@/models/terrain';
 import { Title } from '@/models/title';
 
@@ -70,7 +69,6 @@ export class SourcebookLogic {
 			...sourcebook.perks.map(x => ({ element: x, type: 'perk' as SourcebookElementKind })),
 			...sourcebook.projects.map(x => ({ element: x, type: 'project' as SourcebookElementKind })),
 			...sourcebook.subclasses.map(x => ({ element: x, type: 'subclass' as SourcebookElementKind })),
-			...sourcebook.tacticalMaps.map(x => ({ element: x, type: 'tactical-map' as SourcebookElementKind })),
 			...sourcebook.terrain.map(x => ({ element: x, type: 'terrain' as SourcebookElementKind })),
 			...sourcebook.titles.map(x => ({ element: x, type: 'title' as SourcebookElementKind }))
 		];
@@ -164,10 +162,6 @@ export class SourcebookLogic {
 
 	static getSubclassSourcebook = (sourcebooks: Sourcebook[], subclass: SubClass) => {
 		return sourcebooks.find(s => SourcebookLogic.getSubclasses([ s ], true).some(s => s.id === subclass.id));
-	};
-
-	static getTacticalMapSourcebook = (sourcebooks: Sourcebook[], map: TacticalMap) => {
-		return sourcebooks.find(s => SourcebookLogic.getTacticalMaps([ s ]).some(tm => tm.id === map.id));
 	};
 
 	static getTerrainSourcebook = (sourcebooks: Sourcebook[], terrain: Terrain) => {
@@ -371,16 +365,6 @@ export class SourcebookLogic {
 			if (includeFromClasses) {
 				list.push(...sourcebook.classes.flatMap(c => c.subclasses));
 			}
-		});
-
-		return Collections.sort(list, item => item.name);
-	};
-
-	static getTacticalMaps = (sourcebooks: Sourcebook[]) => {
-		const list: TacticalMap[] = [];
-
-		sourcebooks.forEach(sourcebook => {
-			list.push(...sourcebook.tacticalMaps);
 		});
 
 		return Collections.sort(list, item => item.name);

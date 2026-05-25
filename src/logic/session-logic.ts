@@ -12,7 +12,6 @@ import { Negotiation } from '@/models/negotiation';
 import { Options } from '@/models/options';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
-import { TacticalMap } from '@/models/tactical-map';
 import { Utils } from '@/utils/utils';
 
 export class SessionLogic {
@@ -127,13 +126,6 @@ export class SessionLogic {
 
 	static startNegotiation = (negotiation: Negotiation) => {
 		const copy = Utils.copy(negotiation);
-		copy.id = Utils.guid();
-
-		return copy;
-	};
-
-	static startMap = (map: TacticalMap) => {
-		const copy = Utils.copy(map);
 		copy.id = Utils.guid();
 
 		return copy;

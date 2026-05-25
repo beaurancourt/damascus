@@ -19,8 +19,6 @@ import { PowerRollPanel } from '@/components/panels/power-roll/power-roll-panel'
 import { SashPanel } from '@/components/panels/sash/sash-panel';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
-import { TacticalMapDisplayType } from '@/enums/tactical-map-display-type';
-import { TacticalMapPanel } from '@/components/panels/elements/tactical-map-panel/tactical-map-panel';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useState } from 'react';
 
@@ -116,25 +114,6 @@ export const PlotPanel = (props: PlotPanelProps) => {
 						}
 						break;
 					}
-					case 'tactical-map': {
-						const map = SourcebookLogic.getTacticalMaps(props.sourcebooks).find(tm => tm.id === content.contentID);
-						if (map) {
-							return (
-								<SelectablePanel style={{ overflow: 'hidden' }} onSelect={() => navigation.goToLibrary('tactical-map', map.id)}>
-									<HeaderText level={1}>{map.name || 'Unnamed Map'}</HeaderText>
-									<div className='tactical-map-container'>
-										<TacticalMapPanel
-											map={map}
-											display={TacticalMapDisplayType.Thumbnail}
-											sourcebooks={props.sourcebooks}
-										/>
-									</div>
-									<SashPanel monogram='Map' />
-								</SelectablePanel>
-							);
-						}
-						break;
-					}
 					default: {
 						const element = SourcebookLogic.getElement(content.contentID, props.sourcebooks);
 						if (element) {
@@ -200,18 +179,6 @@ export const PlotPanel = (props: PlotPanelProps) => {
 									<Button title='Info' icon={<InfoCircleOutlined />} onClick={() => setSelectedReference(content)} />
 									<Button title='Run' icon={<PlayCircleOutlined />} onClick={() => props.onStart!('negotiation', negotiation, '')} />
 									<Button title='Edit' icon={<EditOutlined />} onClick={() => navigation.goToLibraryEdit('negotiation', SourcebookLogic.getNegotiationSourcebook(props.sourcebooks, negotiation)!.id, negotiation.id)} />
-								</Flex>
-							);
-						}
-						break;
-					}
-					case 'tactical-map': {
-						const map = SourcebookLogic.getTacticalMaps(props.sourcebooks).find(tm => tm.id === content.contentID);
-						if (map) {
-							return (
-								<Flex vertical={true} gap={5}>
-									<Button title='Run' icon={<PlayCircleOutlined />} onClick={() => props.onStart!('tactical-map', map, '')} />
-									<Button title='Edit' icon={<EditOutlined />} onClick={() => navigation.goToLibraryEdit('tactical-map', SourcebookLogic.getTacticalMapSourcebook(props.sourcebooks, map)!.id, map.id)} />
 								</Flex>
 							);
 						}

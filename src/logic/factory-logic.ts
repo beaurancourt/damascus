@@ -1,7 +1,6 @@
 import { Ability, AbilityDistance, AbilitySectionField, AbilitySectionPackage, AbilitySectionRoll, AbilitySectionText, AbilityType } from '@/models/ability';
 import { Encounter, EncounterGroup, EncounterObjective } from '@/models/encounter';
 import { Kit, KitDamageBonus } from '@/models/kit';
-import { MapFog, MapMini, MapTile, MapWall, MapZone, TacticalMap } from '@/models/tactical-map';
 import { MonsterFilter, TerrainFilter } from '@/models/filter';
 import { Montage, MontageChallenge, MontageSection } from '@/models/montage';
 import { Project, ProjectProgress } from '@/models/project';
@@ -162,7 +161,6 @@ export class FactoryLogic {
 			perks: [],
 			projects: [],
 			subclasses: [],
-			tacticalMaps: [],
 			terrain: [],
 			titles: [],
 			skills: [],
@@ -176,7 +174,6 @@ export class FactoryLogic {
 			encounters: [],
 			montages: [],
 			negotiations: [],
-			tacticalMaps: [],
 			playerViewID: null
 		};
 	};
@@ -927,103 +924,6 @@ export class FactoryLogic {
 			tier1: data.tier1,
 			tier2: data.tier2,
 			tier3: data.tier3
-		};
-	};
-
-	static createTacticalMap = (): TacticalMap => {
-		return {
-			id: Utils.guid(),
-			name: '',
-			description: '',
-			items: []
-		};
-	};
-
-	static createMapTile = (): MapTile => {
-		return {
-			id: Utils.guid(),
-			type: 'tile',
-			notes: '',
-			position: {
-				x: 0,
-				y: 0,
-				z: 0
-			},
-			dimensions: {
-				width: 4,
-				height: 4,
-				depth: 1
-			},
-			corners: 'square',
-			content: {
-				type: 'color',
-				color: 'C8C8C8FF'
-			}
-		};
-	};
-
-	static createMapWall = (): MapWall => {
-		return {
-			id: Utils.guid(),
-			type: 'wall',
-			notes: '',
-			pointA: { x: 0, y: 0, z: 0 },
-			pointB: { x: 0, y: 0, z: 0 },
-			blocksLineOfSight: true,
-			blocksMovement: true,
-			isOpenable: false,
-			isConcealed: false
-		};
-	};
-
-	static createMapZone = (): MapZone => {
-		return {
-			id: Utils.guid(),
-			type: 'zone',
-			notes: '',
-			position: {
-				x: 0,
-				y: 0,
-				z: 0
-			},
-			dimensions: {
-				width: 4,
-				height: 4,
-				depth: 1
-			},
-			corners: 'rounded',
-			color: '5599ff80'
-		};
-	};
-
-	static createMapMini = (): MapMini => {
-		return {
-			id: Utils.guid(),
-			type: 'mini',
-			notes: '',
-			position: {
-				x: 0,
-				y: 0,
-				z: 0
-			},
-			dimensions: {
-				width: 1,
-				height: 1,
-				depth: 1
-			},
-			content: null
-		};
-	};
-
-	static createMapFog = (): MapFog => {
-		return {
-			id: Utils.guid(),
-			type: 'fog',
-			position: {
-				x: 0,
-				y: 0,
-				z: 0
-			}
 		};
 	};
 

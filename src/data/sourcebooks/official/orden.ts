@@ -37,7 +37,6 @@ export const orden: Sourcebook = {
 	perks: [],
 	projects: [],
 	subclasses: [],
-	tacticalMaps: [],
 	terrain: [],
 	titles: [],
 	skills: [

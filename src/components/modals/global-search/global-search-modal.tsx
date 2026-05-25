@@ -87,7 +87,7 @@ export const GlobalSearchModal = (props: Props) => {
 		'monster', 'monster-group', 'encounter',
 		'class', 'subclass', 'ancestry', 'career', 'culture', 'kit', 'complication',
 		'item', 'domain', 'imbuement', 'perk', 'project', 'title',
-		'adventure', 'montage', 'negotiation', 'tactical-map', 'terrain'
+		'adventure', 'montage', 'negotiation', 'terrain'
 	];
 
 	const visibleKinds = KIND_ORDER.filter(k => grouped.has(k) && grouped.get(k)!.length > 0);

@@ -12,7 +12,6 @@ import { EncounterData } from '@/data/encounter-data';
 import { EncounterRunPanel } from '@/components/panels/run/encounter-run/encounter-run-panel';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { Format } from '@/utils/format';
-import { Hero } from '@/models/hero';
 import { Montage } from '@/models/montage';
 import { MontageData } from '@/data/montage-data';
 import { MontageRunPanel } from '@/components/panels/run/montage-run/montage-run-panel';
@@ -20,12 +19,8 @@ import { Negotiation } from '@/models/negotiation';
 import { NegotiationData } from '@/data/negotiation-data';
 import { NegotiationRunPanel } from '@/components/panels/run/negotiation-run/negotiation-run-panel';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
-import { PanelMode } from '@/enums/panel-mode';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
-import { TacticalMap } from '@/models/tactical-map';
-import { TacticalMapDisplayType } from '@/enums/tactical-map-display-type';
-import { TacticalMapPanel } from '@/components/panels/elements/tactical-map-panel/tactical-map-panel';
 import { TextInput } from '@/components/controls/text-input/text-input';
 import { Utils } from '@/utils/utils';
 import { useIsSmall } from '@/hooks/use-is-small';
@@ -42,16 +37,12 @@ interface Props {
 	startEncounter: (encounter: Encounter) => Promise<string>;
 	startMontage: (montage: Montage) => Promise<string>;
 	startNegotiation: (negotiation: Negotiation) => Promise<string>;
-	startMap: (map: TacticalMap) => Promise<string>;
 	startCounter: (counter: Counter) => Promise<string>;
-	updateHero: (hero: Hero) => void;
 	updateEncounter: (encounter: Encounter) => void;
 	updateMontage: (montage: Montage) => void;
 	updateNegotiation: (negotiation: Negotiation) => void;
-	updateMap: (map: TacticalMap) => void;
 	updateCounter: (counter: Counter) => void;
 	finishSessionElement: (id: string) => string | null;
-	showEncounterTools: (encounter: Encounter, tool: string) => void;
 }
 
 export const SessionDirectorPage = (props: Props) => {
@@ -132,25 +123,6 @@ export const SessionDirectorPage = (props: Props) => {
 				);
 			}
 
-			const map = session.tacticalMaps.find(tm => tm.id === selectedElementID);
-			if (map) {
-				return (
-					<div className='session-page-content-container'>
-						<TacticalMapPanel
-							key={map.id}
-							map={map}
-							display={TacticalMapDisplayType.DirectorEdit}
-							encounters={session.encounters}
-							sourcebooks={props.sourcebooks}
-							mode={PanelMode.Full}
-							updateMap={props.updateMap}
-							updateHero={props.updateHero}
-							updateEncounter={props.updateEncounter}
-						/>
-					</div>
-				);
-			}
-
 			const counter = session.counters.find(c => c.id === selectedElementID);
 			if (counter) {
 				return (
@@ -186,10 +158,6 @@ export const SessionDirectorPage = (props: Props) => {
 
 		const startNegotiation = (negotiation: Negotiation) => {
 			props.startNegotiation(negotiation).then(setSelectedElementID);
-		};
-
-		const startMap = (map: TacticalMap) => {
-			props.startMap(map).then(setSelectedElementID);
 		};
 
 		const startCounter = () => {
@@ -321,27 +289,6 @@ export const SessionDirectorPage = (props: Props) => {
 						</div>
 					</Space>
 				);
-			case 'map':
-				return (
-					<Space orientation='vertical' style={{ width: '100%' }}>
-						<div className='ds-text bold-text'>Your maps:</div>
-						{
-							SourcebookLogic.getTacticalMaps(props.sourcebooks).map(tm => (
-								<Button key={tm.id} block={true} onClick={() => startMap(tm)}>{tm.name || 'Unnamed Map'}</Button>
-							))
-						}
-						{
-							SourcebookLogic.getTacticalMaps(props.sourcebooks).length === 0 ?
-								<Alert
-									type='warning'
-									showIcon={true}
-									title='You have not created any maps.'
-									action={<Button type='text' title='Maps' icon={<ReadOutlined />} onClick={() => navigation.goToLibrary('tactical-map')} />}
-								/>
-								: null
-						}
-					</Space>
-				);
 			case 'counter':
 				return (
 					<Space orientation='vertical' style={{ width: '100%' }}>
@@ -382,7 +329,7 @@ export const SessionDirectorPage = (props: Props) => {
 										<Segmented
 											name='startelements'
 											block={true}
-											options={[ 'encounter', 'montage', 'negotiation', 'map', 'counter' ].map(o => ({ value: o, label: Format.capitalize(o) }))}
+											options={[ 'encounter', 'montage', 'negotiation', 'counter' ].map(o => ({ value: o, label: Format.capitalize(o) }))}
 											value={startElement}
 											onChange={setStartElement}
 										/>

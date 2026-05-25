@@ -41,7 +41,6 @@ export type SearchKind =
 	| 'adventure'
 	| 'montage'
 	| 'negotiation'
-	| 'tactical-map'
 	| 'terrain'
 	| 'rule'
 	| 'condition';
@@ -67,7 +66,6 @@ const KIND_LABEL: Record<SearchKind, string> = {
 	adventure: 'Adventures',
 	montage: 'Montages',
 	negotiation: 'Negotiations',
-	'tactical-map': 'Tactical Maps',
 	terrain: 'Terrain',
 	rule: 'Rules',
 	condition: 'Conditions'
@@ -191,7 +189,6 @@ export class GlobalSearchLogic {
 		SourcebookLogic.getEncounters(sourcebooks).forEach(e => push('encounter', e.id, e.name, e.description, { type: 'library', kind: 'encounter', id: e.id }));
 		SourcebookLogic.getMontages(sourcebooks).forEach(e => push('montage', e.id, e.name, e.description, { type: 'library', kind: 'montage', id: e.id }));
 		SourcebookLogic.getNegotiations(sourcebooks).forEach(e => push('negotiation', e.id, e.name, e.description, { type: 'library', kind: 'negotiation', id: e.id }));
-		SourcebookLogic.getTacticalMaps(sourcebooks).forEach(e => push('tactical-map', e.id, e.name, e.description, { type: 'library', kind: 'tactical-map', id: e.id }));
 		SourcebookLogic.getTerrains(sourcebooks).forEach(e => push('terrain', e.id, e.name, e.description, { type: 'library', kind: 'terrain', id: e.id }));
 
 		// Monster groups and individual monsters

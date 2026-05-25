@@ -222,27 +222,6 @@ export const SettingsModal = (props: Props) => {
 		);
 	};
 
-	const getTacticalMapsSection = () => (
-		<Expander title='Tactical Maps'>
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				<NumberSpin
-					label='Director Map Grid Size'
-					min={5}
-					steps={[ 5 ]}
-					value={options.gridSize}
-					onChange={v => updateOption('gridSize', v)}
-				/>
-				<NumberSpin
-					label='Player Map Grid Size'
-					min={5}
-					steps={[ 5 ]}
-					value={options.playerGridSize}
-					onChange={v => updateOption('playerGridSize', v)}
-				/>
-			</Space>
-		</Expander>
-	);
-
 	return (
 		<Modal
 			content={
@@ -252,7 +231,6 @@ export const SettingsModal = (props: Props) => {
 						{getHeroesSection()}
 						{getEncountersSection()}
 						{getDifficultySection()}
-						{getTacticalMapsSection()}
 					</Space>
 				</div>
 			}

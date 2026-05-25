@@ -1045,7 +1045,6 @@ While you are riding along, you can’t act except to spend a free maneuver to r
 	],
 	projects: [],
 	subclasses: [],
-	tacticalMaps: [],
 	terrain: [],
 	titles: [],
 	skills: [],

@@ -68,9 +68,6 @@ export class SourcebookUpdateLogic {
 		if (sourcebook.subclasses === undefined) {
 			sourcebook.subclasses = [];
 		}
-		if (sourcebook.tacticalMaps === undefined) {
-			sourcebook.tacticalMaps = [];
-		}
 		if (sourcebook.terrain === undefined) {
 			sourcebook.terrain = [];
 		}
@@ -95,7 +92,6 @@ export class SourcebookUpdateLogic {
 		sourcebook.perks = Collections.distinct(sourcebook.perks, a => a.id);
 		sourcebook.projects = Collections.distinct(sourcebook.projects, a => a.id);
 		sourcebook.subclasses = Collections.distinct(sourcebook.subclasses, a => a.id);
-		sourcebook.tacticalMaps = Collections.distinct(sourcebook.tacticalMaps, a => a.id);
 		sourcebook.terrain = Collections.distinct(sourcebook.terrain, a => a.id);
 		sourcebook.titles = Collections.distinct(sourcebook.titles, a => a.id);
 
@@ -363,20 +359,6 @@ ${e.objective.victories}`
 			if (sc.abilities === undefined) {
 				sc.abilities = [];
 			}
-		});
-
-		sourcebook.tacticalMaps.forEach(tm => {
-			if (tm.items === undefined) {
-				tm.items = [];
-			}
-
-			tm.items
-				.filter(item => item.type === 'tile')
-				.forEach(tile => {
-					if (tile.content === undefined) {
-						tile.content = { type: 'color', color: 'C8C8C8FF' };
-					}
-				});
 		});
 
 		sourcebook.terrain.forEach(terrain => {

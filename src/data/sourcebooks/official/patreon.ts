@@ -23,7 +23,6 @@ export const patreon: Sourcebook = {
 	perks: [],
 	projects: [],
 	subclasses: [],
-	tacticalMaps: [],
 	terrain: [],
 	titles: [],
 	skills: [],

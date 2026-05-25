@@ -178,22 +178,5 @@ ${e.objective.victories}`
 			}
 		});
 
-		if (session.tacticalMaps === undefined) {
-			session.tacticalMaps = [];
-		}
-
-		session.tacticalMaps.forEach(tm => {
-			if (tm.items === undefined) {
-				tm.items = [];
-			}
-
-			tm.items
-				.filter(item => item.type === 'tile')
-				.forEach(tile => {
-					if (tile.content === undefined) {
-						tile.content = { type: 'color', color: 'C8C8C8FF' };
-					}
-				});
-		});
 	};
 }

@@ -48,7 +48,6 @@ export const summonerSourcebook: Sourcebook = {
 	perks: [],
 	projects: [],
 	subclasses: [],
-	tacticalMaps: [],
 	terrain: [],
 	titles: [
 		TitleData.safeguarded,

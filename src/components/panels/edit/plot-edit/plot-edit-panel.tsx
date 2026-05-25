@@ -24,8 +24,6 @@ import { PanelMode } from '@/enums/panel-mode';
 import { PlotPanel } from '@/components/panels/elements/plot-panel/plot-panel';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
-import { TacticalMapDisplayType } from '@/enums/tactical-map-display-type';
-import { TacticalMapPanel } from '@/components/panels/elements/tactical-map-panel/tactical-map-panel';
 import { Utils } from '@/utils/utils';
 import { useState } from 'react';
 
@@ -430,17 +428,6 @@ export const PlotEditPanel = (props: Props) => {
 										}
 										break;
 									}
-									case 'tactical-map': {
-										const element = SourcebookLogic.getTacticalMaps(props.sourcebooks).find(tm => tm.id === c.contentID);
-										if (element) {
-											name = element.name;
-											tag = 'Tactical Map';
-											content = (
-												<TacticalMapPanel map={element} display={TacticalMapDisplayType.Thumbnail} sourcebooks={props.sourcebooks} />
-											);
-										}
-										break;
-									}
 									default: {
 										const element = SourcebookLogic.getElement(c.contentID, props.sourcebooks);
 										if (element) {
@@ -651,7 +638,6 @@ export const PlotEditPanel = (props: Props) => {
 											'perk',
 											'project',
 											'subclass',
-											'tactical-map',
 											'terrain',
 											'title'
 										].map(opt => ({ value: opt, label: <div className='ds-text'>{Format.capitalize(opt.split('-').join(' '))}</div> }))

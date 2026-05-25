@@ -19,7 +19,6 @@ import { Project } from '@/models/project';
 import { Skill } from '@/models/skill';
 import { SourcebookType } from '@/enums/sourcebook-type';
 import { SubClass } from '@/models/subclass';
-import { TacticalMap } from '@/models/tactical-map';
 import { Terrain } from '@/models/terrain';
 import { Title } from '@/models/title';
 
@@ -43,7 +42,6 @@ export interface Sourcebook extends Element {
 	perks: Perk[];
 	projects: Project[];
 	subclasses: SubClass[];
-	tacticalMaps: TacticalMap[];
 	terrain: Terrain[];
 	titles: Title[];
 
@@ -51,4 +49,4 @@ export interface Sourcebook extends Element {
 	languages: Language[];
 }
 
-export type SourcebookElementKind = 'adventure' | 'ancestry' | 'career' | 'class' | 'complication' | 'culture' | 'domain' | 'encounter' | 'imbuement' | 'item' | 'kit' | 'monster-group' | 'montage' | 'negotiation' | 'perk' | 'project' | 'subclass' | 'tactical-map' | 'terrain' | 'title';
+export type SourcebookElementKind = 'adventure' | 'ancestry' | 'career' | 'class' | 'complication' | 'culture' | 'domain' | 'encounter' | 'imbuement' | 'item' | 'kit' | 'monster-group' | 'montage' | 'negotiation' | 'perk' | 'project' | 'subclass' | 'terrain' | 'title';

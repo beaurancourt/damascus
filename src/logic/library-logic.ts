@@ -24,7 +24,6 @@ import { Project } from '@/models/project';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
 import { SubClass } from '@/models/subclass';
-import { TacticalMap } from '@/models/tactical-map';
 import { Terrain } from '@/models/terrain';
 import { Title } from '@/models/title';
 import { Utils } from '@/utils/utils';
@@ -276,19 +275,6 @@ export class LibraryLogic {
 		}
 	};
 
-	static getTacticalMaps = (sourcebooks: Sourcebook[], searchTerm: string) => {
-		try {
-			return SourcebookLogic.getTacticalMaps(sourcebooks)
-				.filter(item => Utils.textMatches([
-					item.name,
-					item.description
-				], searchTerm));
-		} catch (ex) {
-			console.error(ex);
-			return [];
-		}
-	};
-
 	static getTerrainObjects = (sourcebooks: Sourcebook[], searchTerm: string) => {
 		try {
 			return SourcebookLogic.getTerrains(sourcebooks)
@@ -375,9 +361,6 @@ export class LibraryLogic {
 				break;
 			case 'subclass':
 				sourcebook = SourcebookLogic.getSubclassSourcebook(sourcebooks, element as SubClass);
-				break;
-			case 'tactical-map':
-				sourcebook = SourcebookLogic.getTacticalMapSourcebook(sourcebooks, element as TacticalMap);
 				break;
 			case 'terrain':
 				sourcebook = SourcebookLogic.getTerrainSourcebook(sourcebooks, element as Terrain);

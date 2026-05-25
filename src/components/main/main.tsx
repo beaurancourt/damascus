@@ -24,7 +24,6 @@ import { ElementModal } from '@/components/modals/element/element-modal';
 import { Encounter } from '@/models/encounter';
 import { EncounterSlot } from '@/models/encounter-slot';
 import { EncounterImportModal } from '@/components/modals/encounter-import/encounter-import-modal';
-import { EncounterToolsModal } from '@/components/modals/encounter-tools/encounter-tools-modal';
 import { GlobalSearchModal } from '@/components/modals/global-search/global-search-modal';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { ErrorsModal } from '../modals/errors/errors-modal';
@@ -77,14 +76,12 @@ import { RulesPage } from '@/enums/rules-page';
 import { Session } from '@/models/session';
 import { SessionDirectorPage } from '@/components/pages/session/director/session-director-page';
 import { SessionLogic } from '@/logic/session-logic';
-import { SessionPlayerPage } from '@/components/pages/session/player/session-player-page';
 import { SettingsModal } from '@/components/modals/settings/settings-modal';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
 import { SourcebookUpdateLogic } from '@/logic/update/sourcebook-update-logic';
 import { SubClass } from '@/models/subclass';
 import { SummoningInfo } from '@/models/summon';
-import { TacticalMap } from '@/models/tactical-map';
 import { Terrain } from '@/models/terrain';
 import { TerrainModal } from '@/components/modals/terrain/terrain-modal';
 import { Title } from '@/models/title';
@@ -648,19 +645,6 @@ export const Main = () => {
 			return sc.id;
 		};
 
-		const createTacticalMap = (original: TacticalMap | null, sourcebook: Sourcebook) => {
-			let map: TacticalMap;
-			if (original) {
-				map = Utils.copy(original);
-				map.id = Utils.guid();
-			} else {
-				map = FactoryLogic.createTacticalMap();
-			}
-
-			sourcebook.tacticalMaps.push(map);
-			return map.id;
-		};
-
 		const createTerrain = (original: Terrain | null, sourcebook: Sourcebook) => {
 			let terrain: Terrain;
 			if (original) {
@@ -748,9 +732,6 @@ export const Main = () => {
 			case 'subclass':
 				id = createSubClass(original as SubClass | null, sourcebook);
 				break;
-			case 'tactical-map':
-				id = createTacticalMap(original as TacticalMap | null, sourcebook);
-				break;
 			case 'terrain':
 				id = createTerrain(original as Terrain | null, sourcebook);
 				break;
@@ -818,9 +799,6 @@ export const Main = () => {
 				break;
 			case 'subclass':
 				sourceSourcebook = SourcebookLogic.getSubclassSourcebook(sourcebooks, element as SubClass);
-				break;
-			case 'tactical-map':
-				sourceSourcebook = SourcebookLogic.getTacticalMapSourcebook(sourcebooks, element as TacticalMap);
 				break;
 			case 'terrain':
 				sourceSourcebook = SourcebookLogic.getTerrainSourcebook(sourcebooks, element as Terrain);
@@ -909,10 +887,6 @@ export const Main = () => {
 				destinationSourcebook.subclasses.push(element as SubClass);
 				sourceSourcebook.subclasses = sourceSourcebook.subclasses.filter(x => x.id !== element.id);
 				break;
-			case 'tactical-map':
-				destinationSourcebook.tacticalMaps.push(element as TacticalMap);
-				sourceSourcebook.tacticalMaps = sourceSourcebook.tacticalMaps.filter(x => x.id !== element.id);
-				break;
 			case 'terrain':
 				destinationSourcebook.terrain.push(element as Terrain);
 				sourceSourcebook.terrain = sourceSourcebook.terrain.filter(x => x.id !== element.id);
@@ -981,9 +955,6 @@ export const Main = () => {
 					break;
 				case 'subclass':
 					sourcebook.subclasses = sourcebook.subclasses.filter(x => x.id !== element.id);
-					break;
-				case 'tactical-map':
-					sourcebook.tacticalMaps = sourcebook.tacticalMaps.filter(x => x.id !== element.id);
 					break;
 				case 'terrain':
 					sourcebook.terrain = sourcebook.terrain.filter(x => x.id !== element.id);
@@ -1055,9 +1026,6 @@ export const Main = () => {
 					break;
 				case 'subclass':
 					sourcebook.subclasses = sourcebook.subclasses.map(x => x.id === element.id ? element : x) as SubClass[];
-					break;
-				case 'tactical-map':
-					sourcebook.tacticalMaps = sourcebook.tacticalMaps.map(x => x.id === element.id ? element : x) as TacticalMap[];
 					break;
 				case 'terrain':
 					sourcebook.terrain = sourcebook.terrain.map(x => x.id === element.id ? element : x) as Terrain[];
@@ -1167,10 +1135,6 @@ export const Main = () => {
 				sourcebook.subclasses.push(element as SubClass);
 				sourcebook.subclasses = Collections.sort<Element>(sourcebook.subclasses, item => item.name) as SubClass[];
 				break;
-			case 'tactical-map':
-				sourcebook.tacticalMaps.push(element as TacticalMap);
-				sourcebook.tacticalMaps = Collections.sort<Element>(sourcebook.tacticalMaps, item => item.name) as TacticalMap[];
-				break;
 			case 'terrain':
 				sourcebook.terrain.push(element as Terrain);
 				sourcebook.terrain = Collections.sort<Element>(sourcebook.terrain, item => item.name) as Terrain[];
@@ -1231,17 +1195,6 @@ export const Main = () => {
 		return copy.id;
 	};
 
-	const startMap = async (map: TacticalMap) => {
-		const copy = SessionLogic.startMap(map);
-
-		const sessionCopy = Utils.copy(session);
-		sessionCopy.tacticalMaps.push(copy);
-
-		await persistSession(sessionCopy);
-		await navigation.goToSession();
-		return copy.id;
-	};
-
 	const startCounter = async (counter: Counter) => {
 		const copy = SessionLogic.startCounter(counter);
 
@@ -1286,17 +1239,6 @@ export const Main = () => {
 		persistSession(copy);
 	};
 
-	const updateMap = (map: TacticalMap) => {
-		const copy = Utils.copy(session);
-
-		const index = copy.tacticalMaps.findIndex(tm => tm.id === map.id);
-		if (index !== -1) {
-			copy.tacticalMaps[index] = map;
-		}
-
-		persistSession(copy);
-	};
-
 	const updateCounter = (counter: Counter) => {
 		const copy = Utils.copy(session);
 
@@ -1314,7 +1256,6 @@ export const Main = () => {
 		copy.encounters = copy.encounters.filter(e => e.id !== id);
 		copy.montages = copy.montages.filter(m => m.id !== id);
 		copy.negotiations = copy.negotiations.filter(n => n.id !== id);
-		copy.tacticalMaps = copy.tacticalMaps.filter(tm => tm.id !== id);
 		copy.counters = copy.counters.filter(c => c.id !== id);
 
 		if (copy.playerViewID === id) {
@@ -1648,21 +1589,6 @@ export const Main = () => {
 		);
 	};
 
-	const showEncounterTools = (encounter: Encounter, tool: string) => {
-		switch (tool) {
-			case 'minis':
-				setDrawer(
-					<EncounterToolsModal
-						encounter={encounter}
-						sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-						onClose={() => setDrawer(null)}
-					/>
-				);
-				break;
-		}
-	};
-
-
 	// #endregion
 
 	const footerParams: FooterParams = {
@@ -1774,8 +1700,7 @@ export const Main = () => {
 									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
 									params={footerParams}
 									showMonster={monster => onSelectMonster(undefined, monster, undefined, undefined)}
-									showEncounterTools={showEncounterTools}
-									showEncounterImport={showEncounterImport}
+										showEncounterImport={showEncounterImport}
 									createElement={(kind, sourcebookID, element) => createLibraryElement(kind, sourcebookID, element)}
 									importElement={importLibraryElement}
 									moveElement={moveLibraryElement}
@@ -1784,7 +1709,6 @@ export const Main = () => {
 									startEncounter={startEncounter}
 									startMontage={startMontage}
 									startNegotiation={startNegotiation}
-									startMap={startMap}
 								/>
 							}
 						/>
@@ -1815,26 +1739,13 @@ export const Main = () => {
 									startEncounter={startEncounter}
 									startMontage={startMontage}
 									startNegotiation={startNegotiation}
-									startMap={startMap}
 									startCounter={startCounter}
-									updateHero={persistHero}
 									updateEncounter={updateEncounter}
 									updateMontage={updateMontage}
 									updateNegotiation={updateNegotiation}
-									updateMap={updateMap}
 									updateCounter={updateCounter}
 									finishSessionElement={finishSessionElement}
-									showEncounterTools={showEncounterTools}
-								/>
-							}
-						/>
-						<Route
-							path='player'
-							element={
-								<SessionPlayerPage
-									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-									params={footerParams}
-								/>
+									/>
 							}
 						/>
 					</Route>

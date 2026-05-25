@@ -571,7 +571,6 @@ export const core: Sourcebook = {
 		ProjectData.spendTimeWithLovedOnes
 	],
 	subclasses: [],
-	tacticalMaps: [],
 	terrain: [
 		TerrainData.angryBeehive,
 		TerrainData.brambles,

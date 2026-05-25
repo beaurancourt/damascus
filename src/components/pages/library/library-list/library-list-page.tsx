@@ -59,9 +59,6 @@ import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
 import { SubClass } from '@/models/subclass';
 import { SubclassPanel } from '@/components/panels/elements/subclass-panel/subclass-panel';
-import { TacticalMap } from '@/models/tactical-map';
-import { TacticalMapDisplayType } from '@/enums/tactical-map-display-type';
-import { TacticalMapPanel } from '@/components/panels/elements/tactical-map-panel/tactical-map-panel';
 import { Terrain } from '@/models/terrain';
 import { TerrainPanel } from '@/components/panels/elements/terrain-panel/terrain-panel';
 import { Title } from '@/models/title';
@@ -78,7 +75,6 @@ interface Props {
 	sourcebooks: Sourcebook[];
 	params: FooterParams;
 	showMonster: (monster: Monster) => void;
-	showEncounterTools: (encounter: Encounter, tool: string) => void;
 	showEncounterImport: (sourcebookID: string, setSourcebookID: (id: string) => void) => void;
 	createElement: (kind: SourcebookElementKind, sourcebookID: string, element: Element | null) => void;
 	importElement: (kind: SourcebookElementKind, sourcebookID: string, element: Element) => void;
@@ -88,7 +84,6 @@ interface Props {
 	startEncounter: (encounter: Encounter) => void;
 	startMontage: (montage: Montage) => void;
 	startNegotiation: (negotiation: Negotiation) => void;
-	startMap: (map: TacticalMap) => void;
 }
 
 export const LibraryListPage = (props: Props) => {
@@ -183,9 +178,6 @@ export const LibraryListPage = (props: Props) => {
 			case 'subclass':
 				list = LibraryLogic.getSubclasses(getSourcebooks(), searchTerm, showSubclassesFromClasses);
 				break;
-			case 'tactical-map':
-				list = LibraryLogic.getTacticalMaps(getSourcebooks(), searchTerm);
-				break;
 			case 'terrain':
 				list = LibraryLogic.getTerrainObjects(getSourcebooks(), searchTerm);
 				break;
@@ -223,7 +215,7 @@ export const LibraryListPage = (props: Props) => {
 				getPanel = (element: Element) => <DomainPanel key={element.id} domain={element as Domain} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
 				break;
 			case 'encounter':
-				getPanel = (element: Element) => <EncounterPanel key={element.id} encounter={element as Encounter} sourcebooks={props.sourcebooks} mode={PanelMode.Full} showTools={tool => props.showEncounterTools(element as Encounter, tool)} />;
+				getPanel = (element: Element) => <EncounterPanel key={element.id} encounter={element as Encounter} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
 				break;
 			case 'imbuement':
 				getPanel = (element: Element) => <ImbuementPanel key={element.id} imbuement={element as Imbuement} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
@@ -256,9 +248,6 @@ export const LibraryListPage = (props: Props) => {
 				break;
 			case 'subclass':
 				getPanel = (element: Element) => <SubclassPanel key={element.id} subclass={element as SubClass} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
-				break;
-			case 'tactical-map':
-				getPanel = (element: Element) => <TacticalMapPanel key={element.id} map={element as TacticalMap} sourcebooks={props.sourcebooks} display={TacticalMapDisplayType.DirectorView} mode={PanelMode.Full} />;
 				break;
 			case 'terrain':
 				getPanel = (element: Element) => <TerrainPanel key={element.id} terrain={element as Terrain} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />;
@@ -417,7 +406,6 @@ export const LibraryListPage = (props: Props) => {
 								<SelectorRow selected={category === 'monster-group'} content={showMonsters ? 'Monsters' : 'Monster Groups'} info={showMonsters ? getList('monster').length : getList('monster-group').length} onSelect={() => navigation.goToLibrary('monster-group')} />
 								<SelectorRow selected={category === 'montage'} content='Montages' info={getList('montage').length} onSelect={() => navigation.goToLibrary('montage')} />
 								<SelectorRow selected={category === 'negotiation'} content='Negotiations' info={getList('negotiation').length} onSelect={() => navigation.goToLibrary('negotiation')} />
-								<SelectorRow selected={category === 'tactical-map'} content='Tactical Maps' info={getList('tactical-map').length} onSelect={() => navigation.goToLibrary('tactical-map')} />
 								<SelectorRow selected={category === 'terrain'} content='Terrain' info={getList('terrain').length} onSelect={() => navigation.goToLibrary('terrain')} />
 							</div>
 							<div className='selection-list elements'>
@@ -477,13 +465,6 @@ export const LibraryListPage = (props: Props) => {
 						label: isSmall ? undefined : 'Start',
 						icon: <PlayCircleOutlined />,
 						onClick: () => props.startNegotiation(element as Negotiation)
-					} as ButtonConfig;
-				case 'tactical-map':
-					return {
-						type: 'button',
-						label: isSmall ? undefined : 'Start',
-						icon: <PlayCircleOutlined />,
-						onClick: () => props.startMap(element as TacticalMap)
 					} as ButtonConfig;
 			}
 
@@ -708,7 +689,6 @@ export const LibraryListPage = (props: Props) => {
 		{ key: 'monster-group', label: showMonsters ? 'Monsters' : 'Monster Groups' },
 		{ key: 'montage', label: 'Montages' },
 		{ key: 'negotiation', label: 'Negotiations' },
-		{ key: 'tactical-map', label: 'Tactical Maps' },
 		{ key: 'terrain', label: 'Terrain' }
 	];
 

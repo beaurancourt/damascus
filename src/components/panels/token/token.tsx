@@ -4,7 +4,6 @@ import { ErrorBoundary } from '@/components/controls/error-boundary/error-bounda
 import { Format } from '@/utils/format';
 import { HeroLogic } from '@/logic/hero-logic';
 import { Monster } from '@/models/monster';
-import { MonsterGroup } from '@/models/monster-group';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterRoleType } from '@/enums/monster-role-type';
 import { Pregen } from '@/models/pregen';
@@ -160,29 +159,6 @@ export const PregenInfo = (props: PregenInfoProps) => {
 					<div className='combatant-info'>{props.pregen.description}</div>
 				</div>
 			</div>
-		</ErrorBoundary>
-	);
-};
-
-interface MonsterTokenProps {
-	monster: Monster;
-	monsterGroup?: MonsterGroup;
-	size?: number;
-	onClick?: () => void;
-}
-
-export const MonsterToken = (props: MonsterTokenProps) => {
-	return (
-		<ErrorBoundary>
-			<Token
-				name={MonsterLogic.getMonsterName(props.monster, props.monsterGroup)}
-				picture={props.monster.picture || props.monsterGroup?.picture || undefined}
-				role={props.monster.role.type}
-				type='monster'
-				isDefeated={props.monster.state.defeated}
-				size={props.size}
-				onClick={props.onClick}
-			/>
 		</ErrorBoundary>
 	);
 };
