@@ -189,17 +189,21 @@ export const MonsterToken = (props: MonsterTokenProps) => {
 
 interface MonsterInfoProps {
 	monster: Monster;
+	showEV?: boolean;
 	style?: CSSProperties;
 }
 
 export const MonsterInfo = (props: MonsterInfoProps) => {
+	const description = MonsterLogic.getMonsterDescription(props.monster);
+	const info = props.showEV && props.monster.encounterValue > 0
+		? `${description} · EV ${props.monster.encounterValue}`
+		: description;
 	return (
 		<ErrorBoundary>
 			<div className='combatant-button-content' style={props.style}>
-				<MonsterToken monster={props.monster} size={30} />
 				<div className='combatant-button-details'>
 					<div className='combatant-name'>{props.monster.name}</div>
-					<div className='combatant-info'>{MonsterLogic.getMonsterDescription(props.monster)}</div>
+					<div className='combatant-info'>{info}</div>
 				</div>
 			</div>
 		</ErrorBoundary>

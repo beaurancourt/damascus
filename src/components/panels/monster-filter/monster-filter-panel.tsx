@@ -1,9 +1,9 @@
 import { Flex, Select, Slider, Space, Tag } from 'antd';
 import { Collections } from '@/utils/collections';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
-import { Field } from '@/components/controls/field/field';
 import { Monster } from '@/models/monster';
 import { MonsterFilter } from '@/models/filter';
+import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { MonsterRoleType } from '@/enums/monster-role-type';
 import { TextInput } from '@/components/controls/text-input/text-input';
@@ -41,17 +41,18 @@ export const MonsterFilterPanel = (props: Props) => {
 	};
 
 	const toggleRoles = (value: boolean) => {
-		setFilterRoles(value ? [ MonsterRoleType.Ambusher ] : []);
+		setFilterRoles([]);
 		setShowRole(value);
 	};
 
 	const toggleOrg = (value: boolean) => {
-		setFilterOrganizations(value ? [ MonsterOrganizationType.Platoon ] : []);
+		setFilterOrganizations([]);
 		setShowOrg(value);
 	};
 
 	const toggleSize = (value: boolean) => {
-		setFilterSize(value ? [ 1, 2 ] : []);
+		// Default range spans every available size step: 1T (0) up through the largest.
+		setFilterSize(value ? [ 0, maxSizeIndex ] : []);
 		setShowSize(value);
 	};
 
@@ -108,7 +109,11 @@ export const MonsterFilterPanel = (props: Props) => {
 	};
 
 	const keywords = Collections.distinct(props.monsters.flatMap(m => m.keywords), k => k).sort();
-	const maxSize = Collections.max(props.monsters.map(m => m.size.value), x => x) || 1;
+	const maxSizeIndex = Collections.max(props.monsters.map(m => MonsterLogic.encodeSize(m.size)), x => x) ?? 3;
+	const sizeMarks: Record<number, string> = {};
+	for (let i = 0; i <= maxSizeIndex; i++) {
+		sizeMarks[i] = MonsterLogic.decodeSizeLabel(i);
+	}
 	const maxLevel = Collections.max(props.monsters.map(m => m.level), x => x) || 1;
 	const maxEV = Collections.max(props.monsters.map(m => m.encounterValue), x => x) || 0;
 
@@ -179,21 +184,29 @@ export const MonsterFilterPanel = (props: Props) => {
 					}
 					{
 						showSize && (props.monsterFilter.size.length > 0) ?
-							<>
+							<div className='filter-range-row filter-range-row--ticked'>
+								<span className='filter-range-label'>Size</span>
 								<Slider
 									range={{ draggableTrack: true }}
-									min={1}
-									max={maxSize}
+									min={0}
+									max={maxSizeIndex}
+									step={1}
+									marks={sizeMarks}
 									value={props.monsterFilter.size}
 									onChange={setFilterSize}
 								/>
-								<Field label='Size' value={`${Math.min(...props.monsterFilter.size)} to ${Math.max(...props.monsterFilter.size)}`} />
-							</>
+								<span className='filter-range-value'>
+									{MonsterLogic.decodeSizeLabel(Math.min(...props.monsterFilter.size))}
+									–
+									{MonsterLogic.decodeSizeLabel(Math.max(...props.monsterFilter.size))}
+								</span>
+							</div>
 							: null
 					}
 					{
 						showLevel && (props.monsterFilter.level.length > 0) ?
-							<>
+							<div className='filter-range-row'>
+								<span className='filter-range-label'>Level</span>
 								<Slider
 									range={{ draggableTrack: true }}
 									min={1}
@@ -201,13 +214,14 @@ export const MonsterFilterPanel = (props: Props) => {
 									value={props.monsterFilter.level}
 									onChange={setFilterLevel}
 								/>
-								<Field label='Level' value={`${Math.min(...props.monsterFilter.level)} to ${Math.max(...props.monsterFilter.level)}`} />
-							</>
+								<span className='filter-range-value'>{Math.min(...props.monsterFilter.level)}–{Math.max(...props.monsterFilter.level)}</span>
+							</div>
 							: null
 					}
 					{
 						showEV && (props.monsterFilter.ev.length > 0) ?
-							<>
+							<div className='filter-range-row'>
+								<span className='filter-range-label'>EV</span>
 								<Slider
 									range={{ draggableTrack: true }}
 									min={0}
@@ -215,8 +229,8 @@ export const MonsterFilterPanel = (props: Props) => {
 									value={props.monsterFilter.ev}
 									onChange={setFilterEV}
 								/>
-								<Field label='EV' value={`${Math.min(...props.monsterFilter.ev)} to ${Math.max(...props.monsterFilter.ev)}`} />
-							</>
+								<span className='filter-range-value'>{Math.min(...props.monsterFilter.ev)}–{Math.max(...props.monsterFilter.ev)}</span>
+							</div>
 							: null
 					}
 				</Space>

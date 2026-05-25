@@ -19,13 +19,34 @@ import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { MonsterRoleType } from '@/enums/monster-role-type';
 import { MonsterState } from '@/models/monster-state';
 import { Random } from '@/utils/random';
+import { Size } from '@/models/size';
 import { Skill } from '@/models/skill';
 import { SkillList } from '@/enums/skill-list';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { Utils } from '@/utils/utils';
 
+// Encode a Size into a single sortable index so the picker UI can treat
+// 1T/1S/1M/1L as four distinct discrete steps before size 2 begins.
+//   0:1T, 1:1S, 2:1M, 3:1L, then 4:size 2, 5:size 3, ... (idx = value + 2 for value > 1)
+const SIZE_1_MODS: Array<Size['mod']> = [ 'T', 'S', 'M', 'L' ];
+
 export class MonsterLogic {
+	static encodeSize = (size: Size) => {
+		if (size.value === 1) {
+			const i = SIZE_1_MODS.indexOf(size.mod);
+			return i < 0 ? 2 : i;
+		}
+		return size.value + 2;
+	};
+
+	static decodeSizeLabel = (index: number) => {
+		if (index <= 3) {
+			return `1${SIZE_1_MODS[Math.max(0, Math.min(3, index))]}`;
+		}
+		return `${index - 2}`;
+	};
+
 	static getMonsterName = (monster: Monster, group?: MonsterGroup) => {
 		if (monster.name) {
 			return monster.name;
@@ -200,7 +221,8 @@ export class MonsterLogic {
 		if (filter.size.length > 0) {
 			const minSize = Math.min(...filter.size);
 			const maxSize = Math.max(...filter.size);
-			if ((monster.size.value < minSize) || (monster.size.value > maxSize)) {
+			const encoded = MonsterLogic.encodeSize(monster.size);
+			if ((encoded < minSize) || (encoded > maxSize)) {
 				return false;
 			}
 		}

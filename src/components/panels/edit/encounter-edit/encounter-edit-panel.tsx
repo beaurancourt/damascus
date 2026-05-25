@@ -1,7 +1,6 @@
-import { Alert, Button, Divider, Flex, Popover, Select, Space } from 'antd';
+import { Alert, Button, Flex, Select, Space } from 'antd';
 import { CaretDownOutlined, CaretUpOutlined, CheckCircleOutlined, CloseCircleOutlined, CopyOutlined, EditFilled, EditOutlined, EllipsisOutlined, FilterFilled, FilterOutlined, InfoCircleOutlined, PlusOutlined, ToolFilled, ToolOutlined } from '@ant-design/icons';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDraggable, useDroppable } from '@dnd-kit/core';
-import { Encounter, EncounterGroup, EncounterObjective, TerrainSlot } from '@/models/encounter';
+import { Encounter, EncounterGroup, TerrainSlot } from '@/models/encounter';
 import { EncounterSlot, EncounterSlotCustomization } from '@/models/encounter-slot';
 import { Fragment, ReactNode, useState } from 'react';
 import { MonsterFilter, TerrainFilter } from '@/models/filter';
@@ -11,13 +10,10 @@ import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { Collections } from '@/utils/collections';
 import { DangerButton } from '@/components/controls/danger-button/danger-button';
 import { DropdownButton } from '@/components/controls/dropdown-button/dropdown-button';
-import { Element } from '@/models/element';
-import { ElementEditPanel } from '@/components/panels/edit/element-edit/element-edit-panel';
 import { Empty } from '@/components/controls/empty/empty';
 import { EncounterDifficultyLogic } from '@/logic/encounter-difficulty-logic';
 import { EncounterDifficultyPanel } from '@/components/panels/encounter-difficulty/encounter-difficulty-panel';
 import { EncounterLogic } from '@/logic/encounter-logic';
-import { EncounterObjectiveData } from '@/data/encounter-objective-data';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { Expander } from '@/components/controls/expander/expander';
 import { FactoryLogic } from '@/logic/factory-logic';
@@ -29,7 +25,6 @@ import { MonsterFilterPanel } from '@/components/panels/monster-filter/monster-f
 import { MonsterGroup } from '@/models/monster-group';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterOrganizationType } from '@/enums/monster-organization-type';
-import { NameDescEditPanel } from '@/components/panels/edit/name-desc-edit/name-desc-edit-panel';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { OptionsLogic } from '@/logic/options-logic';
 import { PanelMode } from '@/enums/panel-mode';
@@ -59,8 +54,6 @@ export const EncounterEditPanel = (props: Props) => {
 	const [ filterVisible, setFilterVisible ] = useState<boolean>(false);
 	const [ monsterFilter, setMonsterFilter ] = useState<MonsterFilter>(FactoryLogic.createMonsterFilter());
 	const [ terrainFilter, setTerrainFilter ] = useState<TerrainFilter>(FactoryLogic.createTerrainFilter());
-	const [ draggedMonster, setDraggedMonster ] = useState<Monster | null>(null);
-	const [ draggedTerrain, setDraggedTerrain ] = useState<Terrain | null>(null);
 	const options = useOptions();
 	const heroes = useHeroes();
 
@@ -84,6 +77,39 @@ export const EncounterEditPanel = (props: Props) => {
 		props.onChange(copy);
 	};
 
+	const addGroup = () => {
+		const copy = Utils.copy(encounter);
+		copy.groups.push(FactoryLogic.createEncounterGroup());
+		setEncounter(copy);
+		props.onChange(copy);
+	};
+
+	const getEncounterWarnings = () => {
+		const warnings: { key: string; title: string }[] = [];
+
+		const statblocks = Collections.distinct(encounter.groups.flatMap(g => g.slots).map(s => s.monsterID), s => s).length;
+		if (statblocks > 6) {
+			warnings.push({
+				key: 'too-many-statblocks',
+				title: `You shouldn't generally have more than 6 different types of monster (this encounter has ${statblocks}).`
+			});
+		}
+
+		encounter.groups.forEach((g, i) => {
+			if (g.slots.length === 0) return;
+			const label = g.name || `Group ${i + 1}`;
+			const strength = EncounterDifficultyLogic.getGroupStrength(g, props.sourcebooks);
+			const heroValue = EncounterDifficultyLogic.getHeroValue(options.heroLevel);
+			if (strength < heroValue) {
+				warnings.push({ key: `weak-${g.id}`, title: `${label} may be too weak — consider adding monsters.` });
+			} else if (strength > heroValue * 2) {
+				warnings.push({ key: `strong-${g.id}`, title: `${label} may be too strong — consider splitting it.` });
+			}
+		});
+
+		return warnings;
+	};
+
 	const addTerrain = (terrain: Terrain) => {
 		const copy = Utils.copy(encounter);
 
@@ -105,18 +131,20 @@ export const EncounterEditPanel = (props: Props) => {
 	};
 
 	const getNameAndDescriptionSection = () => {
-		const onChange = (name: string, desc: string) => {
+		const setName = (value: string) => {
 			const copy = Utils.copy(encounter);
-			copy.name = name;
-			copy.description = desc;
+			copy.name = value;
 			setEncounter(copy);
 			props.onChange(copy);
 		};
 
 		return (
-			<NameDescEditPanel
-				element={encounter}
-				onChange={onChange}
+			<TextInput
+				status={encounter.name === '' ? 'warning' : ''}
+				placeholder='Name'
+				allowClear={true}
+				value={encounter.name}
+				onChange={setName}
 			/>
 		);
 	};
@@ -132,13 +160,6 @@ export const EncounterEditPanel = (props: Props) => {
 		const setMinHeroCount = (group: EncounterGroup, value: number | undefined) => {
 			const copy = Utils.copy(encounter);
 			copy.groups.filter(g => g.id === group.id).forEach(g => g.minHeroCount = value);
-			setEncounter(copy);
-			props.onChange(copy);
-		};
-
-		const addGroup = () => {
-			const copy = Utils.copy(encounter);
-			copy.groups.push(FactoryLogic.createEncounterGroup());
 			setEncounter(copy);
 			props.onChange(copy);
 		};
@@ -241,25 +262,8 @@ export const EncounterEditPanel = (props: Props) => {
 			);
 		};
 
-		const warnings = [];
-		const statblocks = Collections.distinct(encounter.groups.flatMap(g => g.slots).map(s => s.monsterID), s => s).length;
-		if (statblocks > 6) {
-			warnings.push(
-				<Alert
-					key='too-many-statblocks'
-					type='warning'
-					showIcon={true}
-					title={`You shouldn't generally have more than 6 different types of monster in an encounter (this encounter has ${statblocks}).`}
-				/>
-			);
-		}
-
 		return (
 			<Space orientation='vertical' style={{ width: '100%' }}>
-				{warnings}
-				<Flex justify='flex-end'>
-					<Button icon={<PlusOutlined />} onClick={addGroup}>Add group</Button>
-				</Flex>
 				{
 					encounter.groups.map((group, n) => (
 						<SelectablePanel key={group.id}>
@@ -267,7 +271,6 @@ export const EncounterEditPanel = (props: Props) => {
 								group={group}
 								index={n}
 								sourcebooks={props.sourcebooks}
-								draggedMonster={draggedMonster}
 								setName={setName}
 								setMinHeroCount={setMinHeroCount}
 								copyGroup={copyGroup}
@@ -280,7 +283,7 @@ export const EncounterEditPanel = (props: Props) => {
 				}
 				{
 					encounter.groups.length === 0 ?
-						<div className='ds-text dimmed-text centered-text'>No monsters yet — pick one below.</div>
+						<div className='ds-text dimmed-text centered-text'>No groups yet — pick a monster below.</div>
 						: null
 				}
 			</Space>
@@ -329,140 +332,16 @@ export const EncounterEditPanel = (props: Props) => {
 			<Space orientation='vertical' style={{ width: '100%' }}>
 				<SelectablePanel style={{ paddingTop: '20px' }}>
 					<div className='encounter-terrain-panel'>
-						<TerrainDropTarget
-							encounter={encounter}
-							draggedTerrain={draggedTerrain}
-							getSlot={getTerrain}
-						/>
+						<div className='terrain-slots'>
+							{encounter.terrain.map(slot => getTerrain(slot))}
+							{
+								encounter.terrain.length === 0 ?
+									<div className='ds-text dimmed-text centered-text'>Add terrain from the list below.</div>
+									: null
+							}
+						</div>
 					</div>
 				</SelectablePanel>
-			</Space>
-		);
-	};
-
-	const getNotesSection = () => {
-		const addNote = () => {
-			const copy = Utils.copy(encounter);
-			copy.notes.push({
-				id: Utils.guid(),
-				name: '',
-				description: ''
-			});
-			setEncounter(copy);
-			props.onChange(copy);
-		};
-
-		const addObjective = (value: EncounterObjective) => {
-			const copy = Utils.copy(encounter);
-			copy.notes.push({
-				id: Utils.guid(),
-				name: value.name,
-				description: `
-${value.description}
-
-### Difficulty Modifier
-
-${value.difficultyModifier}
-
-### Success Condition
-
-${value.successCondition}
-
-### Failure Condition
-
-${value.failureCondition}
-
-### Victories
-
-${value.victories}`
-			});
-			setEncounter(copy);
-			props.onChange(copy);
-		};
-
-		const changeNote = (notes: Element) => {
-			const copy = Utils.copy(encounter);
-			const index = copy.notes.findIndex(i => i.id === notes.id);
-			if (index !== -1) {
-				copy.notes[index] = notes;
-			}
-			setEncounter(copy);
-			props.onChange(copy);
-		};
-
-		const moveNote = (notes: Element, direction: 'up' | 'down') => {
-			const copy = Utils.copy(encounter);
-			const index = copy.notes.findIndex(i => i.id === notes.id);
-			copy.notes = Collections.move(copy.notes, index, direction);
-			setEncounter(copy);
-			props.onChange(copy);
-		};
-
-		const deleteNote = (notes: Element) => {
-			const copy = Utils.copy(encounter);
-			copy.notes = copy.notes.filter(i => i.id !== notes.id);
-			setEncounter(copy);
-			props.onChange(copy);
-		};
-
-		return (
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				<HeaderText
-					extra={
-						<Popover
-							trigger='click'
-							content={(
-								<div style={{ width: '160px' }}>
-									<Button type='text' block={true} onClick={addNote}>Add a Note</Button>
-									<Divider size='small' />
-									{
-										[
-											EncounterObjectiveData.diminishNumbers,
-											EncounterObjectiveData.defeatFoe,
-											EncounterObjectiveData.getThing,
-											EncounterObjectiveData.destroyThing,
-											EncounterObjectiveData.saveAnother,
-											EncounterObjectiveData.escort,
-											EncounterObjectiveData.holdThemOff,
-											EncounterObjectiveData.assaultDefenses,
-											EncounterObjectiveData.stopAction,
-											EncounterObjectiveData.completeAction
-										].map(o => (
-											<Button key={o.id} type='text' block={true} onClick={() => addObjective(o)}>{o.name}</Button>
-										))
-									}
-								</div>
-							)}
-						>
-							<Button type='text' icon={<PlusOutlined />} />
-						</Popover>
-					}
-				>
-					Notes
-				</HeaderText>
-				{
-					encounter.notes.map(i => (
-						<Expander
-							key={i.id}
-							title={i.name || 'Unnamed Note'}
-							extra={[
-								<Button key='up' type='text' title='Move Up' icon={<CaretUpOutlined />} onClick={e => { e.stopPropagation(); moveNote(i, 'up'); }} />,
-								<Button key='down' type='text' title='Move Down' icon={<CaretDownOutlined />} onClick={e => { e.stopPropagation(); moveNote(i, 'down'); }} />,
-								<DangerButton key='delete' mode='clear' onConfirm={e => { e.stopPropagation(); deleteNote(i); }} />
-							]}
-						>
-							<ElementEditPanel
-								element={i}
-								onChange={changeNote}
-							/>
-						</Expander>
-					))
-				}
-				{
-					encounter.notes.length === 0 ?
-						<Empty />
-						: null
-				}
 			</Space>
 		);
 	};
@@ -541,50 +420,81 @@ ${value.victories}`
 	};
 
 	const getMonsterListSection = () => {
-		const groups = Collections.sort(props.sourcebooks.flatMap(sb => sb.monsterGroups).filter(g => g.monsters.some(m => (m.role.organization !== MonsterOrganizationType.Retainer) && MonsterLogic.matches(m, monsterFilter))), g => g.name);
+		const allGroups = props.sourcebooks.flatMap(sb => sb.monsterGroups);
+		// Echelons match the Draw Steel rulebook: 1st (lvl 1-3), 2nd (4-6), 3rd (7-9), 4th (10).
+		const echelons: { key: string; tier: string; range: string; inRange: (level: number) => boolean }[] = [
+			{ key: '1', tier: '1st Echelon', range: 'Levels 1–3', inRange: lvl => lvl >= 1 && lvl <= 3 },
+			{ key: '2', tier: '2nd Echelon', range: 'Levels 4–6', inRange: lvl => lvl >= 4 && lvl <= 6 },
+			{ key: '3', tier: '3rd Echelon', range: 'Levels 7–9', inRange: lvl => lvl >= 7 && lvl <= 9 },
+			{ key: '4', tier: '4th Echelon', range: 'Level 10', inRange: lvl => lvl === 10 }
+		];
+
+		const passes = (m: Monster) =>
+			m.role.organization !== MonsterOrganizationType.Retainer && MonsterLogic.matches(m, monsterFilter);
+
+		const echelonBuckets = echelons.map(e => {
+			const groups: { group: MonsterGroup; monsters: Monster[] }[] = [];
+			for (const g of allGroups) {
+				const monsters = g.monsters.filter(m => passes(m) && e.inRange(m.level));
+				if (monsters.length > 0) {
+					groups.push({ group: g, monsters: Collections.sort(monsters, m => m.name) });
+				}
+			}
+			return { echelon: e, groups: Collections.sort(groups, b => b.group.name) };
+		});
+
+		const anyMatches = echelonBuckets.some(b => b.groups.length > 0);
 
 		return (
 			<Space orientation='vertical' style={{ width: '100%', padding: '5px' }}>
 				{
 					filterVisible ?
-						<>
-							<MonsterFilterPanel
-								monsterFilter={monsterFilter}
-								monsters={props.sourcebooks.flatMap(sb => sb.monsterGroups).flatMap(g => g.monsters)}
-								includeNameFilter={true}
-								includeOrgFilter={true}
-								includeEVFilter={true}
-								onChange={setMonsterFilter}
-							/>
-							<Divider size='small' />
-						</>
+						<MonsterFilterPanel
+							monsterFilter={monsterFilter}
+							monsters={props.sourcebooks.flatMap(sb => sb.monsterGroups).flatMap(g => g.monsters)}
+							includeNameFilter={true}
+							includeOrgFilter={true}
+							includeEVFilter={true}
+							onChange={setMonsterFilter}
+						/>
 						: null
 				}
 				{
-					groups.map(g => (
-						<Expander key={g.id} title={g.name}>
-							<Space orientation='vertical' style={{ width: '100%' }}>
-								{
-									Collections.sort(g.monsters.filter(m => m.role.organization !== MonsterOrganizationType.Retainer).filter(m => MonsterLogic.matches(m, monsterFilter)), m => m.name).map(m => (
-										<MonsterListItem
-											key={m.id}
-											monster={m}
-											monsterGroup={SourcebookLogic.getMonsterGroup(props.sourcebooks, m.id) as MonsterGroup}
-											encounter={encounter}
-											addMonster={addMonster}
-											showMonster={props.showMonster}
-										/>
-									))
-								}
-							</Space>
-						</Expander>
-					))
+					echelonBuckets.map(bucket =>
+						bucket.groups.length > 0 ? (
+							<div key={bucket.echelon.key} className='echelon-section' data-echelon={bucket.echelon.key}>
+								<div className='echelon-header'>
+									<span className='echelon-tier'>{bucket.echelon.tier}</span>
+									<span className='echelon-divider' aria-hidden='true' />
+									<span className='echelon-range'>{bucket.echelon.range}</span>
+								</div>
+								<Space orientation='vertical' style={{ width: '100%' }}>
+									{
+										bucket.groups.map(({ group, monsters }) => (
+											<Expander key={`${bucket.echelon.key}-${group.id}`} title={group.name}>
+												<Space orientation='vertical' style={{ width: '100%' }}>
+													{
+														monsters.map(m => (
+															<MonsterListItem
+																key={m.id}
+																monster={m}
+																monsterGroup={group}
+																encounter={encounter}
+																addMonster={addMonster}
+																showMonster={props.showMonster}
+															/>
+														))
+													}
+												</Space>
+											</Expander>
+										))
+									}
+								</Space>
+							</div>
+						) : null
+					)
 				}
-				{
-					groups.length === 0 ?
-						<Empty />
-						: null
-				}
+				{!anyMatches ? <Empty /> : null}
 			</Space>
 		);
 	};
@@ -597,14 +507,11 @@ ${value.victories}`
 			<Space orientation='vertical' style={{ width: '100%', padding: '5px' }}>
 				{
 					filterVisible ?
-						<>
-							<TerrainFilterPanel
-								terrainFilter={terrainFilter}
-								terrain={allTerrains}
-								onChange={setTerrainFilter}
-							/>
-							<Divider size='small' />
-						</>
+						<TerrainFilterPanel
+							terrainFilter={terrainFilter}
+							terrain={allTerrains}
+							onChange={setTerrainFilter}
+						/>
 						: null
 				}
 				{
@@ -630,9 +537,36 @@ ${value.victories}`
 		const heroCount = OptionsLogic.getHeroCount(options, heroes);
 		const strength = EncounterDifficultyLogic.getStrength(encounter, props.sourcebooks, heroCount);
 		const difficulty = EncounterDifficultyLogic.getDifficulty(strength, options, heroes);
+		const budgets = EncounterDifficultyLogic.getBudgets(options, heroes);
+
+		// Pick the next tier's lower bound — value at which difficulty ticks up.
+		const tiers: { label: string; threshold: number }[] = [
+			{ label: 'Trivial', threshold: 1 },
+			{ label: 'Easy', threshold: budgets.maxTrivial + 1 },
+			{ label: 'Standard', threshold: budgets.maxEasy + 1 },
+			{ label: 'Hard', threshold: budgets.maxStandard + 1 },
+			{ label: 'Extreme', threshold: budgets.maxHard + 1 }
+		];
+		const next = tiers.find(t => strength < t.threshold);
 
 		return (
-			<Expander title='Difficulty' tags={[ difficulty ]} style={{ flex: '0 0 auto' }}>
+			<Expander
+				title={(
+					<div className='threat-readout'>
+						<span className='threat-tier'>{difficulty}</span>
+						<span className='threat-meter'>
+							<span className='threat-value'>EV {strength}</span>
+							{next ? (
+								<>
+									<span className='threat-arrow'>→</span>
+									<span className='threat-next'>{next.threshold} {next.label}</span>
+								</>
+							) : null}
+						</span>
+					</div>
+				)}
+				style={{ flex: '0 0 auto' }}
+			>
 				<EncounterDifficultyPanel
 					encounter={encounter}
 					sourcebooks={props.sourcebooks}
@@ -641,111 +575,70 @@ ${value.victories}`
 		);
 	};
 
-	const onDragStart = (event: DragStartEvent) => {
-		const data = event.active.data.current as { type: string, element: Element };
-		switch (data.type) {
-			case 'monster': {
-				setDraggedMonster(data.element as Monster);
-				const copy = Utils.copy(encounter);
-				copy.groups.push(FactoryLogic.createEncounterGroup());
-				setEncounter(copy);
-				props.onChange(copy);
-				break;
-			}
-			case 'terrain':
-				setDraggedTerrain(data.element as Terrain);
-				break;
-		}
-	};
-
-	const onDragCancel = () => {
-		setDraggedMonster(null);
-		setDraggedTerrain(null);
-
-		const copy = Utils.copy(encounter);
-		copy.groups = copy.groups.filter(g => g.slots.length > 0);
-		setEncounter(copy);
-		props.onChange(copy);
-	};
-
-	const onDragEnd = (event: DragEndEvent) => {
-		if (draggedMonster && event.over) {
-			const groupID = event.over.id.toString();
-			addMonster(draggedMonster, groupID);
-		} else {
-			const copy = Utils.copy(encounter);
-			copy.groups = copy.groups.filter(g => g.slots.length > 0);
-			setEncounter(copy);
-			props.onChange(copy);
-		}
-
-		if (draggedTerrain && event.over) {
-			addTerrain(draggedTerrain);
-		}
-
-		setDraggedMonster(null);
-		setDraggedTerrain(null);
-	};
-
 	return (
 		<ErrorBoundary>
 			<div className='encounter-edit-panel'>
-				<DndContext
-					onDragStart={onDragStart}
-					onDragCancel={onDragCancel}
-					onDragEnd={onDragEnd}
-				>
-					<div className='encounter-edit-stream'>
+				<div className='encounter-edit-stream'>
+					<div className='encounter-pinned'>
 						{getDifficultySection()}
-
-						<section className='encounter-section'>
-							<HeaderText>Encounter</HeaderText>
-							{getNameAndDescriptionSection()}
-						</section>
-
-						<section className='encounter-section'>
-							<HeaderText
-								extra={
-									<Button
-										type='text'
-										icon={filterVisible ? <FilterFilled style={{ color: 'rgb(22, 119, 255)' }} /> : <FilterOutlined />}
-										onClick={() => setFilterVisible(!filterVisible)}
-									>
-										Filter
-									</Button>
-								}
-							>
-								Monsters
-							</HeaderText>
-							{getMonstersSection()}
-							<Divider />
-							<HeaderText level={3}>Add a monster</HeaderText>
-							{getMonsterListSection()}
-						</section>
-
-						<section className='encounter-section'>
-							<HeaderText>Terrain</HeaderText>
-							{getTerrainSection()}
-							<Divider />
-							<HeaderText level={3}>Add terrain</HeaderText>
-							{getTerrainListSection()}
-						</section>
-
-						<section className='encounter-section'>
-							<HeaderText>Notes</HeaderText>
-							{getNotesSection()}
-						</section>
-
-						<section className='encounter-section'>
-							<HeaderText>Malice</HeaderText>
-							{getMaliceSection()}
-						</section>
+						{
+							getEncounterWarnings().map(w => (
+								<div key={w.key} className='encounter-warning'>{w.title}</div>
+							))
+						}
 					</div>
-					<DragOverlay>
-						{draggedMonster ? <MonsterListItem monster={draggedMonster} /> : null}
-						{draggedTerrain ? <TerrainListItem terrain={draggedTerrain} /> : null}
-					</DragOverlay>
-				</DndContext>
+
+					<section className='encounter-section'>
+						<HeaderText>Encounter</HeaderText>
+						{getNameAndDescriptionSection()}
+					</section>
+
+					<section className='encounter-section'>
+						<HeaderText
+							extra={
+								<Button
+									type='text'
+									size='small'
+									icon={<PlusOutlined />}
+									onClick={addGroup}
+								>
+									Add group
+								</Button>
+							}
+						>
+							Monster Groups
+						</HeaderText>
+						{getMonstersSection()}
+						<HeaderText
+							level={3}
+							extra={
+								<Button
+									type='text'
+									size='small'
+									icon={filterVisible ? <FilterFilled style={{ color: '#c9a45a' }} /> : <FilterOutlined />}
+									onClick={() => setFilterVisible(!filterVisible)}
+								>
+									Filter
+								</Button>
+							}
+						>
+							Add a monster
+						</HeaderText>
+						{getMonsterListSection()}
+					</section>
+
+					<section className='encounter-section'>
+						<HeaderText>Terrain</HeaderText>
+						{getTerrainSection()}
+						<HeaderText level={3}>Add terrain</HeaderText>
+						{getTerrainListSection()}
+					</section>
+
+					<section className='encounter-section'>
+						<HeaderText>Malice</HeaderText>
+						{getMaliceSection()}
+					</section>
+				</div>
 			</div>
 		</ErrorBoundary>
 	);
@@ -755,7 +648,6 @@ interface GroupPanelProps {
 	group: EncounterGroup;
 	index: number;
 	sourcebooks: Sourcebook[];
-	draggedMonster: Monster | null;
 	setName: (group: EncounterGroup, value: string) => void;
 	setMinHeroCount: (group: EncounterGroup, value: number | undefined) => void;
 	copyGroup: (group: EncounterGroup) => void;
@@ -766,7 +658,6 @@ interface GroupPanelProps {
 
 const GroupPanel = (props: GroupPanelProps) => {
 	const [ editing, setEditing ] = useState<boolean>(false);
-	const options = useOptions();
 
 	return (
 		<ErrorBoundary>
@@ -797,11 +688,14 @@ const GroupPanel = (props: GroupPanelProps) => {
 							(props.group.name || `Group ${props.index + 1}`)
 					}
 				</HeaderText>
-				<MonsterDropTarget
-					group={props.group}
-					draggedMonster={props.draggedMonster}
-					getSlot={props.getSlot}
-				/>
+				<div className='group-slots'>
+					{props.group.slots.map(slot => props.getSlot(slot, props.group))}
+					{
+						props.group.slots.length === 0 ?
+							<div className='ds-text dimmed-text centered-text'>No monsters</div>
+							: null
+					}
+				</div>
 				{
 					editing ?
 						<div className='group-edit-row'>
@@ -832,110 +726,11 @@ const GroupPanel = (props: GroupPanelProps) => {
 						/>
 						: null
 				}
-				{
-					(props.group.slots.length > 0) && (EncounterDifficultyLogic.getGroupStrength(props.group, props.sourcebooks) < EncounterDifficultyLogic.getHeroValue(options.heroLevel)) ?
-						<Alert
-							type='warning'
-							showIcon={true}
-							title='This group is probably not strong enough; you might want to add more monsters'
-						/>
-						: null
-				}
-				{
-					(props.group.slots.length > 0) && (EncounterDifficultyLogic.getGroupStrength(props.group, props.sourcebooks) > (EncounterDifficultyLogic.getHeroValue(options.heroLevel) * 2)) ?
-						<Alert
-							type='warning'
-							showIcon={true}
-							title='This group is probably too strong; you might want to split it into smaller groups'
-						/>
-						: null
-				}
 			</div>
 		</ErrorBoundary>
 	);
 };
 
-// #region Drop targets
-
-interface MonsterDropTargetProps {
-	group: EncounterGroup;
-	draggedMonster: Monster | null;
-	getSlot: (slot: EncounterSlot, group: EncounterGroup) => ReactNode;
-}
-
-const MonsterDropTarget = (props: MonsterDropTargetProps) => {
-	const { isOver, setNodeRef } = useDroppable({ id: props.group.id });
-
-	const classNames = [ 'drag-target' ];
-	if (props.draggedMonster) {
-		classNames.push('drag-highlight');
-
-		if (isOver) {
-			classNames.push('drag-over');
-		}
-	}
-
-	return (
-		<div className={classNames.join(' ')} ref={setNodeRef}>
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				{props.group.slots.map(slot => props.getSlot(slot, props.group))}
-				{
-					props.group.slots.length === 0 ?
-						<div className='ds-text dimmed-text centered-text'>No monsters</div>
-						: null
-				}
-			</Space>
-			{
-				props.draggedMonster ?
-					<div className='drop-info-container'>
-						<div className='drop-info'>Drop here</div>
-					</div>
-					: null
-			}
-		</div>
-	);
-};
-
-interface TerrainDropTargetProps {
-	encounter: Encounter;
-	draggedTerrain: Terrain | null;
-	getSlot: (slot: TerrainSlot) => ReactNode;
-}
-
-const TerrainDropTarget = (props: TerrainDropTargetProps) => {
-	const { isOver, setNodeRef } = useDroppable({ id: 'terrain' });
-
-	const classNames = [ 'drag-target' ];
-	if (props.draggedTerrain) {
-		classNames.push('drag-highlight');
-
-		if (isOver) {
-			classNames.push('drag-over');
-		}
-	}
-
-	return (
-		<div className={classNames.join(' ')} ref={setNodeRef}>
-			<Space orientation='vertical' style={{ width: '100%' }}>
-				{props.encounter.terrain.map(slot => props.getSlot(slot))}
-				{
-					props.encounter.terrain.length === 0 ?
-						<div className='ds-text dimmed-text centered-text'>Add terrain from the list on the right.</div>
-						: null
-				}
-			</Space>
-			{
-				props.draggedTerrain ?
-					<div className='drop-info-container'>
-						<div className='drop-info'>Drop here</div>
-					</div>
-					: null
-			}
-		</div>
-	);
-};
-
-// #endregion
 
 // #region Slots
 
@@ -1139,7 +934,7 @@ const MonsterSlotPanel = (props: MonsterSlotPanelProps) => {
 			<div className={showCustomize ? 'slot-row customizing' : 'slot-row'}>
 				<div className='content'>
 					<Flex align='center' justify='space-between'>
-						<MonsterInfo monster={monster} />
+						<MonsterInfo monster={monster} showEV={true} />
 						<ButtonGroup
 							buttons={[
 								{ type: 'button', icon: <InfoCircleOutlined />, tooltip: 'Show stat block', onClick: () => props.showMonster(monster, monsterGroup) },
@@ -1240,12 +1035,10 @@ interface MonsterListItemProps {
 }
 
 const MonsterListItem = (props: MonsterListItemProps) => {
-	const { attributes, listeners, setNodeRef } = useDraggable({ id: props.monster.id, data: { type: 'monster', element: props.monster } });
-
 	return (
 		<div className='monster-list-item'>
-			<div className='info-container' ref={setNodeRef} {...listeners} {...attributes}>
-				<MonsterInfo monster={props.monster} />
+			<div className='info-container'>
+				<MonsterInfo monster={props.monster} showEV={true} />
 			</div>
 			<ButtonGroup
 				buttons={[
@@ -1285,11 +1078,9 @@ interface TerrainListItemProps {
 }
 
 const TerrainListItem = (props: TerrainListItemProps) => {
-	const { attributes, listeners, setNodeRef } = useDraggable({ id: props.terrain.id, data: { type: 'terrain', element: props.terrain } });
-
 	return (
 		<div className='terrain-list-item'>
-			<div className='info-container' ref={setNodeRef} {...listeners} {...attributes}>
+			<div className='info-container'>
 				<TerrainInfo terrain={props.terrain} />
 			</div>
 			<ButtonGroup

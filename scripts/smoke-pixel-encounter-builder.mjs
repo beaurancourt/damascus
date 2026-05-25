@@ -51,6 +51,15 @@ log(`url: ${page.url()}`);
 await page.screenshot({ path: 'tmp/audit/enc-02-builder-top.png', fullPage: false });
 log('saved tmp/audit/enc-02-builder-top.png');
 
+// Focus the encounter name input to verify the focus state looks right.
+const nameInput = page.locator('.encounter-section input').first();
+if (await nameInput.count()) {
+	await nameInput.focus();
+	await page.waitForTimeout(200);
+	await page.screenshot({ path: 'tmp/audit/enc-02b-name-focused.png', fullPage: false });
+	log('saved tmp/audit/enc-02b-name-focused.png');
+}
+
 // Scroll through
 const outer = page.locator('.hero-edit-content, .center-content, .encounter-edit-page-content').first();
 const exists = await outer.count();
@@ -78,7 +87,7 @@ await scrollAndShot(2000, '05-scroll-2000');
 await scrollAndShot(3000, '08-scroll-3000');
 await scrollAndShot(4000, '09-scroll-4000');
 
-// Click each tab
+// Click each tab (legacy — kept for backward compat; no-op when tabs are gone)
 const tabClick = async (label, name) => {
 	await page.locator('.ant-tabs-tab').filter({ hasText: new RegExp(`^${label}$`) }).first().click().catch(() => {});
 	await page.waitForTimeout(500);
@@ -87,6 +96,86 @@ const tabClick = async (label, name) => {
 };
 await tabClick('Monsters', '06-monsters-tab');
 await tabClick('Terrain', '07-terrain-tab');
+
+// --- Populate the encounter so we can see group cards ---------------
+// Scroll back to top so the picker is in view, then click the first echelon
+// group + first add button to seed a group.
+await page.evaluate(() => {
+	const scrollers = Array.from(document.querySelectorAll('*')).filter(el => {
+		const cs = getComputedStyle(el);
+		return (cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
+	});
+	scrollers.sort((a, b) => b.scrollHeight - a.scrollHeight);
+	if (scrollers[0]) scrollers[0].scrollTo({ top: 0 });
+});
+await page.waitForTimeout(300);
+
+// Click the "Add group" button in the Monster Groups header
+const addGroupBtn = page.locator('button').filter({ hasText: /^Add group$/i }).first();
+if (await addGroupBtn.count()) {
+	await addGroupBtn.click().catch(() => {});
+	await page.waitForTimeout(400);
+}
+
+// Expand first echelon group then add monster
+const firstGroup = page.locator('.echelon-section[data-echelon="1"] .ant-collapse-header').first();
+if (await firstGroup.count()) {
+	await firstGroup.click().catch(() => {});
+	await page.waitForTimeout(400);
+	const addPlus = page.locator('.monster-list-item .add-btn').first();
+	if (await addPlus.count()) {
+		await addPlus.click().catch(() => {});
+		await page.waitForTimeout(300);
+		await addPlus.click().catch(() => {});
+		await page.waitForTimeout(300);
+	}
+}
+
+// Scroll back up
+await page.evaluate(() => {
+	const scrollers = Array.from(document.querySelectorAll('*')).filter(el => {
+		const cs = getComputedStyle(el);
+		return (cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
+	});
+	scrollers.sort((a, b) => b.scrollHeight - a.scrollHeight);
+	if (scrollers[0]) scrollers[0].scrollTo({ top: 0 });
+});
+await page.waitForTimeout(300);
+await page.screenshot({ path: 'tmp/audit/enc-10-with-group.png', fullPage: false });
+log('saved tmp/audit/enc-10-with-group.png');
+
+await page.evaluate(() => {
+	const scrollers = Array.from(document.querySelectorAll('*')).filter(el => {
+		const cs = getComputedStyle(el);
+		return (cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
+	});
+	scrollers.sort((a, b) => b.scrollHeight - a.scrollHeight);
+	if (scrollers[0]) scrollers[0].scrollTo({ top: 400 });
+});
+await page.waitForTimeout(300);
+await page.screenshot({ path: 'tmp/audit/enc-11-group-card.png', fullPage: false });
+log('saved tmp/audit/enc-11-group-card.png');
+
+// Toggle the Filter button and capture the open filter form.
+const filterBtn = page.locator('button').filter({ hasText: /^Filter$/i }).first();
+if (await filterBtn.count()) {
+	await filterBtn.click().catch(() => {});
+	await page.waitForTimeout(400);
+	await page.screenshot({ path: 'tmp/audit/enc-12-filter-open.png', fullPage: false });
+	log('saved tmp/audit/enc-12-filter-open.png');
+
+	// Activate every chip so the full form is visible.
+	for (const label of [ 'Keywords', 'Role', 'Organization', 'Size', 'Level', 'EV' ]) {
+		const chip = page.locator('.monster-filter-panel .ant-tag-checkable').filter({ hasText: new RegExp(`^${label}$`, 'i') }).first();
+		if (await chip.count()) {
+			await chip.click().catch(() => {});
+			await page.waitForTimeout(120);
+		}
+	}
+	await page.waitForTimeout(300);
+	await page.screenshot({ path: 'tmp/audit/enc-13-filter-all-on.png', fullPage: false });
+	log('saved tmp/audit/enc-13-filter-all-on.png');
+}
 
 await browser.close();
 console.log('done');

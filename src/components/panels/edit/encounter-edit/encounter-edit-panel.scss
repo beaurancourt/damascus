@@ -1,3 +1,21 @@
+// =============================================================================
+// Encounter Builder — Tactical Field Dossier
+// =============================================================================
+// A GM is assembling a combat encounter. The visual language is a field manual:
+// Merriweather serif for major headings, warm bronze accents, and a four-tier
+// echelon color scale (slate → teal → amber → rust) signaling escalating threat.
+// Dark theme is the primary; light theme follows.
+
+// Threat-tier accents (used for echelon sections in the monster picker).
+$echelon-1: #4a7fb5;  // slate — fledgling threats (Levels 1–3)
+$echelon-2: #4a9978;  // teal — capable threats (Levels 4–6)
+$echelon-3: #c9824a;  // amber — elite threats (Levels 7–9)
+$echelon-4: #b54a4a;  // rust — legendary threats (Level 10)
+
+// Bronze accent — replaces the generic blue for major structural beats.
+$bronze: #c9a45a;
+$bronze-dim: rgba(201, 164, 90, 0.4);
+
 .encounter-edit-panel {
 	height: 100%;
 	display: flex;
@@ -7,206 +25,928 @@
 	.encounter-edit-stream {
 		flex: 1 1 0;
 		overflow-y: auto;
+		overflow-x: hidden;
 		display: flex;
 		flex-direction: column;
-		gap: 16px;
-		padding: 10px;
+		gap: 20px;
+		padding: 12px 12px 64px;
 		max-width: 1100px;
 		width: 100%;
 		margin: 0 auto;
 
-		.encounter-section {
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
+		@media (min-width: 768px) {
+			gap: 28px;
+			padding: 16px 16px 80px;
 		}
-	}
 
-	.encounter-workspace-column {
-		flex: 1 1 0;
-		overflow-y: auto;
+		// Override generic HeaderText inside the encounter stream to feel like
+		// dossier section labels: serif, wider letter-spacing, double-rule below.
+		.encounter-section > .header-text-panel.level-2 {
+			margin: 2px 0 10px;
+			padding-bottom: 6px;
+			border-bottom: 1px solid $bronze;
+			position: relative;
 
-		.encounter-group-panel,
-		.encounter-terrain-panel {
-			display: flex;
-			flex-direction: column;
-			gap: 5px;
-
-			.slot-row,
-			.terrain-row {
-				border: 1px solid rgb(220, 220, 220);
-				border-radius: 10px;
-				background-color: rgba(255, 255, 255);
-				padding: 10px;
-				display: flex;
-				flex-direction: row;
-				align-items: center;
-				gap: 10px;
-
-				.content {
-					flex: 1 1 0;
-					border-right: 1px solid rgb(220, 220, 220);
-					padding-right: 10px;
-					min-height: 40px;
-				}
-
-				.actions {
-					min-width: 120px;
-					flex: 0 0 auto;
-				}
-
-				&.customizing {
-					border-radius: 10px 10px 0 0;
-				}
-
-				@media (hover: hover) {
-					&:hover {
-						background-color: rgba(0, 0, 0, 0.05);
-					}
-				}
+			&::after {
+				content: '';
+				position: absolute;
+				left: 0;
+				right: 0;
+				bottom: -4px;
+				height: 1px;
+				background: $bronze-dim;
 			}
 
-			.customize-panel {
-				margin-top: -1px;
-				display: flex;
-				flex-direction: column;
-				gap: 5px;
-				padding: 10px;
-				border: 1px solid rgb(220, 220, 220);
-				border-radius: 0 0 10px 10px;
-				background-color: rgba(255, 255, 255);
+			.header-text {
+				font-family: 'Merriweather', 'PT Sans', serif;
+				font-weight: 700;
+				font-size: 13px;
+				letter-spacing: 3px;
+				text-transform: uppercase;
+				color: rgba(255, 255, 255, 0.95);
 			}
+		}
 
-			.group-edit-row {
-				border: 1px solid rgb(220, 220, 220);
-				border-radius: 10px;
-				background-color: rgba(255, 255, 255);
-				padding: 10px;
-				display: flex;
-				flex-direction: column;
-				gap: 5px;
+		// Sub-headers like "Add a monster" / "Add terrain" — quieter, thin rule.
+		.encounter-section > .header-text-panel.level-3 {
+			margin: 10px 0 8px;
+			padding-bottom: 4px;
+			border-bottom: 1px dashed rgba(201, 164, 90, 0.25);
 
-				@media (hover: hover) {
-					&:hover {
-						background-color: rgba(0, 0, 0, 0.05);
-					}
-				}
+			.header-text {
+				font-family: 'Merriweather', 'PT Sans', serif;
+				font-size: 11px;
+				letter-spacing: 2.5px;
+				text-transform: uppercase;
+				color: rgba(255, 255, 255, 0.65);
 			}
+		}
 
-			.drag-target {
-				position: relative;
-				padding: 5px;
-				border: 1px solid transparent;
-				border-radius: 15px;
+		// Compact action cluster shown in the section header (Filter / Add group).
+		.section-header-actions {
+			display: inline-flex;
+			align-items: center;
+			gap: 2px;
 
-				.drop-info-container {
-					opacity: 1 !important;
-					position: absolute;
-					left: 0;
-					right: 0;
-					top: 0;
-					bottom: 0;
-					display: flex;
-					align-items: center;
-					justify-content: center;
+			.ant-btn {
+				font-family: 'Merriweather', serif;
+				font-size: 10px;
+				letter-spacing: 1.5px;
+				text-transform: uppercase;
+				color: rgba(201, 164, 90, 0.85);
+				padding: 2px 8px;
+				height: auto;
 
-					.drop-info {
-						background: white;
-						padding: 5px 10px;
-						border-radius: 5px;
-						box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 3px 6px 0 rgba(0, 0, 0, 0.12);
-					}
-				}
-
-				&.drag-highlight {
-					background-color: rgb(230, 244, 255);
-
-					.ant-space {
-						opacity: 0.2;
-					}
-
-					&.drag-over {
-						border-color: rgb(22, 119, 255);
-
-						.drop-info-container {
-							.drop-info {
-								font-weight: 600;
-							}
-						}
-					}
+				&:hover {
+					color: $bronze;
+					background: rgba(201, 164, 90, 0.08);
 				}
 			}
 		}
 	}
 
-	.encounter-list-column {
-		flex: 1 1 0;
+	.encounter-section {
 		display: flex;
 		flex-direction: column;
-		padding: 0 5px;
+		gap: 10px;
 	}
 }
 
+// ----- Pinned threat assessment + warnings (sticky top of the stream) ------
+// As the GM scrolls through the picker to assemble groups, the difficulty
+// readout and any rule-of-thumb warnings stay glued to the viewport top.
+.encounter-edit-stream .encounter-pinned {
+	position: sticky;
+	top: 0;
+	z-index: 4;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.encounter-warning {
+	font-family: 'Merriweather', serif;
+	font-size: 11px;
+	line-height: 1.35;
+	letter-spacing: 0.3px;
+	padding: 6px 10px 6px 28px;
+	border: 1px solid rgba(181, 74, 74, 0.45);
+	border-left: 3px solid #b54a4a;
+	border-radius: 3px;
+	background: rgba(40, 18, 18, 0.96);
+	color: rgba(255, 230, 220, 0.92);
+	position: relative;
+
+	&::before {
+		content: '⚠';
+		position: absolute;
+		left: 10px;
+		top: 50%;
+		transform: translateY(-50%);
+		color: #d97a7a;
+		font-size: 12px;
+	}
+}
+
+// ----- Difficulty readout ----------------------------------------------------
+// The original Expander was a solid blue bar. Treat as a tactical readout:
+// bronze-edged card, difficulty word prominent, "THREAT ASSESSMENT" eyebrow above.
+.encounter-edit-stream .encounter-pinned .ant-collapse {
+	background: rgba(20, 20, 22, 0.98);
+	border: 1px solid $bronze;
+	border-radius: 4px;
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+	position: relative;
+	overflow: hidden;
+
+	&::before {
+		content: 'THREAT ASSESSMENT';
+		position: absolute;
+		top: 8px;
+		left: 16px;
+		font-family: 'Merriweather', serif;
+		font-size: 9px;
+		letter-spacing: 2.5px;
+		color: rgba(201, 164, 90, 0.7);
+		z-index: 1;
+		pointer-events: none;
+	}
+
+	> .ant-collapse-item {
+		border-bottom: none;
+
+		> .ant-collapse-header {
+			background: linear-gradient(180deg, rgba(201, 164, 90, 0.08), rgba(201, 164, 90, 0.02));
+			border: none;
+			border-radius: 3px !important;
+			padding: 22px 14px 10px !important;
+			align-items: flex-end;
+
+			.ant-collapse-header-text {
+				flex: 1 1 0;
+				min-width: 0;
+			}
+
+			.threat-readout {
+				display: flex;
+				align-items: baseline;
+				gap: 12px;
+				flex-wrap: wrap;
+				min-width: 0;
+			}
+
+			.threat-tier {
+				font-family: 'Merriweather', serif;
+				font-weight: 700;
+				font-size: 19px;
+				letter-spacing: 2px;
+				text-transform: uppercase;
+				color: rgba(255, 255, 255, 0.95);
+				line-height: 1.1;
+			}
+
+			.threat-meter {
+				display: inline-flex;
+				align-items: baseline;
+				gap: 6px;
+				font-family: 'Merriweather', serif;
+				font-size: 10px;
+				letter-spacing: 1.5px;
+				text-transform: uppercase;
+				color: rgba(201, 164, 90, 0.75);
+				white-space: nowrap;
+			}
+
+			.threat-value {
+				color: $bronze;
+				font-weight: 700;
+			}
+
+			.threat-arrow {
+				color: rgba(201, 164, 90, 0.5);
+			}
+
+			.threat-next {
+				color: rgba(255, 255, 255, 0.55);
+			}
+
+			&:hover {
+				background: linear-gradient(180deg, rgba(201, 164, 90, 0.14), rgba(201, 164, 90, 0.04));
+			}
+		}
+	}
+
+	.ant-collapse-content {
+		background: rgba(0, 0, 0, 0.2);
+		border-top: 1px solid rgba(201, 164, 90, 0.2);
+	}
+}
+
+// ----- Encounter name input --------------------------------------------------
+// Distinctive treatment: thin bronze underline + serif placeholder feel.
+.encounter-edit-stream .encounter-section {
+	.ant-input-affix-wrapper {
+		background: transparent !important;
+		border: none !important;
+		border-bottom: 1px solid rgba(201, 164, 90, 0.4) !important;
+		border-radius: 0 !important;
+		padding: 8px 4px !important;
+		box-shadow: none !important;
+		transition: border-color 0.2s !important;
+
+		&:hover,
+		&:focus-within,
+		&-focused {
+			border-bottom-color: $bronze !important;
+		}
+
+		.ant-input {
+			background: transparent !important;
+			border: none !important;
+			box-shadow: none !important;
+			outline: none !important;
+			font-family: 'Merriweather', serif;
+			font-size: 18px;
+			font-weight: 700;
+			letter-spacing: 0.5px;
+			color: rgba(255, 255, 255, 0.9) !important;
+			padding: 0;
+
+			&:hover,
+			&:focus {
+				background: transparent !important;
+				box-shadow: none !important;
+			}
+
+			&::placeholder {
+				font-style: italic;
+				color: rgba(255, 255, 255, 0.35);
+				font-weight: 400;
+			}
+		}
+
+		.ant-input-clear-icon {
+			color: rgba(201, 164, 90, 0.5);
+
+			&:hover {
+				color: $bronze;
+			}
+		}
+	}
+}
+
+// ----- Echelon sections in the monster picker -------------------------------
+// Color-coded by threat tier via a data-echelon attribute we set on the
+// echelon section wrapper. Falls back gracefully (still readable) without it.
+.encounter-edit-stream .echelon-section {
+	margin-top: 10px;
+
+	> .echelon-header {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 4px 0 4px 10px;
+		margin-bottom: 6px;
+		border-left: 3px solid $bronze;
+
+		.echelon-tier {
+			font-family: 'Merriweather', serif;
+			font-weight: 700;
+			font-size: 14px;
+			letter-spacing: 1.5px;
+			color: $bronze;
+		}
+
+		.echelon-divider {
+			flex: 1 1 0;
+			height: 1px;
+			background: linear-gradient(90deg, $bronze-dim, transparent);
+		}
+
+		.echelon-range {
+			font-family: 'Merriweather', serif;
+			font-size: 10px;
+			letter-spacing: 2px;
+			text-transform: uppercase;
+			color: rgba(255, 255, 255, 0.55);
+		}
+	}
+
+	&[data-echelon="1"] > .echelon-header { border-left-color: $echelon-1; .echelon-tier { color: lighten($echelon-1, 22%); } }
+	&[data-echelon="2"] > .echelon-header { border-left-color: $echelon-2; .echelon-tier { color: lighten($echelon-2, 18%); } }
+	&[data-echelon="3"] > .echelon-header { border-left-color: $echelon-3; .echelon-tier { color: lighten($echelon-3, 12%); } }
+	&[data-echelon="4"] > .echelon-header { border-left-color: $echelon-4; .echelon-tier { color: lighten($echelon-4, 12%); } }
+
+	&[data-echelon="1"] > .echelon-header .echelon-divider { background: linear-gradient(90deg, rgba(74, 127, 181, 0.4), transparent); }
+	&[data-echelon="2"] > .echelon-header .echelon-divider { background: linear-gradient(90deg, rgba(74, 153, 120, 0.4), transparent); }
+	&[data-echelon="3"] > .echelon-header .echelon-divider { background: linear-gradient(90deg, rgba(201, 130, 74, 0.4), transparent); }
+	&[data-echelon="4"] > .echelon-header .echelon-divider { background: linear-gradient(90deg, rgba(181, 74, 74, 0.4), transparent); }
+}
+
+// ----- Monster picker row cards ---------------------------------------------
+// Each MonsterListItem / TerrainListItem is the row added from the picker.
 .monster-list-item,
 .terrain-list-item {
-	border: 1px solid rgb(220, 220, 220);
-	border-radius: 10px;
-	background-color: rgba(255, 255, 255);
-	padding: 5px 10px;
+	border: 1px solid rgba(201, 164, 90, 0.18);
+	border-radius: 3px;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+	padding: 8px 12px;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
+	gap: 8px;
+	transition: border-color 0.15s, background 0.15s, transform 0.1s;
 
 	.info-container {
 		flex: 1 1 0;
 		cursor: grab;
 		touch-action: none;
+		min-width: 0;
+	}
+
+	.combatant-name {
+		font-family: 'Merriweather', serif;
+		font-weight: 700;
+		font-size: 14px;
+		letter-spacing: 0.3px;
+		line-height: 1.25;
+	}
+
+	.combatant-info {
+		font-size: 10px;
+		letter-spacing: 0.8px;
+		text-transform: uppercase;
+		opacity: 0.55;
+		margin-top: 3px;
 	}
 
 	.add-btn {
 		border: none;
+		background: transparent;
+		color: $bronze;
+
+		&:hover {
+			background: rgba(201, 164, 90, 0.15);
+			color: $bronze;
+		}
 	}
 
 	@media (hover: hover) {
 		&:hover {
-			background-color: rgba(0, 0, 0, 0.05);
+			border-color: rgba(201, 164, 90, 0.5);
+			background: linear-gradient(180deg, rgba(201, 164, 90, 0.08), rgba(201, 164, 90, 0.02));
+		}
+	}
+
+	&:active {
+		transform: scale(0.997);
+	}
+}
+
+// ----- Group cards (Group 1, Group 2, etc) ----------------------------------
+// The .selectable-panel wraps each group inside the Monster Groups section.
+.encounter-edit-stream .encounter-section .selectable-panel {
+	border: 1px solid rgba(201, 164, 90, 0.25);
+	border-radius: 3px;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(0, 0, 0, 0.1));
+	box-shadow: none;
+	padding: 14px 14px 12px;
+	position: relative;
+
+	// Decorative top-edge gold line for that field-manual feel
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 12px;
+		right: 12px;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, $bronze-dim, transparent);
+	}
+
+	.header-text-panel.level-2 {
+		margin-top: 0;
+		border-bottom-color: rgba(201, 164, 90, 0.2);
+
+		.header-text {
+			font-family: 'Merriweather', serif;
+			font-size: 12px;
+			letter-spacing: 2px;
+			color: rgba(201, 164, 90, 0.85);
 		}
 	}
 }
 
-html[data-theme="dark"] {
+// ----- Slot rows inside a group (the actual monster instances) --------------
+.encounter-workspace-column,
+.encounter-edit-stream {
+	.encounter-group-panel,
+	.encounter-terrain-panel {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+
+		.slot-row,
+		.terrain-row {
+			border: 1px solid rgba(201, 164, 90, 0.15);
+			border-radius: 3px;
+			background: rgba(0, 0, 0, 0.25);
+			padding: 10px 12px;
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 8px;
+			transition: border-color 0.15s, background 0.15s;
+
+			@media (min-width: 768px) {
+				flex-direction: row;
+				align-items: center;
+				gap: 12px;
+			}
+
+			.content {
+				flex: 1 1 0;
+				min-height: 38px;
+				min-width: 0;
+
+				@media (min-width: 768px) {
+					border-right: 1px solid rgba(201, 164, 90, 0.12);
+					padding-right: 12px;
+				}
+			}
+
+			.combatant-name {
+				font-family: 'Merriweather', serif;
+				font-weight: 700;
+				font-size: 14px;
+				letter-spacing: 0.3px;
+				line-height: 1.25;
+			}
+
+			.combatant-info {
+				font-size: 10px;
+				letter-spacing: 0.8px;
+				text-transform: uppercase;
+				opacity: 0.55;
+				margin-top: 3px;
+			}
+
+			.actions {
+				flex: 0 0 auto;
+				display: flex;
+				justify-content: flex-end;
+
+				@media (min-width: 768px) {
+					min-width: 120px;
+				}
+			}
+
+			&.customizing {
+				border-radius: 3px 3px 0 0;
+				border-bottom-color: transparent;
+			}
+
+			@media (hover: hover) {
+				&:hover {
+					border-color: rgba(201, 164, 90, 0.4);
+					background: rgba(201, 164, 90, 0.06);
+				}
+			}
+		}
+
+		.customize-panel {
+			margin-top: -1px;
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+			padding: 12px;
+			border: 1px solid rgba(201, 164, 90, 0.15);
+			border-top: none;
+			border-radius: 0 0 3px 3px;
+			background: rgba(0, 0, 0, 0.15);
+		}
+
+		.group-edit-row {
+			border: 1px solid rgba(201, 164, 90, 0.15);
+			border-radius: 3px;
+			background: rgba(0, 0, 0, 0.25);
+			padding: 10px;
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+
+			@media (hover: hover) {
+				&:hover {
+					background: rgba(201, 164, 90, 0.05);
+				}
+			}
+		}
+
+		.group-slots,
+		.terrain-slots {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+	}
+}
+
+// ----- Empty states ---------------------------------------------------------
+// "No groups yet — pick a monster below." gets dashed border + serif voice.
+.encounter-edit-stream .ant-space .dimmed-text.centered-text {
+	font-family: 'Merriweather', serif;
+	font-style: italic;
+	font-size: 12px;
+	letter-spacing: 0.5px;
+	padding: 14px 12px;
+	border: 1px dashed rgba(201, 164, 90, 0.22);
+	border-radius: 3px;
+	background: rgba(0, 0, 0, 0.12);
+	color: rgba(255, 255, 255, 0.45);
+}
+
+// ----- Add group / Add monster / Filter buttons -----------------------------
+.encounter-edit-stream {
+	// "Add group" sits in a Flex justify=flex-end. Restyle the button.
+	.ant-flex > button.ant-btn,
+	.encounter-section > .header-text-panel .ant-btn {
+		font-family: 'Merriweather', serif;
+		font-size: 11px;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+		padding: 4px 12px;
+		height: auto;
+		border-radius: 3px;
+		border: 1px solid rgba(201, 164, 90, 0.4);
+		background: transparent;
+		color: $bronze;
+		box-shadow: none;
+
+		&:hover {
+			border-color: $bronze;
+			background: rgba(201, 164, 90, 0.1);
+			color: $bronze;
+		}
+
+		&.ant-btn-text {
+			border: none;
+			padding: 2px 8px;
+			letter-spacing: 1.5px;
+
+			&:hover {
+				background: rgba(201, 164, 90, 0.1);
+			}
+		}
+	}
+}
+
+// ----- Filter panel ---------------------------------------------------------
+.encounter-edit-stream .monster-filter-panel,
+.encounter-edit-stream .terrain-filter-panel {
+	border: 1px dashed rgba(201, 164, 90, 0.25);
+	border-radius: 3px;
+	padding: 12px 12px 14px;
+	background: rgba(0, 0, 0, 0.18);
+	margin-bottom: 10px;
+
+	// Bronze chip-row for picking which filter axis is active.
+	.ant-tag-checkable {
+		font-family: 'Merriweather', serif;
+		font-size: 10px;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+		padding: 4px 10px;
+		margin: 2px;
+		border: 1px solid rgba(201, 164, 90, 0.3);
+		border-radius: 2px;
+		background: transparent;
+		color: rgba(255, 255, 255, 0.6);
+		transition: all 0.15s;
+
+		&:hover {
+			border-color: rgba(201, 164, 90, 0.6);
+			color: rgba(255, 255, 255, 0.85);
+			background: rgba(201, 164, 90, 0.06);
+		}
+
+		&.ant-tag-checkable-checked {
+			background: rgba(201, 164, 90, 0.15);
+			border-color: $bronze;
+			color: $bronze;
+
+			&:hover {
+				background: rgba(201, 164, 90, 0.22);
+				color: lighten($bronze, 8%);
+			}
+		}
+	}
+
+	// Inputs/Selects — bronze accents, dark surface. Flat selectors so AntD's
+	// CSS-in-JS scoped styles can't outrun us with specificity.
+	.ant-input-affix-wrapper {
+		background: rgba(0, 0, 0, 0.3) !important;
+		border: 1px solid rgba(201, 164, 90, 0.2) !important;
+		border-radius: 3px !important;
+		box-shadow: none !important;
+
+		&:hover,
+		&:focus-within {
+			border-color: $bronze !important;
+		}
+
+		.ant-input {
+			background: transparent !important;
+			color: rgba(255, 255, 255, 0.85) !important;
+			font-family: 'PT Sans', sans-serif;
+
+			&::placeholder {
+				color: rgba(255, 255, 255, 0.35);
+				font-style: italic;
+			}
+		}
+	}
+
+	.ant-select,
+	.ant-select.ant-select-outlined,
+	.ant-select.ant-select-multiple,
+	.ant-select.ant-select-single {
+		background: rgba(0, 0, 0, 0.3) !important;
+		background-color: rgba(0, 0, 0, 0.3) !important;
+		border: 1px solid rgba(201, 164, 90, 0.2) !important;
+		border-radius: 3px !important;
+		box-shadow: none !important;
+		min-height: 36px;
+
+		&:hover,
+		&.ant-select-focused {
+			border-color: $bronze !important;
+		}
+	}
+
+	// Some AntD 6 builds still ship the inner .ant-select-selector — cover both.
+	.ant-select-selector {
+		background: transparent !important;
+		background-color: transparent !important;
+		border: none !important;
+		box-shadow: none !important;
+	}
+
+	// AntD 6 uses .ant-select-placeholder (not .ant-select-selection-placeholder).
+	// Keep both for safety across AntD versions. Match the Name input placeholder.
+	.ant-select-placeholder,
+	.ant-select-selection-placeholder {
+		color: rgba(255, 255, 255, 0.6) !important;
+		font-family: 'Merriweather', serif !important;
+		font-style: italic !important;
+		font-weight: 400 !important;
+	}
+
+	.ant-select-input,
+	.ant-select-selection-search-input {
+		color: rgba(255, 255, 255, 0.9) !important;
+		font-family: 'PT Sans', sans-serif;
+	}
+
+	.ant-select-selection-item {
+		background: rgba(201, 164, 90, 0.18) !important;
+		background-color: rgba(201, 164, 90, 0.18) !important;
+		border: 1px solid rgba(201, 164, 90, 0.45) !important;
+		color: rgba(255, 235, 200, 0.95) !important;
+		border-radius: 2px !important;
+	}
+
+	.ant-select-selection-item-remove {
+		color: rgba(255, 235, 200, 0.8) !important;
+
+		&:hover {
+			color: rgba(255, 255, 255, 0.95) !important;
+		}
+	}
+
+	.ant-select-arrow {
+		color: rgba(201, 164, 90, 0.6) !important;
+	}
+
+	.ant-slider {
+		.ant-slider-rail {
+			background: rgba(255, 255, 255, 0.08);
+		}
+
+		.ant-slider-track {
+			background: $bronze;
+		}
+
+		.ant-slider-handle {
+			&::after {
+				box-shadow: 0 0 0 2px $bronze;
+			}
+
+			&:hover::after,
+			&:focus::after {
+				box-shadow: 0 0 0 3px lighten($bronze, 8%);
+			}
+		}
+
+		.ant-slider-mark-text {
+			font-family: 'PT Sans', sans-serif;
+			font-size: 9px;
+			letter-spacing: 0.6px;
+			color: rgba(255, 255, 255, 0.5);
+
+			&-active {
+				color: $bronze;
+			}
+		}
+
+		.ant-slider-dot {
+			border-color: rgba(201, 164, 90, 0.4);
+			background: rgba(0, 0, 0, 0.6);
+
+			&-active {
+				border-color: $bronze;
+			}
+		}
+	}
+
+	// Slider rows lay label + slider + value horizontally so the axis name and
+	// its range stay anchored to the slider track instead of stacking above it.
+	.filter-range-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 4px 0;
+
+		.filter-range-label {
+			flex: 0 0 auto;
+			min-width: 42px;
+			font-family: 'Merriweather', serif;
+			font-size: 10px;
+			letter-spacing: 1.5px;
+			text-transform: uppercase;
+			color: $bronze;
+		}
+
+		.ant-slider {
+			flex: 1 1 0;
+			margin: 0;
+		}
+
+		.filter-range-value {
+			flex: 0 0 auto;
+			min-width: 42px;
+			text-align: right;
+			font-family: 'PT Sans', sans-serif;
+			font-size: 12px;
+			color: rgba(255, 255, 255, 0.75);
+			font-variant-numeric: tabular-nums;
+		}
+
+		// Variant with tick marks below the slider — needs extra vertical room.
+		&.filter-range-row--ticked {
+			align-items: flex-start;
+			padding: 2px 0 22px;
+
+			.filter-range-label,
+			.filter-range-value {
+				padding-top: 4px;
+			}
+		}
+	}
+
+	.field-row,
+	.ds-text {
+		font-family: 'PT Sans', sans-serif;
+		font-size: 12px;
+		color: rgba(255, 255, 255, 0.7);
+	}
+}
+
+html:not([data-theme="dark"]) {
+	.encounter-edit-stream .monster-filter-panel,
+	.encounter-edit-stream .terrain-filter-panel {
+		background: rgba(0, 0, 0, 0.03);
+
+		.ant-tag-checkable {
+			color: rgba(0, 0, 0, 0.7);
+
+			&:hover {
+				color: rgba(0, 0, 0, 0.88);
+			}
+
+			&.ant-tag-checkable-checked {
+				color: darken($bronze, 18%);
+			}
+		}
+
+		.ant-input-affix-wrapper,
+		.ant-select .ant-select-selector {
+			background: rgba(255, 255, 255, 0.7) !important;
+
+			.ant-input,
+			.ant-select-selection-placeholder {
+				color: rgba(0, 0, 0, 0.85) !important;
+			}
+		}
+	}
+}
+
+// ----- Inner monster-group expanders inside an echelon section --------------
+// The Expanders for each monster band ("Demon", "Dragon, Crucible") inside an
+// echelon. Bronze-tinted; no overpowering shadow.
+.echelon-section .ant-collapse {
+	box-shadow: none;
+	background: transparent;
+
+	> .ant-collapse-item > .ant-collapse-header {
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)) !important;
+		border: 1px solid rgba(201, 164, 90, 0.2) !important;
+		border-radius: 3px !important;
+		color: rgba(255, 255, 255, 0.85) !important;
+
+		.ant-collapse-header-text {
+			font-family: 'Merriweather', serif;
+			font-weight: 600;
+			font-size: 14px;
+			letter-spacing: 0.3px;
+		}
+	}
+
+	&:hover > .ant-collapse-item > .ant-collapse-header {
+		background: linear-gradient(180deg, rgba(201, 164, 90, 0.08), rgba(201, 164, 90, 0.02)) !important;
+		border-color: rgba(201, 164, 90, 0.45) !important;
+	}
+
+	.ant-collapse-panel > .ant-collapse-body {
+		background: rgba(0, 0, 0, 0.1);
+		border: 1px solid rgba(201, 164, 90, 0.15);
+		border-top: none;
+		border-radius: 0 0 3px 3px;
+		padding: 10px;
+	}
+}
+
+// =============================================================================
+// LIGHT THEME — softer surface treatments, same bronze accents
+// =============================================================================
+html:not([data-theme="dark"]) {
 	.encounter-edit-panel {
-		.encounter-workspace-column {
+		.encounter-edit-stream {
+			.encounter-warning {
+				background: rgba(252, 240, 240, 0.96);
+				color: rgba(120, 30, 30, 0.9);
+			}
+
+			.encounter-section > .header-text-panel.level-2 .header-text { color: rgba(0, 0, 0, 0.85); }
+			.encounter-section > .header-text-panel.level-3 .header-text { color: rgba(0, 0, 0, 0.55); }
+			.encounter-section input[type="text"] {
+				color: rgba(0, 0, 0, 0.88);
+				&::placeholder { color: rgba(0, 0, 0, 0.3); }
+			}
+
 			.encounter-group-panel,
 			.encounter-terrain-panel {
 				.slot-row,
 				.terrain-row,
-				.customize-panel {
-					background-color: rgba(0, 0, 0);
-					color: rgba(255, 255, 255, 0.88);
-				}
-
-				&.drag-target {
-					background: rgb(80, 80, 80);
-				}
-
-				&.drag-over {
-					border-color: rgb(217, 217, 217);
+				.customize-panel,
+				.group-edit-row {
+					background: rgba(255, 255, 255, 0.7);
+					color: rgba(0, 0, 0, 0.85);
 				}
 			}
-		}
 
-		.encounter-list-column {
-			.filter-button {
-				color: rgba(255, 255, 255, 0.88);
+			.ant-space .dimmed-text.centered-text {
+				color: rgba(0, 0, 0, 0.45);
+				background: rgba(0, 0, 0, 0.03);
 			}
-		}
-
-		.monster-list-item,
-		.terrain-list-item {
-			background-color: rgba(0, 0, 0);
-			color: rgba(255, 255, 255, 0.88);
 		}
 	}
+
+	.monster-list-item,
+	.terrain-list-item {
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.4));
+		border-color: rgba(201, 164, 90, 0.35);
+		color: rgba(0, 0, 0, 0.85);
+
+		@media (hover: hover) {
+			&:hover {
+				background: linear-gradient(180deg, rgba(201, 164, 90, 0.14), rgba(201, 164, 90, 0.04));
+			}
+		}
+	}
+}
+
+// =============================================================================
+// LEGACY desktop two-column layout (unused but kept for safety)
+// =============================================================================
+.encounter-edit-panel .encounter-workspace-column {
+	flex: 1 1 0;
+	overflow-y: auto;
+}
+
+.encounter-edit-panel .encounter-list-column {
+	flex: 1 1 0;
+	display: flex;
+	flex-direction: column;
+	padding: 0 5px;
 }

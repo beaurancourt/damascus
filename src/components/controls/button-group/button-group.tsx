@@ -1,7 +1,7 @@
 import { Button, Divider, Popover, Space } from 'antd';
+import { ReactNode, useState } from 'react';
 import { DangerButton } from '@/components/controls/danger-button/danger-button';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
-import { ReactNode } from 'react';
 
 import './button-group.scss';
 
@@ -43,6 +43,27 @@ interface ButtonGroupProps {
 	buttons: (ButtonConfig | DangerConfig | DropdownConfig | ControlConfig | null)[];
 }
 
+const DropdownButtonItem = ({ config }: { config: DropdownConfig }) => {
+	const [ open, setOpen ] = useState(false);
+	return (
+		<Popover
+			className='dropdown'
+			trigger='click'
+			open={open}
+			onOpenChange={setOpen}
+			content={(
+				<div onClick={() => setOpen(false)}>
+					{config.popover}
+				</div>
+			)}
+		>
+			<Button type={config.primary ? 'primary' : 'text'} disabled={config.disabled} icon={config.icon} title={config.tooltip}>
+				{config.label}
+			</Button>
+		</Popover>
+	);
+};
+
 export const ButtonGroup = (props: ButtonGroupProps) => {
 	return (
 		<ErrorBoundary>
@@ -63,11 +84,7 @@ export const ButtonGroup = (props: ButtonGroupProps) => {
 									);
 								case 'dropdown':
 									return (
-										<Popover className='dropdown' trigger='click' content={item.popover}>
-											<Button type={item.primary ? 'primary' : 'text'} disabled={item.disabled} icon={item.icon} title={item.tooltip}>
-												{item.label}
-											</Button>
-										</Popover>
+										<DropdownButtonItem key={n} config={item} />
 									);
 								case 'control':
 									return item.control;
