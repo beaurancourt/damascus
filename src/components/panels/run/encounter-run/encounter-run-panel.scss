@@ -363,10 +363,13 @@
 	}
 
 	// --- Stat block column (right) ------------------------------------------
+	// The right column is reference material during play — the GM wants quick
+	// access to abilities and stats, NOT the full library-page detail view.
+	// Aggressively compact the MonsterPanel and TerrainPanel renderings here.
 	.encounter-run-stats {
 		display: flex;
 		flex-direction: column;
-		gap: 24px;
+		gap: 12px;
 
 		.stat-block {
 			border: 1px solid transparent;
@@ -378,6 +381,149 @@
 				border-color: $bronze;
 				box-shadow: 0 0 0 1px rgba(201, 164, 90, 0.25), 0 4px 16px rgba(0, 0, 0, 0.3);
 				background: rgba(201, 164, 90, 0.04);
+			}
+
+			// Hide reference-page-only content during play.
+			.monster-panel > .markdown,
+			.monster-panel > div:has(> .ant-collapse) { // "At Higher Levels" expander
+				display: none;
+			}
+
+			// Compact the header — tighter padding, smaller divider beneath.
+			.monster-panel > .header-text-panel,
+			.terrain-panel > .header-text-panel {
+				margin: 0 0 6px;
+				padding-bottom: 4px;
+
+				.header-text {
+					font-size: 14px;
+					letter-spacing: 2.5px;
+				}
+			}
+
+			// Compact the MonsterLabel (role/keywords/EV banner).
+			.monster-label {
+				padding: 6px 10px !important;
+				margin: 0 0 6px !important;
+
+				.field-label {
+					font-size: 9px !important;
+					letter-spacing: 1.5px;
+				}
+
+				.field-value {
+					font-size: 11px !important;
+				}
+			}
+
+			// Compact the two stats rows. Smaller field labels and values.
+			.stats-row {
+				padding: 6px 8px;
+				margin: 4px 0;
+				border-radius: 2px;
+
+				.field {
+					.field-label {
+						font-size: 9px;
+						letter-spacing: 1px;
+						margin-bottom: 1px;
+					}
+
+					.field-value {
+						font-size: 14px;
+						font-weight: 600;
+					}
+				}
+			}
+
+			// Tighten the features block (Movement / Immunities / Cannot Be /
+			// signature damage etc.). Single-line fields with denser spacing.
+			.features {
+				padding: 6px 0;
+
+				.field {
+					padding: 3px 0;
+
+					.field-label {
+						font-size: 10px;
+						font-weight: 700;
+						color: rgba(201, 164, 90, 0.85);
+					}
+
+					.field-value {
+						font-size: 12px;
+					}
+				}
+			}
+
+			// Each ability is rendered inside a SelectablePanel that, by default,
+			// has heavy padding and shadow. Strip those down to the essentials —
+			// the ability already has its own color-coded left border.
+			.abilities {
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+				margin-top: 6px;
+
+				.selectable-panel {
+					padding: 6px 8px;
+					border-radius: 3px;
+					box-shadow: none;
+					background: transparent;
+					border: 1px solid rgba(201, 164, 90, 0.12);
+				}
+
+				.ability-panel {
+					.header-text-panel {
+						margin: 0 0 4px;
+						padding-bottom: 2px;
+						border-bottom: 1px dashed rgba(201, 164, 90, 0.15);
+
+						.header-text {
+							font-size: 12px;
+							letter-spacing: 1.5px;
+						}
+					}
+
+					.ability-description-text {
+						font-size: 11px;
+						margin: 4px 0;
+					}
+
+					.ant-tag {
+						font-size: 8px !important;
+						padding: 0 5px !important;
+						margin: 0 2px 0 0 !important;
+					}
+
+					.ability-info-panel {
+						padding: 6px 8px !important;
+						margin: 4px 0 !important;
+
+						.field {
+							padding: 1px 0;
+
+							.field-label { font-size: 10px; }
+							.field-value { font-size: 11px; }
+						}
+					}
+
+					// Power-roll tier rows
+					.power-roll {
+						padding: 4px 0;
+
+						.power-roll-row {
+							padding: 2px 0;
+							font-size: 11px;
+						}
+					}
+				}
+			}
+
+			// Slim the ant Alert (combat state) when it appears.
+			.ant-alert {
+				padding: 4px 8px;
+				font-size: 11px;
 			}
 		}
 
