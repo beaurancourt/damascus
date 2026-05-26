@@ -270,17 +270,19 @@
 			color: rgba(255, 255, 255, 0.5);
 		}
 
-		// HP control: −1 / current/max / +1. Bronze tabular nums.
+		// HP control: −5 / −1 / current/max / +1 / +5. Bronze tabular nums.
+		// −5/+5 get a slightly stronger visual weight to make burst damage/heal
+		// faster to find when the GM is moving quickly.
 		.hp-control {
 			flex: 0 0 auto;
 			display: flex;
 			align-items: center;
-			gap: 4px;
+			gap: 3px;
 
-			.ant-btn {
-				width: 28px;
+			.hp-step {
+				min-width: 32px;
 				height: 28px;
-				padding: 0;
+				padding: 0 6px;
 				font-family: 'Merriweather', serif;
 				font-size: 11px;
 				font-weight: 700;
@@ -288,16 +290,31 @@
 				background: transparent;
 				border: 1px solid rgba(201, 164, 90, 0.25);
 				border-radius: 3px;
+				font-variant-numeric: tabular-nums;
 
 				&:hover {
 					color: $bronze;
 					background: rgba(201, 164, 90, 0.1);
 					border-color: $bronze;
 				}
+
+				&.hp-big {
+					font-size: 12px;
+					color: rgba(201, 164, 90, 0.85);
+					border-color: rgba(201, 164, 90, 0.4);
+					background: rgba(201, 164, 90, 0.04);
+
+					&:hover {
+						color: $bronze;
+						background: rgba(201, 164, 90, 0.15);
+						border-color: $bronze;
+					}
+				}
 			}
 
 			.hp-display {
 				min-width: 60px;
+				margin: 0 2px;
 				text-align: center;
 				font-family: 'Merriweather', serif;
 				font-variant-numeric: tabular-nums;

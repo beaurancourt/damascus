@@ -245,35 +245,34 @@ export const EncounterRunPanel = (props: Props) => {
 		if (row.kind === 'terrain') {
 			return null;
 		}
-		if (row.kind === 'minion-squad') {
-			// Minion squad: HP is summed across all monsters; tracked on slot.state.
-			const max = row.slot.monsters.reduce((sum, m) => sum + MonsterLogic.getStamina(m), 0);
-			const damage = row.slot.state.staminaDamage;
-			const current = Math.max(0, max - damage);
-			return (
-				<div className='hp-control'>
-					<Button type='text' size='small' onClick={e => { e.stopPropagation(); setSlotStaminaDamage(row.slot.id, damage + 1); }}>−1</Button>
-					<div className='hp-display'>
-						<span className='hp-current'>{current}</span>
-						<span className='hp-sep'>/</span>
-						<span className='hp-max'>{max}</span>
-					</div>
-					<Button type='text' size='small' onClick={e => { e.stopPropagation(); setSlotStaminaDamage(row.slot.id, Math.max(0, damage - 1)); }}>+1</Button>
-				</div>
-			);
-		}
-		const max = MonsterLogic.getStamina(row.monster);
-		const damage = row.monster.state.staminaDamage;
+		const isMinion = row.kind === 'minion-squad';
+		// Minions show the per-minion base HP. Squad mechanics still apply —
+		// damage accumulates on slot.state — but the GM thinks in single-minion
+		// HP units, which matches how minions read on the stat block.
+		const max = isMinion
+			? MonsterLogic.getStamina(row.lead)
+			: MonsterLogic.getStamina(row.monster);
+		const damage = isMinion ? row.slot.state.staminaDamage : row.monster.state.staminaDamage;
 		const current = Math.max(0, max - damage);
+		const apply = (delta: number) => {
+			const next = Math.max(0, damage - delta);
+			if (isMinion) {
+				setSlotStaminaDamage(row.slot.id, next);
+			} else {
+				setMonsterStaminaDamage(row.monster.id, next);
+			}
+		};
 		return (
 			<div className='hp-control'>
-				<Button type='text' size='small' onClick={e => { e.stopPropagation(); setMonsterStaminaDamage(row.monster.id, damage + 1); }}>−1</Button>
+				<Button type='text' size='small' className='hp-step hp-big' title='Take 5 damage' onClick={e => { e.stopPropagation(); apply(-5); }}>−5</Button>
+				<Button type='text' size='small' className='hp-step' title='Take 1 damage' onClick={e => { e.stopPropagation(); apply(-1); }}>−1</Button>
 				<div className='hp-display'>
 					<span className='hp-current'>{current}</span>
 					<span className='hp-sep'>/</span>
 					<span className='hp-max'>{max}</span>
 				</div>
-				<Button type='text' size='small' onClick={e => { e.stopPropagation(); setMonsterStaminaDamage(row.monster.id, Math.max(0, damage - 1)); }}>+1</Button>
+				<Button type='text' size='small' className='hp-step' title='Heal 1' onClick={e => { e.stopPropagation(); apply(1); }}>+1</Button>
+				<Button type='text' size='small' className='hp-step hp-big' title='Heal 5' onClick={e => { e.stopPropagation(); apply(5); }}>+5</Button>
 			</div>
 		);
 	};
