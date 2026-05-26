@@ -416,7 +416,9 @@
 				}
 			}
 
-			// Compact the two stats rows. Smaller field labels and values.
+			// Two adjacent stat rows (size/speed/etc. + characteristics) collapse
+			// into one visual box — drop the gap between them and merge their
+			// borders so they read as a single tactical readout.
 			.stats-row {
 				padding: 6px 8px;
 				margin: 4px 0;
@@ -433,6 +435,19 @@
 						font-size: 14px;
 						font-weight: 600;
 					}
+				}
+
+				& + .stats-row {
+					margin-top: 0;
+					border-top: 1px solid rgba(201, 164, 90, 0.15);
+					border-top-left-radius: 0;
+					border-top-right-radius: 0;
+				}
+
+				&:has(+ .stats-row) {
+					margin-bottom: 0;
+					border-bottom-left-radius: 0;
+					border-bottom-right-radius: 0;
 				}
 			}
 
