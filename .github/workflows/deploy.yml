@@ -29,7 +29,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # Using `npm install` (not `npm ci`) so cross-platform optional
+        # native deps that aren't in the lock from a darwin dev machine
+        # get resolved fresh on linux.
+        run: npm install --no-audit --no-fund --prefer-offline
 
       - name: Build
         run: npm run build
