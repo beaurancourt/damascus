@@ -9,7 +9,6 @@ import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Monster } from '@/models/monster';
 import { MonsterLogic } from '@/logic/monster-logic';
-import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
 import { MonsterSelectModal } from '@/components/modals/select/monster-select/monster-select-modal';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
@@ -29,12 +28,10 @@ interface Props {
 	onChange: (encounter: Encounter) => void;
 }
 
-// A row in the tracker. Groups own the acted flag; rows show HP.
-//   - 'minion-squad': all monsters in the slot share HP via slot.state (one row).
-//   - 'monster': a single individual monster instance (its own HP, one row).
-//   - 'terrain': a terrain piece.
+// A row in the tracker. Groups own the acted flag; rows show HP per-instance.
+// Every monster — including each minion in a squad — gets its own row so the
+// GM can damage them independently, even though they share a stat block.
 type Row =
-	| { kind: 'minion-squad'; rowID: string; groupID: string; slot: EncounterSlot; lead: Monster; name: string; count: number; statBlockKey: string }
 	| { kind: 'monster'; rowID: string; groupID: string; slot: EncounterSlot; monster: Monster; name: string; statBlockKey: string }
 	| { kind: 'terrain'; rowID: string; terrain: Terrain; name: string; statBlockKey: string };
 
@@ -110,14 +107,6 @@ export const EncounterRunPanel = (props: Props) => {
 		commit(copy);
 	};
 
-	const deleteSlot = (groupID: string, slotID: string) => {
-		const copy = Utils.copy(encounter);
-		const g = copy.groups.find(gg => gg.id === groupID);
-		if (g) g.slots = g.slots.filter(s => s.id !== slotID);
-		copy.groups = copy.groups.filter(gg => gg.slots.length > 0);
-		commit(copy);
-	};
-
 	const deleteMonster = (monsterID: string) => {
 		const copy = Utils.copy(encounter);
 		copy.groups.forEach(g => {
@@ -144,16 +133,6 @@ export const EncounterRunPanel = (props: Props) => {
 		commit(copy);
 	};
 
-	// HP setters.
-	const setSlotStaminaDamage = (slotID: string, value: number) => {
-		const copy = Utils.copy(encounter);
-		copy.groups.forEach(g => {
-			const s = g.slots.find(ss => ss.id === slotID);
-			if (s) s.state.staminaDamage = Math.max(0, value);
-		});
-		commit(copy);
-	};
-
 	const setMonsterStaminaDamage = (monsterID: string, value: number) => {
 		const copy = Utils.copy(encounter);
 		copy.groups.forEach(g => {
@@ -176,37 +155,25 @@ export const EncounterRunPanel = (props: Props) => {
 		setAddingMonsters(true);
 	};
 
-	// Build the tracker rows per slot, expanding non-minion squads to one row
-	// per individual monster (since each tracks its own HP).
+	// One row per individual monster (including each minion in a squad) —
+	// each tracks its own HP. The shared stat block on the right column is
+	// deduped separately.
 	const buildGroupRows = (group: EncounterGroup): Row[] => {
 		const rows: Row[] = [];
 		group.slots.forEach(slot => {
-			if (slot.monsters.length === 0) return;
-			const isMinion = slot.monsters[0].role.organization === MonsterOrganizationType.Minion;
-			if (isMinion) {
+			slot.monsters.forEach((m, i) => {
+				const baseName = m.name;
+				const name = slot.monsters.length > 1 ? `${baseName} ${i + 1}` : baseName;
 				rows.push({
-					kind: 'minion-squad',
-					rowID: slot.id,
+					kind: 'monster',
+					rowID: m.id,
 					groupID: group.id,
 					slot,
-					lead: slot.monsters[0],
-					name: slot.monsters[0].name,
-					count: slot.monsters.length,
+					monster: m,
+					name,
 					statBlockKey: monsterBlockKey(slot.monsterID)
 				});
-			} else {
-				slot.monsters.forEach(m => {
-					rows.push({
-						kind: 'monster',
-						rowID: m.id,
-						groupID: group.id,
-						slot,
-						monster: m,
-						name: m.name,
-						statBlockKey: monsterBlockKey(slot.monsterID)
-					});
-				});
-			}
+			});
 		});
 		return rows;
 	};
@@ -245,22 +212,11 @@ export const EncounterRunPanel = (props: Props) => {
 		if (row.kind === 'terrain') {
 			return null;
 		}
-		const isMinion = row.kind === 'minion-squad';
-		// Minions show the per-minion base HP. Squad mechanics still apply —
-		// damage accumulates on slot.state — but the GM thinks in single-minion
-		// HP units, which matches how minions read on the stat block.
-		const max = isMinion
-			? MonsterLogic.getStamina(row.lead)
-			: MonsterLogic.getStamina(row.monster);
-		const damage = isMinion ? row.slot.state.staminaDamage : row.monster.state.staminaDamage;
+		const max = MonsterLogic.getStamina(row.monster);
+		const damage = row.monster.state.staminaDamage;
 		const current = Math.max(0, max - damage);
 		const apply = (delta: number) => {
-			const next = Math.max(0, damage - delta);
-			if (isMinion) {
-				setSlotStaminaDamage(row.slot.id, next);
-			} else {
-				setMonsterStaminaDamage(row.monster.id, next);
-			}
+			setMonsterStaminaDamage(row.monster.id, Math.max(0, damage - delta));
 		};
 		return (
 			<div className='hp-control'>
@@ -281,7 +237,7 @@ export const EncounterRunPanel = (props: Props) => {
 		const focused = focusedBlock === row.statBlockKey;
 		const subtitle = row.kind === 'terrain'
 			? 'Terrain'
-			: MonsterLogic.getMonsterDescription(row.kind === 'minion-squad' ? row.lead : row.monster);
+			: MonsterLogic.getMonsterDescription(row.monster);
 		return (
 			<div
 				key={row.rowID}
@@ -293,10 +249,7 @@ export const EncounterRunPanel = (props: Props) => {
 				onClick={() => focusBlockByKey(row.statBlockKey)}
 			>
 				<div className='row-info'>
-					<div className='row-name'>
-						{row.name}
-						{row.kind === 'minion-squad' && row.count > 1 ? <span className='row-count'> ×{row.count}</span> : null}
-					</div>
+					<div className='row-name'>{row.name}</div>
 					<div className='row-sub'>{subtitle}</div>
 				</div>
 				{renderHpControl(row)}
@@ -307,9 +260,7 @@ export const EncounterRunPanel = (props: Props) => {
 					title='Remove'
 					onClick={e => {
 						e.stopPropagation();
-						if (row.kind === 'minion-squad') {
-							deleteSlot(row.groupID, row.slot.id);
-						} else if (row.kind === 'monster') {
+						if (row.kind === 'monster') {
 							deleteMonster(row.monster.id);
 						} else {
 							deleteTerrain(row.rowID);
