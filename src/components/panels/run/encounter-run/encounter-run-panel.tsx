@@ -82,6 +82,9 @@ export const EncounterRunPanel = (props: Props) => {
 		while (slot.monsters.length < slot.count) {
 			const m = Utils.copy(monster);
 			m.id = Utils.guid();
+			if (slot.count > 1) {
+				m.name = `${monster.name} ${slot.monsters.length + 1}`;
+			}
 			slot.monsters.push(m);
 		}
 		return slot;
@@ -156,21 +159,19 @@ export const EncounterRunPanel = (props: Props) => {
 	};
 
 	// One row per individual monster (including each minion in a squad) —
-	// each tracks its own HP. The shared stat block on the right column is
-	// deduped separately.
+	// each tracks its own HP. Names are already disambiguated by
+	// SessionLogic.startEncounter when needed, so we use m.name as-is.
 	const buildGroupRows = (group: EncounterGroup): Row[] => {
 		const rows: Row[] = [];
 		group.slots.forEach(slot => {
-			slot.monsters.forEach((m, i) => {
-				const baseName = m.name;
-				const name = slot.monsters.length > 1 ? `${baseName} ${i + 1}` : baseName;
+			slot.monsters.forEach(m => {
 				rows.push({
 					kind: 'monster',
 					rowID: m.id,
 					groupID: group.id,
 					slot,
 					monster: m,
-					name,
+					name: m.name,
 					statBlockKey: monsterBlockKey(slot.monsterID)
 				});
 			});
@@ -196,7 +197,12 @@ export const EncounterRunPanel = (props: Props) => {
 			if (slot.monsters.length === 0) return;
 			const key = monsterBlockKey(slot.monsterID);
 			if (!statBlockMap.has(key)) {
-				statBlockMap.set(key, { key, kind: 'monster', monster: slot.monsters[0], name: slot.monsters[0].name });
+				// Reference block reads as the species, not "Abyssal Hyena 1".
+				// Prefer the source monster (sourcebook entry) so the title and
+				// stats reflect the un-numbered template.
+				const source = SourcebookLogic.getMonster(props.sourcebooks, slot.monsterID);
+				const monster = source || slot.monsters[0];
+				statBlockMap.set(key, { key, kind: 'monster', monster, name: monster.name });
 			}
 		});
 	});
