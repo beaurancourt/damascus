@@ -1,5 +1,5 @@
 import { Ability, AbilitySectionField, AbilitySectionPackage, AbilitySectionRoll, AbilitySectionText } from '@/models/ability';
-import { Alert, Button, Flex, Space, Tag } from 'antd';
+import { Alert, Button, Space } from 'antd';
 import { Pill, ResourcePill } from '@/components/controls/pill/pill';
 import { ThunderboltFilled, ThunderboltOutlined } from '@ant-design/icons';
 import { AbilityData } from '@/data/ability-data';
@@ -305,7 +305,7 @@ export const AbilityPanel = (props: Props) => {
 				</Space>
 				<HeaderText
 					ribbon={getRibbon()}
-					tags={props.tags}
+					tags={[ ...(props.tags || []), ...keywords ]}
 					extra={
 						autoCalcAvailable() ?
 							<Button
@@ -320,11 +320,6 @@ export const AbilityPanel = (props: Props) => {
 					{props.ability.name || 'Unnamed Ability'}
 				</HeaderText>
 				<Markdown text={props.ability.description} className='ability-description-text' />
-				{
-					keywords.length > 0 ?
-						<Flex gap={3}>{keywords.map((k, n) => <Tag key={n} variant='outlined'>{k}</Tag>)}</Flex>
-						: null
-				}
 				<AbilityInfoPanel ability={props.ability} hero={props.hero} />
 				{(props.ability.sections || []).map(getSection)}
 				{

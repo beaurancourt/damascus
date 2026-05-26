@@ -511,15 +511,44 @@
 						margin: 0 2px 0 0 !important;
 					}
 
+					// Inline the action-type label + Distance + Target fields onto
+					// one row separated by bullets, instead of stacking.
 					.ability-info-panel {
-						padding: 6px 8px !important;
+						display: flex;
+						flex-wrap: wrap;
+						align-items: baseline;
+						gap: 4px 0;
+						min-height: 0;
+						padding: 6px 10px !important;
 						margin: 4px 0 !important;
 
-						.field {
-							padding: 1px 0;
+						> div {
+							display: inline;
+						}
 
-							.field-label { font-size: 10px; }
-							.field-value { font-size: 11px; }
+						> div + div::before {
+							content: '·';
+							margin: 0 8px;
+							color: rgba(255, 255, 255, 0.35);
+							font-weight: 400;
+						}
+
+						.field {
+							display: inline;
+							padding: 0;
+							margin: 0;
+
+							.field-label {
+								display: inline;
+								font-size: 11px;
+								font-weight: 700;
+								margin-right: 4px;
+							}
+
+							.field-value {
+								display: inline;
+								font-size: 11px;
+							}
 						}
 					}
 
