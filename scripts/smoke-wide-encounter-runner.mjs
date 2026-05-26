@@ -64,7 +64,7 @@ await page.screenshot({ path: 'tmp/audit/run-wide-01-runner.png', fullPage: fals
 log('saved tmp/audit/run-wide-01-runner.png');
 
 // Add a monster via the runner's "Add monster" button
-const addMonsterBtn = page.locator('button').filter({ hasText: /Add monster/i }).first();
+const addMonsterBtn = page.locator('button').filter({ hasText: /(Add monster|New group with monster)/i }).first();
 if (await addMonsterBtn.count()) {
 	await addMonsterBtn.click().catch(() => {});
 	await page.waitForTimeout(500);
@@ -76,7 +76,7 @@ if (await addMonsterBtn.count()) {
 }
 
 // Add a second monster (different one) so the alphabetized stat block stack is meaningful.
-const addMonsterBtn2 = page.locator('button').filter({ hasText: /Add monster/i }).first();
+const addMonsterBtn2 = page.locator('button').filter({ hasText: /(Add monster|New group with monster)/i }).first();
 if (await addMonsterBtn2.count()) {
 	await addMonsterBtn2.click().catch(() => {});
 	await page.waitForTimeout(500);

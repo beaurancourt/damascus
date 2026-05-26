@@ -125,35 +125,42 @@
 		}
 	}
 
-	// --- Tracker rows --------------------------------------------------------
-	.tracker-rows {
+	// --- Tracker groups ------------------------------------------------------
+	// Each group is a bordered card with its own header (acted checkbox +
+	// label + add/delete). Slots inside the group render as flatter rows.
+	.tracker-groups {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 14px;
 	}
 
-	.tracker-row {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 8px 10px;
-		border: 1px solid rgba(201, 164, 90, 0.18);
+	.tracker-group {
+		border: 1px solid rgba(201, 164, 90, 0.25);
 		border-radius: 3px;
-		background: rgba(0, 0, 0, 0.18);
-		cursor: pointer;
-		transition: border-color 0.15s, background 0.15s, opacity 0.2s;
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(0, 0, 0, 0.12));
+		overflow: hidden;
+		transition: opacity 0.2s, border-color 0.15s;
+
+		.group-header {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 8px 8px 8px 6px;
+			background: linear-gradient(180deg, rgba(201, 164, 90, 0.08), rgba(201, 164, 90, 0.02));
+			border-bottom: 1px solid rgba(201, 164, 90, 0.2);
+		}
 
 		.acted-toggle {
 			flex: 0 0 auto;
-			width: 32px;
-			height: 32px;
+			width: 36px;
+			height: 36px;
 			padding: 0;
 			color: rgba(201, 164, 90, 0.55);
 			background: transparent;
 			border: none;
 
 			.anticon {
-				font-size: 22px;
+				font-size: 24px;
 			}
 
 			&:hover {
@@ -163,8 +170,75 @@
 		}
 
 		.terrain-spacer {
-			width: 32px;
-			height: 32px;
+			width: 36px;
+			height: 36px;
+		}
+
+		.group-name {
+			flex: 1 1 0;
+			min-width: 0;
+			font-family: 'Merriweather', serif;
+			font-weight: 700;
+			font-size: 12px;
+			letter-spacing: 2.5px;
+			text-transform: uppercase;
+			color: rgba(255, 255, 255, 0.92);
+		}
+
+		.group-add,
+		.group-delete {
+			flex: 0 0 auto;
+			color: rgba(201, 164, 90, 0.6);
+
+			&:hover {
+				color: $bronze;
+				background: rgba(201, 164, 90, 0.08);
+			}
+		}
+
+		.group-delete {
+			color: rgba(255, 255, 255, 0.3);
+
+			&:hover {
+				color: #d97a7a;
+				background: rgba(181, 74, 74, 0.1);
+			}
+		}
+
+		.group-rows {
+			display: flex;
+			flex-direction: column;
+		}
+
+		&.acted {
+			opacity: 0.55;
+
+			.acted-toggle { color: $bronze; }
+			.group-name {
+				text-decoration: line-through;
+				text-decoration-color: rgba(255, 255, 255, 0.4);
+			}
+		}
+
+		&.terrain-group {
+			border-style: dashed;
+
+			.group-name { font-style: italic; }
+		}
+	}
+
+	.tracker-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px 10px;
+		border-top: 1px solid rgba(201, 164, 90, 0.1);
+		background: transparent;
+		cursor: pointer;
+		transition: background 0.15s;
+
+		&:first-child {
+			border-top: none;
 		}
 
 		.row-info {
@@ -175,7 +249,7 @@
 		.row-name {
 			font-family: 'Merriweather', serif;
 			font-weight: 700;
-			font-size: 14px;
+			font-size: 13px;
 			letter-spacing: 0.3px;
 			line-height: 1.25;
 			color: rgba(255, 255, 255, 0.92);
@@ -196,6 +270,55 @@
 			color: rgba(255, 255, 255, 0.5);
 		}
 
+		// HP control: −1 / current/max / +1. Bronze tabular nums.
+		.hp-control {
+			flex: 0 0 auto;
+			display: flex;
+			align-items: center;
+			gap: 4px;
+
+			.ant-btn {
+				width: 28px;
+				height: 28px;
+				padding: 0;
+				font-family: 'Merriweather', serif;
+				font-size: 11px;
+				font-weight: 700;
+				color: rgba(201, 164, 90, 0.7);
+				background: transparent;
+				border: 1px solid rgba(201, 164, 90, 0.25);
+				border-radius: 3px;
+
+				&:hover {
+					color: $bronze;
+					background: rgba(201, 164, 90, 0.1);
+					border-color: $bronze;
+				}
+			}
+
+			.hp-display {
+				min-width: 60px;
+				text-align: center;
+				font-family: 'Merriweather', serif;
+				font-variant-numeric: tabular-nums;
+				font-size: 13px;
+
+				.hp-current {
+					font-weight: 700;
+					color: rgba(255, 255, 255, 0.95);
+				}
+
+				.hp-sep {
+					margin: 0 2px;
+					color: rgba(255, 255, 255, 0.3);
+				}
+
+				.hp-max {
+					color: rgba(255, 255, 255, 0.55);
+				}
+			}
+		}
+
 		.row-delete {
 			flex: 0 0 auto;
 			color: rgba(255, 255, 255, 0.3);
@@ -208,38 +331,17 @@
 
 		@media (hover: hover) {
 			&:hover {
-				border-color: rgba(201, 164, 90, 0.5);
-				background: rgba(201, 164, 90, 0.05);
+				background: rgba(201, 164, 90, 0.04);
 			}
 		}
 
 		&.focused {
-			border-color: $bronze;
 			background: rgba(201, 164, 90, 0.1);
-			box-shadow: 0 0 0 1px rgba(201, 164, 90, 0.3);
-		}
-
-		// Acted rows fade and show the filled check icon in bronze.
-		&.acted {
-			opacity: 0.45;
-
-			.acted-toggle {
-				color: $bronze;
-			}
-
-			.row-name {
-				text-decoration: line-through;
-				text-decoration-color: rgba(255, 255, 255, 0.4);
-			}
+			box-shadow: inset 3px 0 0 0 $bronze;
 		}
 
 		&.terrain {
-			border-style: dashed;
-			background: rgba(0, 0, 0, 0.12);
-
-			.row-name {
-				font-style: italic;
-			}
+			.row-name { font-style: italic; }
 		}
 	}
 

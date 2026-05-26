@@ -1,6 +1,6 @@
 import { Button, Drawer, Flex } from 'antd';
 import { CheckCircleFilled, CheckCircleOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Encounter } from '@/models/encounter';
+import { Encounter, EncounterGroup } from '@/models/encounter';
 import { EncounterDifficultyPanel } from '@/components/panels/encounter-difficulty/encounter-difficulty-panel';
 import { EncounterSlot } from '@/models/encounter-slot';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
@@ -9,6 +9,7 @@ import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Monster } from '@/models/monster';
 import { MonsterLogic } from '@/logic/monster-logic';
+import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
 import { MonsterSelectModal } from '@/components/modals/select/monster-select/monster-select-modal';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
@@ -28,18 +29,26 @@ interface Props {
 	onChange: (encounter: Encounter) => void;
 }
 
-// A flat row in the left-column tracker — either a monster slot (a unit:
-// solo, elite, leader, squad of minions, etc.) or a terrain piece.
-type Combatant =
-	| { kind: 'monster'; id: string; groupID: string; slot: EncounterSlot; monsters: Monster[]; name: string; count: number }
-	| { kind: 'terrain'; id: string; terrain: Terrain; name: string };
+// A row in the tracker. Groups own the acted flag; rows show HP.
+//   - 'minion-squad': all monsters in the slot share HP via slot.state (one row).
+//   - 'monster': a single individual monster instance (its own HP, one row).
+//   - 'terrain': a terrain piece.
+type Row =
+	| { kind: 'minion-squad'; rowID: string; groupID: string; slot: EncounterSlot; lead: Monster; name: string; count: number; statBlockKey: string }
+	| { kind: 'monster'; rowID: string; groupID: string; slot: EncounterSlot; monster: Monster; name: string; statBlockKey: string }
+	| { kind: 'terrain'; rowID: string; terrain: Terrain; name: string; statBlockKey: string };
+
+const monsterBlockKey = (monsterID: string) => `monster-${monsterID}`;
+const terrainBlockKey = (terrainID: string) => `terrain-${terrainID}`;
 
 export const EncounterRunPanel = (props: Props) => {
 	const [ encounter, setEncounter ] = useState<Encounter>(Utils.copy(props.encounter));
 	const [ addingMonsters, setAddingMonsters ] = useState<boolean>(false);
-	const [ focusedID, setFocusedID ] = useState<string | null>(null);
+	// When set, "Add monster" appends a slot to that existing group instead
+	// of creating a fresh group.
+	const [ addTargetGroupID, setAddTargetGroupID ] = useState<string | null>(null);
+	const [ focusedBlock, setFocusedBlock ] = useState<string | null>(null);
 
-	// Per-combatant refs so clicking the tracker row scrolls the matching stat block.
 	const blockRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
 	const commit = (next: Encounter) => {
@@ -47,8 +56,7 @@ export const EncounterRunPanel = (props: Props) => {
 		props.onChange(next);
 	};
 
-	// Round +/- doubles as the "new round" affordance: bumping the round clears
-	// every group's acted flag so the next round starts clean.
+	// Bumping Round clears every group's acted flag so the next round starts clean.
 	const setRound = (value: number) => {
 		const copy = Utils.copy(encounter);
 		copy.round = value;
@@ -71,7 +79,7 @@ export const EncounterRunPanel = (props: Props) => {
 		commit(copy);
 	};
 
-	const addMonsterAsGroup = (monster: Monster) => {
+	const buildSlot = (monster: Monster) => {
 		const slot = FactoryLogic.createEncounterSlot(monster.id);
 		slot.count = MonsterLogic.getRoleMultiplier(monster.role.organization);
 		while (slot.monsters.length < slot.count) {
@@ -79,17 +87,44 @@ export const EncounterRunPanel = (props: Props) => {
 			m.id = Utils.guid();
 			slot.monsters.push(m);
 		}
-		const group = FactoryLogic.createEncounterGroup();
-		group.slots.push(slot);
+		return slot;
+	};
 
+	const addMonster = (monster: Monster) => {
+		const slot = buildSlot(monster);
 		const copy = Utils.copy(encounter);
-		copy.groups.push(group);
+		if (addTargetGroupID) {
+			const target = copy.groups.find(g => g.id === addTargetGroupID);
+			if (target) target.slots.push(slot);
+		} else {
+			const group = FactoryLogic.createEncounterGroup();
+			group.slots.push(slot);
+			copy.groups.push(group);
+		}
 		commit(copy);
 	};
 
 	const deleteGroup = (groupID: string) => {
 		const copy = Utils.copy(encounter);
 		copy.groups = copy.groups.filter(g => g.id !== groupID);
+		commit(copy);
+	};
+
+	const deleteSlot = (groupID: string, slotID: string) => {
+		const copy = Utils.copy(encounter);
+		const g = copy.groups.find(gg => gg.id === groupID);
+		if (g) g.slots = g.slots.filter(s => s.id !== slotID);
+		copy.groups = copy.groups.filter(gg => gg.slots.length > 0);
+		commit(copy);
+	};
+
+	const deleteMonster = (monsterID: string) => {
+		const copy = Utils.copy(encounter);
+		copy.groups.forEach(g => {
+			g.slots.forEach(s => { s.monsters = s.monsters.filter(m => m.id !== monsterID); });
+			g.slots = g.slots.filter(s => s.monsters.length > 0);
+		});
+		copy.groups = copy.groups.filter(g => g.slots.length > 0);
 		commit(copy);
 	};
 
@@ -109,40 +144,182 @@ export const EncounterRunPanel = (props: Props) => {
 		commit(copy);
 	};
 
-	const focusBlock = (id: string) => {
-		setFocusedID(id);
-		const el = blockRefs.current[id];
-		if (el) {
-			el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-		}
+	// HP setters.
+	const setSlotStaminaDamage = (slotID: string, value: number) => {
+		const copy = Utils.copy(encounter);
+		copy.groups.forEach(g => {
+			const s = g.slots.find(ss => ss.id === slotID);
+			if (s) s.state.staminaDamage = Math.max(0, value);
+		});
+		commit(copy);
 	};
 
-	// Build the left-column tracker rows in encounter order — one row per slot
-	// (a slot is a unit: solo monster, elite, minion squad of 4, etc.) so the
-	// GM tracks each combat unit once.
-	const trackerRows: Combatant[] = [];
-	encounter.groups.forEach((g, gIdx) => {
+	const setMonsterStaminaDamage = (monsterID: string, value: number) => {
+		const copy = Utils.copy(encounter);
+		copy.groups.forEach(g => {
+			g.slots.forEach(s => {
+				const m = s.monsters.find(mm => mm.id === monsterID);
+				if (m) m.state.staminaDamage = Math.max(0, value);
+			});
+		});
+		commit(copy);
+	};
+
+	const focusBlockByKey = (key: string) => {
+		setFocusedBlock(key);
+		const el = blockRefs.current[key];
+		if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	};
+
+	const openAddMonster = (groupID: string | null) => {
+		setAddTargetGroupID(groupID);
+		setAddingMonsters(true);
+	};
+
+	// Build the tracker rows per slot, expanding non-minion squads to one row
+	// per individual monster (since each tracks its own HP).
+	const buildGroupRows = (group: EncounterGroup): Row[] => {
+		const rows: Row[] = [];
+		group.slots.forEach(slot => {
+			if (slot.monsters.length === 0) return;
+			const isMinion = slot.monsters[0].role.organization === MonsterOrganizationType.Minion;
+			if (isMinion) {
+				rows.push({
+					kind: 'minion-squad',
+					rowID: slot.id,
+					groupID: group.id,
+					slot,
+					lead: slot.monsters[0],
+					name: slot.monsters[0].name,
+					count: slot.monsters.length,
+					statBlockKey: monsterBlockKey(slot.monsterID)
+				});
+			} else {
+				slot.monsters.forEach(m => {
+					rows.push({
+						kind: 'monster',
+						rowID: m.id,
+						groupID: group.id,
+						slot,
+						monster: m,
+						name: m.name,
+						statBlockKey: monsterBlockKey(slot.monsterID)
+					});
+				});
+			}
+		});
+		return rows;
+	};
+
+	const terrainRows: Row[] = encounter.terrain.flatMap(ts => ts.terrain).map(t => ({
+		kind: 'terrain' as const,
+		rowID: t.id,
+		terrain: t,
+		name: t.name || 'Terrain',
+		statBlockKey: terrainBlockKey(t.id)
+	}));
+
+	// Right column: one stat block per unique monster type + per terrain piece.
+	type StatBlock =
+		| { key: string; kind: 'monster'; monster: Monster; name: string }
+		| { key: string; kind: 'terrain'; terrain: Terrain; name: string };
+	const statBlockMap = new Map<string, StatBlock>();
+	encounter.groups.forEach(g => {
 		g.slots.forEach(slot => {
 			if (slot.monsters.length === 0) return;
-			const lead = slot.monsters[0];
-			trackerRows.push({
-				kind: 'monster',
-				id: slot.id,
-				groupID: g.id,
-				slot,
-				monsters: slot.monsters,
-				name: lead.name || g.name || `Group ${gIdx + 1}`,
-				count: slot.monsters.length
-			});
+			const key = monsterBlockKey(slot.monsterID);
+			if (!statBlockMap.has(key)) {
+				statBlockMap.set(key, { key, kind: 'monster', monster: slot.monsters[0], name: slot.monsters[0].name });
+			}
 		});
 	});
 	encounter.terrain.flatMap(ts => ts.terrain).forEach(t => {
-		trackerRows.push({ kind: 'terrain', id: t.id, terrain: t, name: t.name || 'Terrain' });
+		const key = terrainBlockKey(t.id);
+		if (!statBlockMap.has(key)) {
+			statBlockMap.set(key, { key, kind: 'terrain', terrain: t, name: t.name || 'Terrain' });
+		}
 	});
+	const statBlocks: StatBlock[] = Array.from(statBlockMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 
-	// Right column flattens to per-monster stat blocks (each minion needs its
-	// own HP tracking), sorted alphabetically by name.
-	const statBlocks: Combatant[] = [ ...trackerRows ].sort((a, b) => a.name.localeCompare(b.name));
+	const renderHpControl = (row: Row) => {
+		if (row.kind === 'terrain') {
+			return null;
+		}
+		if (row.kind === 'minion-squad') {
+			// Minion squad: HP is summed across all monsters; tracked on slot.state.
+			const max = row.slot.monsters.reduce((sum, m) => sum + MonsterLogic.getStamina(m), 0);
+			const damage = row.slot.state.staminaDamage;
+			const current = Math.max(0, max - damage);
+			return (
+				<div className='hp-control'>
+					<Button type='text' size='small' onClick={e => { e.stopPropagation(); setSlotStaminaDamage(row.slot.id, damage + 1); }}>−1</Button>
+					<div className='hp-display'>
+						<span className='hp-current'>{current}</span>
+						<span className='hp-sep'>/</span>
+						<span className='hp-max'>{max}</span>
+					</div>
+					<Button type='text' size='small' onClick={e => { e.stopPropagation(); setSlotStaminaDamage(row.slot.id, Math.max(0, damage - 1)); }}>+1</Button>
+				</div>
+			);
+		}
+		const max = MonsterLogic.getStamina(row.monster);
+		const damage = row.monster.state.staminaDamage;
+		const current = Math.max(0, max - damage);
+		return (
+			<div className='hp-control'>
+				<Button type='text' size='small' onClick={e => { e.stopPropagation(); setMonsterStaminaDamage(row.monster.id, damage + 1); }}>−1</Button>
+				<div className='hp-display'>
+					<span className='hp-current'>{current}</span>
+					<span className='hp-sep'>/</span>
+					<span className='hp-max'>{max}</span>
+				</div>
+				<Button type='text' size='small' onClick={e => { e.stopPropagation(); setMonsterStaminaDamage(row.monster.id, Math.max(0, damage - 1)); }}>+1</Button>
+			</div>
+		);
+	};
+
+	const renderRow = (row: Row) => {
+		const focused = focusedBlock === row.statBlockKey;
+		const subtitle = row.kind === 'terrain'
+			? 'Terrain'
+			: MonsterLogic.getMonsterDescription(row.kind === 'minion-squad' ? row.lead : row.monster);
+		return (
+			<div
+				key={row.rowID}
+				className={[
+					'tracker-row',
+					focused ? 'focused' : '',
+					row.kind === 'terrain' ? 'terrain' : ''
+				].filter(Boolean).join(' ')}
+				onClick={() => focusBlockByKey(row.statBlockKey)}
+			>
+				<div className='row-info'>
+					<div className='row-name'>
+						{row.name}
+						{row.kind === 'minion-squad' && row.count > 1 ? <span className='row-count'> ×{row.count}</span> : null}
+					</div>
+					<div className='row-sub'>{subtitle}</div>
+				</div>
+				{renderHpControl(row)}
+				<Button
+					type='text'
+					className='row-delete'
+					icon={<DeleteOutlined />}
+					title='Remove'
+					onClick={e => {
+						e.stopPropagation();
+						if (row.kind === 'minion-squad') {
+							deleteSlot(row.groupID, row.slot.id);
+						} else if (row.kind === 'monster') {
+							deleteMonster(row.monster.id);
+						} else {
+							deleteTerrain(row.rowID);
+						}
+					}}
+				/>
+			</div>
+		);
+	};
 
 	return (
 		<ErrorBoundary>
@@ -161,74 +338,66 @@ export const EncounterRunPanel = (props: Props) => {
 						</div>
 
 						<div className='encounter-run-add'>
-							<Button icon={<PlusOutlined />} onClick={() => setAddingMonsters(true)}>Add monster</Button>
+							<Button icon={<PlusOutlined />} onClick={() => openAddMonster(null)}>New group with monster…</Button>
 						</div>
 
 						<HeaderText level={2}>Combatants</HeaderText>
 
 						{
-							trackerRows.length === 0 ?
-								<div className='ds-text dimmed-text centered-text'>No combatants yet — add monsters or terrain to begin.</div>
+							(encounter.groups.length === 0 && terrainRows.length === 0) ?
+								<div className='ds-text dimmed-text centered-text'>No combatants yet — add a monster to begin.</div>
 								:
-								<div className='tracker-rows'>
+								<div className='tracker-groups'>
 									{
-										trackerRows.map(c => {
-											const acted = c.kind === 'monster'
-												? encounter.groups.find(g => g.id === c.groupID)?.encounterState === 'finished'
-												: false;
-											const focused = focusedID === c.id;
+										encounter.groups.map((group, gIdx) => {
+											const acted = group.encounterState === 'finished';
+											const rows = buildGroupRows(group);
+											const label = group.name || `Group ${gIdx + 1}`;
 											return (
-												<div
-													key={c.id}
-													className={[
-														'tracker-row',
-														acted ? 'acted' : '',
-														focused ? 'focused' : '',
-														c.kind === 'terrain' ? 'terrain' : ''
-													].filter(Boolean).join(' ')}
-													onClick={() => focusBlock(c.id)}
-												>
-													{
-														c.kind === 'monster' ?
-															<Button
-																type='text'
-																className='acted-toggle'
-																icon={acted ? <CheckCircleFilled /> : <CheckCircleOutlined />}
-																title={acted ? 'Mark as not yet acted' : 'Mark as acted this round'}
-																onClick={e => { e.stopPropagation(); toggleGroupActed(c.groupID); }}
-															/>
-															: <div className='acted-toggle terrain-spacer' />
-													}
-													<div className='row-info'>
-														<div className='row-name'>
-															{c.name}
-															{c.kind === 'monster' && c.count > 1 ? <span className='row-count'> ×{c.count}</span> : null}
-														</div>
-														<div className='row-sub'>
-															{
-																c.kind === 'monster'
-																	? MonsterLogic.getMonsterDescription(c.monsters[0])
-																	: 'Terrain'
-															}
-														</div>
+												<div key={group.id} className={[ 'tracker-group', acted ? 'acted' : '' ].filter(Boolean).join(' ')}>
+													<div className='group-header'>
+														<Button
+															type='text'
+															className='acted-toggle'
+															icon={acted ? <CheckCircleFilled /> : <CheckCircleOutlined />}
+															title={acted ? 'Mark as not yet acted' : 'Mark as acted this round'}
+															onClick={() => toggleGroupActed(group.id)}
+														/>
+														<div className='group-name'>{label}</div>
+														<Button
+															type='text'
+															className='group-add'
+															icon={<PlusOutlined />}
+															title='Add monster to this group'
+															onClick={() => openAddMonster(group.id)}
+														/>
+														<Button
+															type='text'
+															className='group-delete'
+															icon={<DeleteOutlined />}
+															title='Remove group'
+															onClick={() => deleteGroup(group.id)}
+														/>
 													</div>
-													<Button
-														type='text'
-														className='row-delete'
-														icon={<DeleteOutlined />}
-														title='Remove'
-														onClick={e => {
-															e.stopPropagation();
-															if (c.kind === 'monster') {
-																deleteGroup(c.groupID);
-															} else {
-																deleteTerrain(c.id);
-															}
-														}}
-													/>
+													<div className='group-rows'>
+														{rows.map(renderRow)}
+													</div>
 												</div>
 											);
 										})
+									}
+									{
+										terrainRows.length > 0 ?
+											<div className='tracker-group terrain-group'>
+												<div className='group-header'>
+													<div className='acted-toggle terrain-spacer' />
+													<div className='group-name'>Terrain</div>
+												</div>
+												<div className='group-rows'>
+													{terrainRows.map(renderRow)}
+												</div>
+											</div>
+											: null
 									}
 								</div>
 						}
@@ -248,15 +417,15 @@ export const EncounterRunPanel = (props: Props) => {
 								:
 								statBlocks.map(c => (
 									<div
-										key={c.id}
-										ref={el => { blockRefs.current[c.id] = el; }}
-										className={`stat-block ${focusedID === c.id ? 'focused' : ''}`}
+										key={c.key}
+										ref={el => { blockRefs.current[c.key] = el; }}
+										className={`stat-block ${focusedBlock === c.key ? 'focused' : ''}`}
 									>
 										{
 											c.kind === 'monster' ?
 												<MonsterPanel
-													monster={c.monsters[0]}
-													monsterGroup={SourcebookLogic.getMonsterGroup(props.sourcebooks, c.monsters[0].id) || undefined}
+													monster={c.monster}
+													monsterGroup={SourcebookLogic.getMonsterGroup(props.sourcebooks, c.monster.id) || undefined}
 													sourcebooks={props.sourcebooks}
 													mode={PanelMode.Full}
 												/>
@@ -279,7 +448,7 @@ export const EncounterRunPanel = (props: Props) => {
 						monsters={props.sourcebooks.flatMap(sb => sb.monsterGroups).flatMap(g => g.monsters)}
 						sourcebooks={props.sourcebooks}
 						onClose={() => setAddingMonsters(false)}
-						onSelect={m => { setAddingMonsters(false); addMonsterAsGroup(m); }}
+						onSelect={m => { setAddingMonsters(false); addMonster(m); }}
 					/>
 				</Drawer>
 			</div>
