@@ -1,9 +1,25 @@
+# Build artifacts
 coverage
 dist
 node_modules
+playwright-report
+test-results
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor cruft
 .DS_Store
 .vscode/
 .vscode/*
+
+# Local env
 .env
 .env.local
+
+# Local dev scratch
 tmp/
+
+# Claude Code workspace state
+.claude/

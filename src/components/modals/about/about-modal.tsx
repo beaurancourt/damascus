@@ -30,7 +30,7 @@ export const AboutModal = (props: Props) => {
 								The fork's source lives at <a href='https://github.com/beaurancourt/damascus' target='_blank'>github.com/beaurancourt/damascus</a>.
 							</div>
 							<div>
-								Suggest a feature or report a bug for the upstream Forge Steel project <a href='https://github.com/andyaiken/forgesteel/issues' target='_blank'>here</a>.
+								Report a bug or suggest a feature for <b>Damascus</b> <a href='https://github.com/beaurancourt/damascus/issues' target='_blank'>here</a>, or for upstream Forge Steel <a href='https://github.com/andyaiken/forgesteel/issues' target='_blank'>here</a>.
 							</div>
 						</Space>
 					</SelectablePanel>
