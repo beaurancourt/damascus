@@ -100,14 +100,16 @@ export const HeroPanel = (props: Props) => {
 
 							{/* 3. Conditions */}
 							{
-								props.updateHero ? (
-									<HeroHealthPanel
-										hero={props.hero}
-										showEncounterControls={false}
-										sections={[ 'conditions' ]}
-										onChange={props.updateHero}
-									/>
-								) : null
+								props.updateHero
+									? (
+										<HeroHealthPanel
+											hero={props.hero}
+											showEncounterControls={false}
+											sections={[ 'conditions' ]}
+											onChange={props.updateHero}
+										/>
+									)
+									: null
 							}
 
 							{/* Controlled monsters / squads — appear close to combat actions */}
@@ -189,15 +191,17 @@ export const HeroPanel = (props: Props) => {
 									: null
 							}
 
-							{retinueCount > 0 ? (
-								<RetinuePanel
-									hero={props.hero}
-									sourcebooks={props.sourcebooks}
-									onSelectMonster={props.onSelectMonster}
-									onSelectFollower={props.onSelectFollower}
-									onSelectFixture={props.onSelectFixture}
-								/>
-							) : null}
+							{retinueCount > 0
+								? (
+									<RetinuePanel
+										hero={props.hero}
+										sourcebooks={props.sourcebooks}
+										onSelectMonster={props.onSelectMonster}
+										onSelectFollower={props.onSelectFollower}
+										onSelectFixture={props.onSelectFixture}
+									/>
+								)
+								: null}
 						</div>
 					</div>
 				</div>

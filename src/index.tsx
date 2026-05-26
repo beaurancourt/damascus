@@ -11,10 +11,12 @@ import './index.scss';
 
 initializeTheme();
 
-// Register Service Worker for PWA functionality
+// Register Service Worker for PWA functionality. import.meta.env.BASE_URL
+// is the Vite-injected base path so we work at both '/' (dev) and
+// '/damascus/' (GitHub Pages prod).
 if ('serviceWorker' in navigator) {
 	window.addEventListener('load', () => {
-		navigator.serviceWorker.register('/sw.js')
+		navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`)
 			.catch(registrationError => {
 				console.error('SW registration failed: ', registrationError);
 			});

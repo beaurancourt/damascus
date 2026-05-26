@@ -195,7 +195,7 @@ export const ChoicesPanel = (props: Props) => {
 					props.hero.state.projects.length > 0 ?
 						props.hero.state.projects.map(project => {
 							const setProjectPoints = (value: number) => {
-								if (!props.updateHero) return;
+								if (!props.updateHero) { return; }
 								const copy = Utils.copy(props.hero);
 								const target = copy.state.projects.find(p => p.id === project.id);
 								if (target && target.progress) {
@@ -212,17 +212,19 @@ export const ChoicesPanel = (props: Props) => {
 										<div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', gap: 4 }}>
 											<div>Project: <b>{project.name}</b> — {ProjectLogic.getStatus(project)}</div>
 											{
-												editable && project.progress ? (
-													<div onClick={e => e.stopPropagation()}>
-														<NumberSpin
-															label={`Progress${project.goal ? ` (goal ${project.goal})` : ''}`}
-															value={project.progress.points}
-															min={0}
-															steps={[ 1, 5 ]}
-															onChange={setProjectPoints}
-														/>
-													</div>
-												) : null
+												editable && project.progress
+													? (
+														<div onClick={e => e.stopPropagation()}>
+															<NumberSpin
+																label={`Progress${project.goal ? ` (goal ${project.goal})` : ''}`}
+																value={project.progress.points}
+																min={0}
+																steps={[ 1, 5 ]}
+																onChange={setProjectPoints}
+															/>
+														</div>
+													)
+													: null
 											}
 										</div>
 									</div>
@@ -235,17 +237,19 @@ export const ChoicesPanel = (props: Props) => {
 									<Field label='Project' value={project.name} />
 									{project.progress ? <Field label='State' value={ProjectLogic.getStatus(project)} /> : null}
 									{
-										editable && project.progress ? (
-											<div style={{ marginTop: 6 }} onClick={e => e.stopPropagation()}>
-												<NumberSpin
-													label={`Progress${project.goal ? ` (goal ${project.goal})` : ''}`}
-													value={project.progress.points}
-													min={0}
-													steps={[ 1, 5 ]}
-													onChange={setProjectPoints}
-												/>
-											</div>
-										) : null
+										editable && project.progress
+											? (
+												<div style={{ marginTop: 6 }} onClick={e => e.stopPropagation()}>
+													<NumberSpin
+														label={`Progress${project.goal ? ` (goal ${project.goal})` : ''}`}
+														value={project.progress.points}
+														min={0}
+														steps={[ 1, 5 ]}
+														onChange={setProjectPoints}
+													/>
+												</div>
+											)
+											: null
 									}
 								</div>
 							);

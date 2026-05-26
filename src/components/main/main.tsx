@@ -93,7 +93,6 @@ import { useSyncStatus } from '@/hooks/use-sync-status';
 
 import './main.scss';
 
-
 export const Main = () => {
 	const navigation = useNavigation();
 	const [ notify, notifyContext ] = notification.useNotification();
@@ -103,7 +102,6 @@ export const Main = () => {
 	const heroes = useHeroes();
 	const homebrewSourcebooks = useHomebrewSourcebooks();
 	const dataManager = useDataManager();
-
 
 	const [ errors, setErrors ] = useState<Event[]>([]);
 	const [ drawer, setDrawer ] = useState<ReactNode>(null);
@@ -132,7 +130,6 @@ export const Main = () => {
 		};
 		window.addEventListener('keydown', handler);
 		return () => window.removeEventListener('keydown', handler);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	// #region Persistence
@@ -1700,7 +1697,7 @@ export const Main = () => {
 									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
 									params={footerParams}
 									showMonster={monster => onSelectMonster(undefined, monster, undefined, undefined)}
-										showEncounterImport={showEncounterImport}
+									showEncounterImport={showEncounterImport}
 									createElement={(kind, sourcebookID, element) => createLibraryElement(kind, sourcebookID, element)}
 									importElement={importLibraryElement}
 									moveElement={moveLibraryElement}
@@ -1745,7 +1742,7 @@ export const Main = () => {
 									updateNegotiation={updateNegotiation}
 									updateCounter={updateCounter}
 									finishSessionElement={finishSessionElement}
-									/>
+								/>
 							}
 						/>
 					</Route>

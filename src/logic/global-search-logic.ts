@@ -46,29 +46,29 @@ export type SearchKind =
 	| 'condition';
 
 const KIND_LABEL: Record<SearchKind, string> = {
-	hero: 'Heroes',
-	ancestry: 'Ancestries',
-	career: 'Careers',
-	class: 'Classes',
-	subclass: 'Subclasses',
-	culture: 'Cultures',
-	complication: 'Complications',
-	domain: 'Domains',
-	imbuement: 'Imbuements',
-	item: 'Items',
-	kit: 'Kits',
-	perk: 'Perks',
-	project: 'Projects',
-	title: 'Titles',
-	monster: 'Monsters',
+	'hero': 'Heroes',
+	'ancestry': 'Ancestries',
+	'career': 'Careers',
+	'class': 'Classes',
+	'subclass': 'Subclasses',
+	'culture': 'Cultures',
+	'complication': 'Complications',
+	'domain': 'Domains',
+	'imbuement': 'Imbuements',
+	'item': 'Items',
+	'kit': 'Kits',
+	'perk': 'Perks',
+	'project': 'Projects',
+	'title': 'Titles',
+	'monster': 'Monsters',
 	'monster-group': 'Monster Groups',
-	encounter: 'Encounters',
-	adventure: 'Adventures',
-	montage: 'Montages',
-	negotiation: 'Negotiations',
-	terrain: 'Terrain',
-	rule: 'Rules',
-	condition: 'Conditions'
+	'encounter': 'Encounters',
+	'adventure': 'Adventures',
+	'montage': 'Montages',
+	'negotiation': 'Negotiations',
+	'terrain': 'Terrain',
+	'rule': 'Rules',
+	'condition': 'Conditions'
 };
 
 const ALL_RULES = [
@@ -137,7 +137,7 @@ const RULE_KEYWORDS: { keywords: string[]; label: string }[] = [
 export const labelForKind = (kind: SearchKind) => KIND_LABEL[kind];
 
 const stripMarkdown = (text: string | undefined | null): string | undefined => {
-	if (!text) return undefined;
+	if (!text) { return undefined; }
 	return text
 		.replace(/[*_`~#>]/g, '')
 		.replace(/\s+/g, ' ')
@@ -157,7 +157,7 @@ export class GlobalSearchLogic {
 			target: SearchEntry['target'],
 			subtitle?: string
 		) => {
-			if (!name) return;
+			if (!name) { return; }
 			entries.push({ id: `${kind}:${id}`, kind, name, description: stripMarkdown(description), subtitle, target });
 		};
 

@@ -248,9 +248,19 @@ const isAbilityFeature = (feature: Feature) => (feature.type === FeatureType.Abi
 // Suppress the feature.name when it matches the default-type label set by the factory
 // (e.g. "Damage Modifier" for a DamageModifier feature with no custom name).
 const GENERIC_NAMES = new Set([
-	'Damage Modifier', 'Speed', 'Save Threshold', 'Bonus', 'Characteristic Bonus',
-	'Skill', 'Skill Choice', 'Language', 'Language Choice', 'Movement Mode',
-	'Size', 'Proficiency', 'Heroic Resource'
+	'Damage Modifier',
+	'Speed',
+	'Save Threshold',
+	'Bonus',
+	'Characteristic Bonus',
+	'Skill',
+	'Skill Choice',
+	'Language',
+	'Language Choice',
+	'Movement Mode',
+	'Size',
+	'Proficiency',
+	'Heroic Resource'
 ]);
 const hasMeaningfulName = (feature: Feature) => !!feature.name && !GENERIC_NAMES.has(feature.name);
 
@@ -288,7 +298,7 @@ export const ConfigChoice = (props: ConfigProps) => {
 			if (isSingle) {
 				dataCopy.selected = [ opt.feature ];
 			} else {
-				if (opt.value > pointsLeft) return;
+				if (opt.value > pointsLeft) { return; }
 				dataCopy.selected.push(opt.feature);
 			}
 		}

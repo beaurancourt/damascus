@@ -263,60 +263,60 @@ export const LibraryListPage = (props: Props) => {
 	const getElementListHeader = () => {
 		switch (category) {
 			case 'monster-group':
-			return (
-				<div className='list-header'>
-					<Flex align='center' justify='space-between' gap={5}>
-						<Segmented
-							style={{ flex: '1 1 0' }}
-							block={true}
-							options={[
-								{ value: false, label: 'Groups' },
-								{ value: true, label: 'Monsters' }
-							]}
-							value={showMonsters}
-							onChange={setShowMonsters}
-						/>
-						<Button
-							disabled={!showMonsters}
-							icon={showMonsterFilter ? <FilterFilled style={{ color: 'rgb(22, 119, 255)' }} /> : <FilterOutlined />}
-							onClick={() => setShowMonsterFilter(!showMonsterFilter)}
-						/>
-					</Flex>
-					{
-						showMonsters && showMonsterFilter ?
-							<div style={{ paddingTop: '5px' }}>
-								<MonsterFilterPanel
-									monsterFilter={monsterFilter}
-									monsters={SourcebookLogic.getMonsters(props.sourcebooks)}
-									includeNameFilter={false}
-									includeOrgFilter={true}
-									includeEVFilter={true}
-									onChange={setMonsterFilter}
-								/>
-							</div>
-							: null
-					}
-				</div>
-			);
+				return (
+					<div className='list-header'>
+						<Flex align='center' justify='space-between' gap={5}>
+							<Segmented
+								style={{ flex: '1 1 0' }}
+								block={true}
+								options={[
+									{ value: false, label: 'Groups' },
+									{ value: true, label: 'Monsters' }
+								]}
+								value={showMonsters}
+								onChange={setShowMonsters}
+							/>
+							<Button
+								disabled={!showMonsters}
+								icon={showMonsterFilter ? <FilterFilled style={{ color: 'rgb(22, 119, 255)' }} /> : <FilterOutlined />}
+								onClick={() => setShowMonsterFilter(!showMonsterFilter)}
+							/>
+						</Flex>
+						{
+							showMonsters && showMonsterFilter ?
+								<div style={{ paddingTop: '5px' }}>
+									<MonsterFilterPanel
+										monsterFilter={monsterFilter}
+										monsters={SourcebookLogic.getMonsters(props.sourcebooks)}
+										includeNameFilter={false}
+										includeOrgFilter={true}
+										includeEVFilter={true}
+										onChange={setMonsterFilter}
+									/>
+								</div>
+								: null
+						}
+					</div>
+				);
 			case 'culture':
-			return (
-				<div className='list-header'>
-					<Toggle style={{ margin: '0' }} label='Include cultures from ancestries' value={showCulturesFromAncestries} onChange={setShowCulturesFromAncestries} />
-				</div>
-			);
+				return (
+					<div className='list-header'>
+						<Toggle style={{ margin: '0' }} label='Include cultures from ancestries' value={showCulturesFromAncestries} onChange={setShowCulturesFromAncestries} />
+					</div>
+				);
 			case 'project':
-			return (
-				<div className='list-header'>
-					<Toggle style={{ margin: '0' }} label='Include projects from imbuements' value={showProjectsFromImbuements} onChange={setShowProjectsFromImbuements} />
-					<Toggle style={{ margin: '0' }} label='Include projects from items' value={showProjectsFromItems} onChange={setShowProjectsFromItems} />
-				</div>
-			);
+				return (
+					<div className='list-header'>
+						<Toggle style={{ margin: '0' }} label='Include projects from imbuements' value={showProjectsFromImbuements} onChange={setShowProjectsFromImbuements} />
+						<Toggle style={{ margin: '0' }} label='Include projects from items' value={showProjectsFromItems} onChange={setShowProjectsFromItems} />
+					</div>
+				);
 			case 'subclass':
-			return (
-				<div className='list-header'>
-					<Toggle style={{ margin: '0' }} label='Include subclasses from classes' value={showSubclassesFromClasses} onChange={setShowSubclassesFromClasses} />
-				</div>
-			);
+				return (
+					<div className='list-header'>
+						<Toggle style={{ margin: '0' }} label='Include subclasses from classes' value={showSubclassesFromClasses} onChange={setShowSubclassesFromClasses} />
+					</div>
+				);
 		}
 
 		return null;
@@ -330,12 +330,12 @@ export const LibraryListPage = (props: Props) => {
 		const sortedHeaders = Collections.sort(distinctHeaders, x => x || '');
 		sortedHeaders.forEach(header => {
 			if (header) {
-			listItems.push(
-				<div key={`${header}-header`} className='selection-list-group-header'>
-					<HeaderText level={3}>{header || 'List'}</HeaderText>
-				</div>
-			);
-		}
+				listItems.push(
+					<div key={`${header}-header`} className='selection-list-group-header'>
+						<HeaderText level={3}>{header || 'List'}</HeaderText>
+					</div>
+				);
+			}
 
 			const items = getList(category).filter(item => LibraryLogic.getGroupHeader(item, category, props.sourcebooks) === header);
 
@@ -666,7 +666,6 @@ export const LibraryListPage = (props: Props) => {
 		].filter(item => !!item);
 	};
 
-
 	const selected = getList(category).find(item => item.id == selectedID);
 	const getPanel = getElementPanel();
 
@@ -695,10 +694,10 @@ export const LibraryListPage = (props: Props) => {
 	const selectedChipRef = useRef<HTMLButtonElement | null>(null);
 	const chipStripRef = useRef<HTMLDivElement | null>(null);
 	useEffect(() => {
-		if (!isSmall) return;
+		if (!isSmall) { return; }
 		const chip = selectedChipRef.current;
 		const strip = chipStripRef.current;
-		if (!chip || !strip) return;
+		if (!chip || !strip) { return; }
 		const target = chip.offsetLeft - (strip.clientWidth - chip.clientWidth) / 2;
 		strip.scrollLeft = Math.max(0, target);
 	}, [ category, isSmall ]);
@@ -751,38 +750,40 @@ export const LibraryListPage = (props: Props) => {
 				)}
 
 				<ErrorBoundary>
-					{showElement ? (
-						<div className='mobile-element-view'>
-							{getPanel(selected!)}
-						</div>
-					) : (
-						<div className='mobile-list-view'>
-							<div className='mobile-search-bar'>
-								<SearchBox searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+					{showElement
+						? (
+							<div className='mobile-element-view'>
+								{getPanel(selected!)}
 							</div>
-							<div className='mobile-category-chips' ref={chipStripRef} role='tablist' aria-label='Library categories'>
-								{CATEGORIES.map(c => (
-									<button
-										key={c.key}
-										ref={category === c.key ? selectedChipRef : undefined}
-										type='button'
-										role='tab'
-										aria-selected={category === c.key}
-										className={`mobile-category-chip${category === c.key ? ' selected' : ''}`}
-										onClick={() => navigation.goToLibrary(c.key)}
-									>
-										{c.label} <span className='chip-count'>{getList(c.key).length}</span>
-									</button>
-								))}
+						)
+						: (
+							<div className='mobile-list-view'>
+								<div className='mobile-search-bar'>
+									<SearchBox searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+								</div>
+								<div className='mobile-category-chips' ref={chipStripRef} role='tablist' aria-label='Library categories'>
+									{CATEGORIES.map(c => (
+										<button
+											key={c.key}
+											ref={category === c.key ? selectedChipRef : undefined}
+											type='button'
+											role='tab'
+											aria-selected={category === c.key}
+											className={`mobile-category-chip${category === c.key ? ' selected' : ''}`}
+											onClick={() => navigation.goToLibrary(c.key)}
+										>
+											{c.label} <span className='chip-count'>{getList(c.key).length}</span>
+										</button>
+									))}
+								</div>
+								{getElementListHeader && (
+									<div className='mobile-list-header-slot'>{getElementListHeader()}</div>
+								)}
+								<div className='mobile-element-list'>
+									{getElementListItems()}
+								</div>
 							</div>
-							{getElementListHeader && (
-								<div className='mobile-list-header-slot'>{getElementListHeader()}</div>
-							)}
-							<div className='mobile-element-list'>
-								{getElementListItems()}
-							</div>
-						</div>
-					)}
+						)}
 				</ErrorBoundary>
 
 				<AppFooter

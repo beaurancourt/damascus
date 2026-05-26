@@ -99,40 +99,42 @@ export const StatsPanel = (props: Props) => {
 						</Flex>
 				}
 				{
-					props.updateHero ? (
-						<QuickResourcesPanel
-							hero={props.hero}
-							onChange={props.updateHero}
-							onShowState={props.onShowState}
-						/>
-					) : (
-						useRows ?
-							<div className='selectable-row clickable' onClick={() => props.onShowState(HeroModalType.Resources)}>
-								{
-									HeroLogic.getHeroicResources(props.hero).map(hr => (
-										<div key={hr.id}>{hr.name}: <b>{hr.value}</b></div>
-									))
-								}
-								<div>Surges: <b>{props.hero.state.surges}</b></div>
-								<div>Victories: <b>{props.hero.state.victories}</b></div>
-								<div>XP: <b>{props.hero.state.xp}</b></div>
-								<div>Renown: <b>{HeroLogic.getRenown(props.hero)}</b></div>
-								<div>Wealth: <b>{HeroLogic.getWealth(props.hero)}</b></div>
-							</div>
-							:
-							<StatsRow caption='Resources' onClick={() => props.onShowState(HeroModalType.Resources)}>
-								{
-									HeroLogic.getHeroicResources(props.hero).map(hr => (
-										<Statistic key={hr.id} title={hr.name} value={hr.value} />
-									))
-								}
-								<Statistic title='Surges' value={props.hero.state.surges} />
-								<Statistic title='Victories' value={props.hero.state.victories} />
-								<Statistic title='XP' value={props.hero.state.xp} suffix={xpSuffix} />
-								<Statistic title='Renown' value={HeroLogic.getRenown(props.hero)} />
-								<Statistic title='Wealth' value={HeroLogic.getWealth(props.hero)} />
-							</StatsRow>
-					)
+					props.updateHero
+						? (
+							<QuickResourcesPanel
+								hero={props.hero}
+								onChange={props.updateHero}
+								onShowState={props.onShowState}
+							/>
+						)
+						: (
+							useRows ?
+								<div className='selectable-row clickable' onClick={() => props.onShowState(HeroModalType.Resources)}>
+									{
+										HeroLogic.getHeroicResources(props.hero).map(hr => (
+											<div key={hr.id}>{hr.name}: <b>{hr.value}</b></div>
+										))
+									}
+									<div>Surges: <b>{props.hero.state.surges}</b></div>
+									<div>Victories: <b>{props.hero.state.victories}</b></div>
+									<div>XP: <b>{props.hero.state.xp}</b></div>
+									<div>Renown: <b>{HeroLogic.getRenown(props.hero)}</b></div>
+									<div>Wealth: <b>{HeroLogic.getWealth(props.hero)}</b></div>
+								</div>
+								:
+								<StatsRow caption='Resources' onClick={() => props.onShowState(HeroModalType.Resources)}>
+									{
+										HeroLogic.getHeroicResources(props.hero).map(hr => (
+											<Statistic key={hr.id} title={hr.name} value={hr.value} />
+										))
+									}
+									<Statistic title='Surges' value={props.hero.state.surges} />
+									<Statistic title='Victories' value={props.hero.state.victories} />
+									<Statistic title='XP' value={props.hero.state.xp} suffix={xpSuffix} />
+									<Statistic title='Renown' value={HeroLogic.getRenown(props.hero)} />
+									<Statistic title='Wealth' value={HeroLogic.getWealth(props.hero)} />
+								</StatsRow>
+						)
 				}
 				{
 					!props.updateHero && useRows && (

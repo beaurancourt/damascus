@@ -96,7 +96,7 @@ export const EncounterEditPanel = (props: Props) => {
 		}
 
 		encounter.groups.forEach((g, i) => {
-			if (g.slots.length === 0) return;
+			if (g.slots.length === 0) { return; }
 			const label = g.name || `Group ${i + 1}`;
 			const strength = EncounterDifficultyLogic.getGroupStrength(g, props.sourcebooks);
 			const heroValue = EncounterDifficultyLogic.getHeroValue(options.heroLevel);
@@ -461,37 +461,39 @@ export const EncounterEditPanel = (props: Props) => {
 				}
 				{
 					echelonBuckets.map(bucket =>
-						bucket.groups.length > 0 ? (
-							<div key={bucket.echelon.key} className='echelon-section' data-echelon={bucket.echelon.key}>
-								<div className='echelon-header'>
-									<span className='echelon-tier'>{bucket.echelon.tier}</span>
-									<span className='echelon-divider' aria-hidden='true' />
-									<span className='echelon-range'>{bucket.echelon.range}</span>
+						bucket.groups.length > 0
+							? (
+								<div key={bucket.echelon.key} className='echelon-section' data-echelon={bucket.echelon.key}>
+									<div className='echelon-header'>
+										<span className='echelon-tier'>{bucket.echelon.tier}</span>
+										<span className='echelon-divider' aria-hidden='true' />
+										<span className='echelon-range'>{bucket.echelon.range}</span>
+									</div>
+									<Space orientation='vertical' style={{ width: '100%' }}>
+										{
+											bucket.groups.map(({ group, monsters }) => (
+												<Expander key={`${bucket.echelon.key}-${group.id}`} title={group.name}>
+													<Space orientation='vertical' style={{ width: '100%' }}>
+														{
+															monsters.map(m => (
+																<MonsterListItem
+																	key={m.id}
+																	monster={m}
+																	monsterGroup={group}
+																	encounter={encounter}
+																	addMonster={addMonster}
+																	showMonster={props.showMonster}
+																/>
+															))
+														}
+													</Space>
+												</Expander>
+											))
+										}
+									</Space>
 								</div>
-								<Space orientation='vertical' style={{ width: '100%' }}>
-									{
-										bucket.groups.map(({ group, monsters }) => (
-											<Expander key={`${bucket.echelon.key}-${group.id}`} title={group.name}>
-												<Space orientation='vertical' style={{ width: '100%' }}>
-													{
-														monsters.map(m => (
-															<MonsterListItem
-																key={m.id}
-																monster={m}
-																monsterGroup={group}
-																encounter={encounter}
-																addMonster={addMonster}
-																showMonster={props.showMonster}
-															/>
-														))
-													}
-												</Space>
-											</Expander>
-										))
-									}
-								</Space>
-							</div>
-						) : null
+							)
+							: null
 					)
 				}
 				{!anyMatches ? <Empty /> : null}
@@ -556,12 +558,14 @@ export const EncounterEditPanel = (props: Props) => {
 						<span className='threat-tier'>{difficulty}</span>
 						<span className='threat-meter'>
 							<span className='threat-value'>EV {strength}</span>
-							{next ? (
-								<>
-									<span className='threat-arrow'>→</span>
-									<span className='threat-next'>{next.threshold} {next.label}</span>
-								</>
-							) : null}
+							{next
+								? (
+									<>
+										<span className='threat-arrow'>→</span>
+										<span className='threat-next'>{next.threshold} {next.label}</span>
+									</>
+								)
+								: null}
 						</span>
 					</div>
 				)}
@@ -741,7 +745,6 @@ const GroupPanel = (props: GroupPanelProps) => {
 		</ErrorBoundary>
 	);
 };
-
 
 // #region Slots
 

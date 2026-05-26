@@ -451,5 +451,4 @@ describe('LocalService', () => {
 			expect(catchFn).not.toHaveBeenCalled();
 		});
 	});
-
 });

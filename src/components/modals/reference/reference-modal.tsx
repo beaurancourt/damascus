@@ -57,7 +57,7 @@ export const ReferenceModal = (props: Props) => {
 		currentLabel: string,
 		targets: { label: string; kind: 'rule' | 'condition' }[]
 	) => {
-		if (!content) return content;
+		if (!content) { return content; }
 		// Sort longest-first so e.g. "Slamming Into Creatures" matches before
 		// "Slamming", and "Forced Movement" matches before "Movement".
 		const sorted = targets
@@ -74,7 +74,7 @@ export const ReferenceModal = (props: Props) => {
 		});
 		let masked = content;
 		masked = mask(masked, /\[[^\]]*\]\([^)]*\)/g); // existing markdown links
-		masked = mask(masked, /`[^`\n]*`/g);            // inline code
+		masked = mask(masked, /`[^`\n]*`/g); // inline code
 
 		for (const target of sorted) {
 			const escaped = target.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -92,7 +92,8 @@ export const ReferenceModal = (props: Props) => {
 			);
 		}
 
-		// Restore masked spans.
+		// Restore masked spans. The sentinel is \x00 — intentional.
+		// eslint-disable-next-line no-control-regex
 		return masked.replace(/\x00(\d+)\x00/g, (_match, i) => placeholders[Number(i)]);
 	};
 
@@ -101,11 +102,11 @@ export const ReferenceModal = (props: Props) => {
 	const handleDocClick = (event: React.MouseEvent<HTMLDivElement>) => {
 		const target = event.target as HTMLElement;
 		const anchor = target.closest('a') as HTMLAnchorElement | null;
-		if (!anchor) return;
+		if (!anchor) { return; }
 		const href = anchor.getAttribute('href');
-		if (!href || !(href.startsWith('#rule-') || href.startsWith('#condition-') || href.startsWith('#section-'))) return;
+		if (!href || !(href.startsWith('#rule-') || href.startsWith('#condition-') || href.startsWith('#section-'))) { return; }
 		const el = document.getElementById(href.slice(1));
-		if (!el) return;
+		if (!el) { return; }
 		event.preventDefault();
 		el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	};
@@ -128,19 +129,20 @@ export const ReferenceModal = (props: Props) => {
 			// Try rule first, then condition (since both are passed via this prop).
 			const ruleId = ruleSlug(props.startRule);
 			const conditionId = conditionSlug(props.startRule);
-			target = document.getElementById(ruleId) ? ruleId
-				: document.getElementById(conditionId) ? conditionId
-				: ruleId; // fall back to rule slug; it may mount asynchronously
+			target = document.getElementById(ruleId)
+				? ruleId
+				: document.getElementById(conditionId)
+					? conditionId
+					: ruleId; // fall back to rule slug; it may mount asynchronously
 		} else if (props.startPage) {
 			target = sectionSlug(props.startPage);
 		}
-		if (!target) return;
+		if (!target) { return; }
 		const t = setTimeout(() => {
 			const el = document.getElementById(target!);
-			if (el) el.scrollIntoView({ behavior: 'auto', block: 'start' });
+			if (el) { el.scrollIntoView({ behavior: 'auto', block: 'start' }); }
 		}, 80);
 		return () => clearTimeout(t);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const getRulesSection = () => {
@@ -190,7 +192,7 @@ export const ReferenceModal = (props: Props) => {
 		const ordered = rules.slice().sort((a, b) => {
 			const pa = a.page ?? Number.MAX_SAFE_INTEGER;
 			const pb = b.page ?? Number.MAX_SAFE_INTEGER;
-			if (pa !== pb) return pa - pb;
+			if (pa !== pb) { return pa - pb; }
 			return a.label.localeCompare(b.label);
 		});
 
@@ -277,7 +279,7 @@ export const ReferenceModal = (props: Props) => {
 							return <h2 key={`s-${idx}`} className='rules-section-heading'>{entry.label}</h2>;
 						}
 						if (entry.kind === 'virtual') {
-							const HeadingTag = (`h${Math.min(6, 3 + entry.depth)}` as 'h3' | 'h4' | 'h5' | 'h6');
+							const HeadingTag = `h${Math.min(6, 3 + entry.depth)}` as 'h3' | 'h4' | 'h5' | 'h6';
 							return (
 								<div key={`v-${idx}-${entry.label}`} className={`rules-entry virtual depth-${entry.depth}`}>
 									<HeadingTag className='rules-entry-heading'>{entry.label}</HeadingTag>
@@ -285,7 +287,7 @@ export const ReferenceModal = (props: Props) => {
 							);
 						}
 						const r = entry.rule;
-						const HeadingTag = (`h${Math.min(6, 3 + entry.depth)}` as 'h3' | 'h4' | 'h5' | 'h6');
+						const HeadingTag = `h${Math.min(6, 3 + entry.depth)}` as 'h3' | 'h4' | 'h5' | 'h6';
 						return (
 							<div key={r.label} id={ruleSlug(r.label)} className={`rules-entry depth-${entry.depth}`}>
 								<HeadingTag className='rules-entry-heading'>
@@ -316,7 +318,7 @@ export const ReferenceModal = (props: Props) => {
 		const visible = searchTerm
 			? conditions.filter(c => Utils.textMatches([ c, ConditionLogic.getDescription(c) ], searchTerm))
 			: conditions;
-		if (visible.length === 0) return null;
+		if (visible.length === 0) { return null; }
 
 		const allRules = [
 			RulesData.abilityDistance, RulesData.abilityTarget, RulesData.assist, RulesData.burrowing, RulesData.climbingAndSwimming, RulesData.concealment, RulesData.cover, RulesData.crawling, RulesData.criticalHit, RulesData.damageAndEffect, RulesData.damagingTerrain, RulesData.difficultTerrain, RulesData.duringTheMove, RulesData.dyingAndDeath, RulesData.falling, RulesData.flanking, RulesData.flying, RulesData.forcedMovement, RulesData.hiding, RulesData.highGround, RulesData.hover, RulesData.invisibility, RulesData.jumping, RulesData.mainAction, RulesData.mountedCombat, RulesData.movement, RulesData.naturalRoll, RulesData.opportunityAttack, RulesData.rollVsMultipleCreatures, RulesData.shifting, RulesData.slammingCreatures, RulesData.slammingObjects, RulesData.sneaking, RulesData.suffocating, RulesData.surprise, RulesData.takingATurn, RulesData.teleporting, RulesData.underwaterCombat, RulesData.wieldingTreasures
@@ -349,7 +351,7 @@ export const ReferenceModal = (props: Props) => {
 		const visibleSkills = searchTerm
 			? allSkills.filter(s => Utils.textMatches([ s.name, s.description ], searchTerm))
 			: allSkills;
-		if (visibleSkills.length === 0) return null;
+		if (visibleSkills.length === 0) { return null; }
 
 		return (
 			<div id={sectionSlug(RulesPage.Skills)} className='rules-entry'>
@@ -363,7 +365,7 @@ export const ReferenceModal = (props: Props) => {
 						SkillList.Lore
 					].map(sl => {
 						const inGroup = visibleSkills.filter(s => s.list === sl);
-						if (inGroup.length === 0) return null;
+						if (inGroup.length === 0) { return null; }
 						return (
 							<div key={sl} className='rules-entry depth-1'>
 								<h3 className='rules-entry-heading'>{sl}</h3>
@@ -395,7 +397,7 @@ export const ReferenceModal = (props: Props) => {
 		const visibleLangs = searchTerm
 			? allLanguages.filter(l => Utils.textMatches([ l.name, l.description ], searchTerm))
 			: allLanguages;
-		if (visibleLangs.length === 0) return null;
+		if (visibleLangs.length === 0) { return null; }
 
 		return (
 			<div id={sectionSlug(RulesPage.Languages)} className='rules-entry'>
@@ -408,7 +410,7 @@ export const ReferenceModal = (props: Props) => {
 						LanguageType.Dead
 					].map(type => {
 						const inGroup = visibleLangs.filter(l => l.type === type);
-						if (inGroup.length === 0) return null;
+						if (inGroup.length === 0) { return null; }
 						return (
 							<div key={type} className='rules-entry depth-1'>
 								<h3 className='rules-entry-heading'>{type} Languages</h3>
@@ -452,7 +454,7 @@ export const ReferenceModal = (props: Props) => {
 		const filtered = searchTerm
 			? groups.map(g => ({ ...g, items: g.items.filter(a => Utils.textMatches([ a.name, a.description ], searchTerm)) })).filter(g => g.items.length > 0)
 			: groups;
-		if (filtered.length === 0) return null;
+		if (filtered.length === 0) { return null; }
 
 		return (
 			<div id={sectionSlug(RulesPage.Abilities)} className='rules-entry'>

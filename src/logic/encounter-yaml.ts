@@ -58,21 +58,32 @@ interface EncounterInput {
 const KNOWN_TOP_LEVEL = new Set([ 'name', 'description', 'groups', 'notes', 'sections' ]);
 const KNOWN_GROUP_KEYS = new Set([ 'name', 'minHeroCount', 'slots' ]);
 const KNOWN_SLOT_KEYS = new Set([
-	'monster', 'id', 'monsterID',
+	'monster',
+	'id',
+	'monsterID',
 	'count',
-	'level', 'levelAdjustment',
-	'solo', 'convertToSolo',
-	'minions', 'minionCountAdjustment',
-	'addOns', 'items'
+	'level',
+	'levelAdjustment',
+	'solo',
+	'convertToSolo',
+	'minions',
+	'minionCountAdjustment',
+	'addOns',
+	'items'
 ]);
 const RESERVED_KEYS = new Set([
-	'id', 'round', 'malice', 'initiative', 'heroes',
-	'additionalTurnsTaken', 'hiddenMaliceFeatures',
+	'id',
+	'round',
+	'malice',
+	'initiative',
+	'heroes',
+	'additionalTurnsTaken',
+	'hiddenMaliceFeatures',
 	'objective'
 ]);
 
 const toStringArray = (value: unknown): string[] => {
-	if (!Array.isArray(value)) return [];
+	if (!Array.isArray(value)) { return []; }
 	return value.filter((v): v is string => typeof v === 'string');
 };
 
@@ -212,7 +223,7 @@ export class EncounterYamlLogic {
 
 		if (Array.isArray(input.sections)) {
 			(input.sections as SectionInput[]).forEach((section, si) => {
-				if (!section || typeof section !== 'object') return;
+				if (!section || typeof section !== 'object') { return; }
 				const title = typeof section.title === 'string' ? section.title : `Section ${si + 1}`;
 				const body = typeof section.body === 'string' ? section.body : '';
 				encounter.notes.push(FactoryLogic.createElement(title, body));

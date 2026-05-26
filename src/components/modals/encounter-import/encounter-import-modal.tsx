@@ -47,7 +47,7 @@ export const EncounterImportModal = (props: Props) => {
 	const [ submitted, setSubmitted ] = useState(false);
 
 	const result = useMemo(() => {
-		if (!text.trim()) return null;
+		if (!text.trim()) { return null; }
 		return EncounterYamlLogic.parse(text, props.sourcebooks);
 	}, [ text, props.sourcebooks ]);
 
@@ -56,7 +56,7 @@ export const EncounterImportModal = (props: Props) => {
 	const encounter = result?.encounter ?? null;
 
 	const evTotal = useMemo(() => {
-		if (!encounter) return 0;
+		if (!encounter) { return 0; }
 		return encounter.groups.reduce(
 			(sum, g) => sum + EncounterDifficultyLogic.getGroupStrength(g, props.sourcebooks),
 			0
@@ -73,13 +73,13 @@ export const EncounterImportModal = (props: Props) => {
 	};
 
 	const handleSave = () => {
-		if (!encounter) return;
+		if (!encounter) { return; }
 		setSubmitted(true);
 		props.onSave(encounter);
 	};
 
 	const handleRunLive = () => {
-		if (!encounter) return;
+		if (!encounter) { return; }
 		setSubmitted(true);
 		props.onRunLive(encounter);
 	};

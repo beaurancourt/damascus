@@ -95,7 +95,7 @@ export const EncounterRunPanel = (props: Props) => {
 		const copy = Utils.copy(encounter);
 		if (addTargetGroupID) {
 			const target = copy.groups.find(g => g.id === addTargetGroupID);
-			if (target) target.slots.push(slot);
+			if (target) { target.slots.push(slot); }
 		} else {
 			const group = FactoryLogic.createEncounterGroup();
 			group.slots.push(slot);
@@ -131,7 +131,7 @@ export const EncounterRunPanel = (props: Props) => {
 		const copy = Utils.copy(encounter);
 		copy.terrain.forEach(ts => {
 			const i = ts.terrain.findIndex(t => t.id === terrain.id);
-			if (i !== -1) ts.terrain[i] = terrain;
+			if (i !== -1) { ts.terrain[i] = terrain; }
 		});
 		commit(copy);
 	};
@@ -141,7 +141,7 @@ export const EncounterRunPanel = (props: Props) => {
 		copy.groups.forEach(g => {
 			g.slots.forEach(s => {
 				const m = s.monsters.find(mm => mm.id === monsterID);
-				if (m) m.state.staminaDamage = Math.max(0, value);
+				if (m) { m.state.staminaDamage = Math.max(0, value); }
 			});
 		});
 		commit(copy);
@@ -150,7 +150,7 @@ export const EncounterRunPanel = (props: Props) => {
 	const focusBlockByKey = (key: string) => {
 		setFocusedBlock(key);
 		const el = blockRefs.current[key];
-		if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 	};
 
 	const openAddMonster = (groupID: string | null) => {
@@ -194,7 +194,7 @@ export const EncounterRunPanel = (props: Props) => {
 	const statBlockMap = new Map<string, StatBlock>();
 	encounter.groups.forEach(g => {
 		g.slots.forEach(slot => {
-			if (slot.monsters.length === 0) return;
+			if (slot.monsters.length === 0) { return; }
 			const key = monsterBlockKey(slot.monsterID);
 			if (!statBlockMap.has(key)) {
 				// Reference block reads as the species, not "Abyssal Hyena 1".

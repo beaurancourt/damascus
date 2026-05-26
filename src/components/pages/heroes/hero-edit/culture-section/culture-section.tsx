@@ -90,77 +90,79 @@ export const CultureSection = (props: CultureSectionProps) => {
 					props.hero.culture ?
 						<div className='hero-edit-content-column selected single-column' id='culture-selected'>
 							{
-								isBespoke ? (
-									<div>
-										<HeaderText>Bespoke Culture</HeaderText>
-										<div className='ds-text'>Choose a name for your culture.</div>
-										<Space.Compact style={{ width: '100%' }}>
-											<TextInput
-												status={props.hero.culture.name === '' ? 'warning' : ''}
-												placeholder='Name'
-												allowClear={true}
-												value={props.hero.culture.name}
-												onChange={setName}
-											/>
-											<NameSuggestions onSelect={setName} />
-										</Space.Compact>
-										<Divider />
-										<div className='ds-text'>Choose your Environment, Organization, and Upbringing.</div>
-										<Space orientation='vertical' style={{ width: '100%' }}>
-											{
-												props.hero.culture.environment ?
-													<SelectionBox
-														content={
-															<Field
-																style={{ flex: '1 1 0' }}
-																label={props.hero.culture.environment.name}
-																value={<Markdown text={props.hero.culture.environment.description} useSpan={true} />}
-															/>
-														}
-														onRemove={() => props.selectEnvironment(null)}
-													/>
-													:
-													<Button block={true} className='status-warning' onClick={() => setShowEnvironment(true)}>
-														Choose environment
-													</Button>
-											}
-											{
-												props.hero.culture.organization ?
-													<SelectionBox
-														content={
-															<Field
-																style={{ flex: '1 1 0' }}
-																label={props.hero.culture.organization.name}
-																value={<Markdown text={props.hero.culture.organization.description} useSpan={true} />}
-															/>
-														}
-														onRemove={() => props.selectOrganization(null)}
-													/>
-													:
-													<Button block={true} className='status-warning' onClick={() => setShowOrganization(true)}>
-														Choose organization
-													</Button>
-											}
-											{
-												props.hero.culture.upbringing ?
-													<SelectionBox
-														content={
-															<Field
-																style={{ flex: '1 1 0' }}
-																label={props.hero.culture.upbringing.name}
-																value={<Markdown text={props.hero.culture.upbringing.description} useSpan={true} />}
-															/>
-														}
-														onRemove={() => props.selectUpbringing(null)}
-													/>
-													:
-													<Button block={true} className='status-warning' onClick={() => setShowUpbringing(true)}>
-														Choose upbringing
-													</Button>
-											}
-										</Space>
-									</div>
-								) : null
+								isBespoke
+									? (
+										<div>
+											<HeaderText>Bespoke Culture</HeaderText>
+											<div className='ds-text'>Choose a name for your culture.</div>
+											<Space.Compact style={{ width: '100%' }}>
+												<TextInput
+													status={props.hero.culture.name === '' ? 'warning' : ''}
+													placeholder='Name'
+													allowClear={true}
+													value={props.hero.culture.name}
+													onChange={setName}
+												/>
+												<NameSuggestions onSelect={setName} />
+											</Space.Compact>
+											<Divider />
+											<div className='ds-text'>Choose your Environment, Organization, and Upbringing.</div>
+											<Space orientation='vertical' style={{ width: '100%' }}>
+												{
+													props.hero.culture.environment ?
+														<SelectionBox
+															content={
+																<Field
+																	style={{ flex: '1 1 0' }}
+																	label={props.hero.culture.environment.name}
+																	value={<Markdown text={props.hero.culture.environment.description} useSpan={true} />}
+																/>
+															}
+															onRemove={() => props.selectEnvironment(null)}
+														/>
+														:
+														<Button block={true} className='status-warning' onClick={() => setShowEnvironment(true)}>
+															Choose environment
+														</Button>
+												}
+												{
+													props.hero.culture.organization ?
+														<SelectionBox
+															content={
+																<Field
+																	style={{ flex: '1 1 0' }}
+																	label={props.hero.culture.organization.name}
+																	value={<Markdown text={props.hero.culture.organization.description} useSpan={true} />}
+																/>
+															}
+															onRemove={() => props.selectOrganization(null)}
+														/>
+														:
+														<Button block={true} className='status-warning' onClick={() => setShowOrganization(true)}>
+															Choose organization
+														</Button>
+												}
+												{
+													props.hero.culture.upbringing ?
+														<SelectionBox
+															content={
+																<Field
+																	style={{ flex: '1 1 0' }}
+																	label={props.hero.culture.upbringing.name}
+																	value={<Markdown text={props.hero.culture.upbringing.description} useSpan={true} />}
+																/>
+															}
+															onRemove={() => props.selectUpbringing(null)}
+														/>
+														:
+														<Button block={true} className='status-warning' onClick={() => setShowUpbringing(true)}>
+															Choose upbringing
+														</Button>
+												}
+											</Space>
+										</div>
+									)
+									: null
 							}
 							<CulturePanel
 								culture={props.hero.culture}

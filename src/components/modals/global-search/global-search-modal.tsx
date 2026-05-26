@@ -48,10 +48,10 @@ export const GlobalSearchModal = (props: Props) => {
 					byKind.set(e.kind, n + 1);
 					sample.push(e);
 				}
-				if (sample.length >= 24) break;
+				if (sample.length >= 24) { break; }
 			}
 			sample.forEach(e => {
-				if (!groups.has(e.kind)) groups.set(e.kind, []);
+				if (!groups.has(e.kind)) { groups.set(e.kind, []); }
 				groups.get(e.kind)!.push(e);
 			});
 			return groups;
@@ -82,12 +82,29 @@ export const GlobalSearchModal = (props: Props) => {
 	};
 
 	const KIND_ORDER: SearchKind[] = [
-		'rule', 'condition',
+		'rule',
+		'condition',
 		'hero',
-		'monster', 'monster-group', 'encounter',
-		'class', 'subclass', 'ancestry', 'career', 'culture', 'kit', 'complication',
-		'item', 'domain', 'imbuement', 'perk', 'project', 'title',
-		'adventure', 'montage', 'negotiation', 'terrain'
+		'monster',
+		'monster-group',
+		'encounter',
+		'class',
+		'subclass',
+		'ancestry',
+		'career',
+		'culture',
+		'kit',
+		'complication',
+		'item',
+		'domain',
+		'imbuement',
+		'perk',
+		'project',
+		'title',
+		'adventure',
+		'montage',
+		'negotiation',
+		'terrain'
 	];
 
 	const visibleKinds = KIND_ORDER.filter(k => grouped.has(k) && grouped.get(k)!.length > 0);

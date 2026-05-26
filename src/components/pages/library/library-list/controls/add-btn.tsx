@@ -86,19 +86,21 @@ export const AddBtn = (props: Props) => {
 		switch (props.category) {
 			case 'encounter':
 				return [
-					props.showEncounterImport ? (
-						<Button
-							key='yaml-import'
-							block={true}
-							icon={<CodeOutlined />}
-							onClick={() => {
-								setPopoverOpen(false);
-								props.showEncounterImport!();
-							}}
-						>
-							Paste YAML (from Claude)
-						</Button>
-					) : null,
+					props.showEncounterImport
+						? (
+							<Button
+								key='yaml-import'
+								block={true}
+								icon={<CodeOutlined />}
+								onClick={() => {
+									setPopoverOpen(false);
+									props.showEncounterImport!();
+								}}
+							>
+								Paste YAML (from Claude)
+							</Button>
+						)
+						: null,
 					<Expander key='premade' title='Use a premade example'>
 						<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px' }}>
 							{

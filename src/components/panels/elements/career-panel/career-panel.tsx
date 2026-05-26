@@ -100,7 +100,7 @@ export const CareerPanel = (props: Props) => {
 								key={opt.id}
 								className={`choice-option${isSelected ? ' selected' : ''}`}
 								onClick={() => {
-									if (!editing) return;
+									if (!editing) { return; }
 									props.onSelectIncitingIncident!(isSelected ? null : opt);
 								}}
 								style={editing ? undefined : { cursor: 'default' }}

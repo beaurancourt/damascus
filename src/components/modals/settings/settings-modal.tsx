@@ -25,8 +25,8 @@ export const SettingsModal = (props: Props) => {
 	const { themeMode, setTheme } = useTheme();
 	const [ options, setOptions ] = useState<Options>(Utils.copy(useOptions()));
 	const [ standardAbilitiesMode, setStandardAbilitiesMode ] = useState<string>(() => {
-		if (options.shownStandardAbilities.length === 0) return 'none';
-		if (options.shownStandardAbilities.length === AbilityData.standardAbilities.length) return 'all';
+		if (options.shownStandardAbilities.length === 0) { return 'none'; }
+		if (options.shownStandardAbilities.length === AbilityData.standardAbilities.length) { return 'all'; }
 		return 'custom';
 	});
 	const [ showAbilitySelector, setShowAbilitySelector ] = useState<boolean>(false);
@@ -73,9 +73,9 @@ export const SettingsModal = (props: Props) => {
 		};
 
 		const closeStandardAbilitiesModal = () => {
-			if (options.shownStandardAbilities.length === 0) setStandardAbilitiesMode('none');
-			else if (options.shownStandardAbilities.length === AbilityData.standardAbilities.length) setStandardAbilitiesMode('all');
-			else setStandardAbilitiesMode('custom');
+			if (options.shownStandardAbilities.length === 0) { setStandardAbilitiesMode('none'); }
+			else if (options.shownStandardAbilities.length === AbilityData.standardAbilities.length) { setStandardAbilitiesMode('all'); }
+			else { setStandardAbilitiesMode('custom'); }
 			setShowAbilitySelector(false);
 		};
 
@@ -153,21 +153,23 @@ export const SettingsModal = (props: Props) => {
 						onChange={v => updateOption('showDefeatedCombatants', v)}
 					/>
 					{
-						parties.length > 0 ? (
-							<LabelControl
-								label='Start encounters with'
-								control={
-									<Select
-										style={{ width: '100%' }}
-										placeholder='Select a party'
-										options={[ '', ...parties ].map(p => ({ value: p, label: p || 'No heroes' }))}
-										optionRender={option => <div className='ds-text'>{option.data.label}</div>}
-										value={options.party}
-										onChange={p => updateOption('party', p || '')}
-									/>
-								}
-							/>
-						) : null
+						parties.length > 0
+							? (
+								<LabelControl
+									label='Start encounters with'
+									control={
+										<Select
+											style={{ width: '100%' }}
+											placeholder='Select a party'
+											options={[ '', ...parties ].map(p => ({ value: p, label: p || 'No heroes' }))}
+											optionRender={option => <div className='ds-text'>{option.data.label}</div>}
+											value={options.party}
+											onChange={p => updateOption('party', p || '')}
+										/>
+									}
+								/>
+							)
+							: null
 					}
 				</Space>
 			</Expander>
@@ -193,29 +195,31 @@ export const SettingsModal = (props: Props) => {
 						}
 					/>
 					{
-						options.heroParty === '' ? (
-							<>
-								<NumberSpin
-									label='Number of heroes'
-									min={1}
-									value={options.heroCount}
-									onChange={v => updateOption('heroCount', v)}
-								/>
-								<NumberSpin
-									label='Hero level'
-									min={1}
-									max={10}
-									value={options.heroLevel}
-									onChange={v => updateOption('heroLevel', v)}
-								/>
-								<NumberSpin
-									label='Number of victories'
-									min={0}
-									value={options.heroVictories}
-									onChange={v => updateOption('heroVictories', v)}
-								/>
-							</>
-						) : null
+						options.heroParty === ''
+							? (
+								<>
+									<NumberSpin
+										label='Number of heroes'
+										min={1}
+										value={options.heroCount}
+										onChange={v => updateOption('heroCount', v)}
+									/>
+									<NumberSpin
+										label='Hero level'
+										min={1}
+										max={10}
+										value={options.heroLevel}
+										onChange={v => updateOption('heroLevel', v)}
+									/>
+									<NumberSpin
+										label='Number of victories'
+										min={0}
+										value={options.heroVictories}
+										onChange={v => updateOption('heroVictories', v)}
+									/>
+								</>
+							)
+							: null
 					}
 				</Space>
 			</Expander>

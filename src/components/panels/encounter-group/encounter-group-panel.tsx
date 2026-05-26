@@ -249,15 +249,17 @@ export const EncounterGroupHero = (props: EncounterGroupHeroProps) => {
 							}
 						</div>
 						{
-							props.onHeroChange && expanded ? (
-								<div className='encounter-slot-inline-health' onClick={e => e.stopPropagation()}>
-									<HeroHealthPanel
-										hero={props.hero}
-										showEncounterControls={true}
-										onChange={props.onHeroChange}
-									/>
-								</div>
-							) : null
+							props.onHeroChange && expanded
+								? (
+									<div className='encounter-slot-inline-health' onClick={e => e.stopPropagation()}>
+										<HeroHealthPanel
+											hero={props.hero}
+											showEncounterControls={true}
+											onChange={props.onHeroChange}
+										/>
+									</div>
+								)
+								: null
 						}
 						{
 							props.hero.state.controlledSlots.map(slot => (
@@ -381,8 +383,8 @@ export const MonsterSlot = (props: MonsterSlotProps) => {
 	const toggleExpand = (id: string) => {
 		setExpandedIds(prev => {
 			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
+			if (next.has(id)) { next.delete(id); }
+			else { next.add(id); }
 			return next;
 		});
 	};
@@ -608,14 +610,16 @@ export const MonsterSlot = (props: MonsterSlotProps) => {
 									</div>
 								</div>
 								{
-									props.onMonsterChange && expandedIds.has(monster.id) ? (
-										<div className='encounter-slot-inline-health' onClick={e => e.stopPropagation()}>
-											<MonsterHealthPanel
-												monster={monster}
-												onChange={props.onMonsterChange}
-											/>
-										</div>
-									) : null
+									props.onMonsterChange && expandedIds.has(monster.id)
+										? (
+											<div className='encounter-slot-inline-health' onClick={e => e.stopPropagation()}>
+												<MonsterHealthPanel
+													monster={monster}
+													onChange={props.onMonsterChange}
+												/>
+											</div>
+										)
+										: null
 								}
 							</div>
 						))
