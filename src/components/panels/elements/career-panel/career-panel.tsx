@@ -1,4 +1,5 @@
 import { Career } from '@/models/career';
+import { DoneBadge } from '@/components/controls/done-badge/done-badge';
 import { Element } from '@/models/element';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { Feature, FeatureData } from '@/models/feature';
@@ -90,7 +91,7 @@ export const CareerPanel = (props: Props) => {
 				</HeaderText>
 				<Markdown text={props.career.description} />
 				{props.career.features.flatMap(f => renderFeature(f))}
-				<HeaderText>Inciting Incident</HeaderText>
+				<HeaderText extra={selectedIncident ? <DoneBadge /> : null}>Inciting Incident</HeaderText>
 				<div className='ds-text'>Choose 1 of the following:</div>
 				{
 					props.career.incitingIncidents.options.map(opt => {

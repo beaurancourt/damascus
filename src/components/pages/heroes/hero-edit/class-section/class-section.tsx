@@ -3,6 +3,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { Characteristic } from '@/enums/characteristic';
 import { ClassPanel } from '@/components/panels/elements/class-panel/class-panel';
 import { Collections } from '@/utils/collections';
+import { DoneBadge } from '@/components/controls/done-badge/done-badge';
 import { Element } from '@/models/element';
 import { EmptyMessage } from '@/components/pages/heroes/hero-edit/empty-message/empty-message';
 import { FeatureData } from '@/models/feature';
@@ -91,6 +92,7 @@ export const ClassSection = (props: Props) => {
 
 		const selectedIDs = cls.subclasses.filter(sc => sc.selected).map(sc => sc.id);
 		const subclasses = Collections.sort(cls.subclasses, sc => sc.name);
+		const isDone = selectedIDs.length >= cls.subclassCount;
 
 		const toggleSubclass = (sc: SubClass) => {
 			if (sc.selected) {
@@ -108,7 +110,7 @@ export const ClassSection = (props: Props) => {
 
 		return (
 			<div>
-				<HeaderText>{Format.capitalize(subclassLabel)}{cls.subclassCount > 1 ? 's' : ''}</HeaderText>
+				<HeaderText extra={isDone ? <DoneBadge /> : null}>{Format.capitalize(subclassLabel)}{cls.subclassCount > 1 ? 's' : ''}</HeaderText>
 				<div className='ds-text'>{prompt}</div>
 				{
 					subclasses.map(sc => {
@@ -198,22 +200,29 @@ const Characteristics = (props: CharacteristicsProps) => {
 	const [ array, setArray ] = useState<number[]>(getArray);
 	const [ values, setValues ] = useState<{ characteristic: Characteristic, value: number }[]>(props.heroClass.characteristics);
 
+	const isDone = (array.length > 0) && (values.length > 0) && values.some(v => v.value !== 0);
+
 	const getHeader = () => {
 		return (
 			<HeaderText
 				extra={
-					(array.length > 0) || (props.heroClass.primaryCharacteristicsOptions.length > 1) ?
-						<Button
-							type='text'
-							icon={<CloseOutlined />}
-							onClick={() => {
-								setArray([]);
-								setValues([]);
-								props.selectPrimaryCharacteristics([]);
-								props.selectCharacteristics([]);
-							}}
-						/>
-						: null
+					<>
+						{isDone ? <DoneBadge /> : null}
+						{
+							(array.length > 0) || (props.heroClass.primaryCharacteristicsOptions.length > 1) ?
+								<Button
+									type='text'
+									icon={<CloseOutlined />}
+									onClick={() => {
+										setArray([]);
+										setValues([]);
+										props.selectPrimaryCharacteristics([]);
+										props.selectCharacteristics([]);
+									}}
+								/>
+								: null
+						}
+					</>
 				}
 			>
 				Characteristics

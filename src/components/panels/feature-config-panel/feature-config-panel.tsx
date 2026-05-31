@@ -5,6 +5,7 @@ import { ReactNode, useState } from 'react';
 import { AbilityLogic } from '@/logic/ability-logic';
 import { ConfigFeature } from '@/components/features/feature';
 import { DangerButton } from '@/components/controls/danger-button/danger-button';
+import { DoneBadge } from '@/components/controls/done-badge/done-badge';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { FeatureLogic } from '@/logic/feature-logic';
 import { FeatureType } from '@/enums/feature-type';
@@ -51,12 +52,19 @@ export const FeatureConfigPanel = (props: Props) => {
 		return desc;
 	};
 
+	// Show a "Done" badge when this feature is a choice the player has fully
+	// resolved. Helps players spot which categories still need attention,
+	// even when the inner widget doesn't gray out unselected options.
+	const isChoice = FeatureLogic.isChoice(props.feature as Feature);
+	const isComplete = isChoice && FeatureLogic.isChosen(props.feature as Feature, props.hero, props.sourcebooks);
+
 	return (
 		<ErrorBoundary>
-			<div className='feature-config-panel'>
+			<div className={`feature-config-panel${isComplete ? ' is-complete' : ''}`}>
 				<HeaderText
 					extra={
 						<>
+							{isComplete ? <DoneBadge key='done' /> : null}
 							{
 								autoCalcAvailable() ?
 									<Button
