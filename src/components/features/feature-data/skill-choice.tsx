@@ -175,7 +175,9 @@ export const ConfigSkillChoice = (props: ConfigProps) => {
 				availableSkills.map(skill => {
 					const isSelected = selectedSkills.includes(skill.name);
 					const alreadyKnown = !isSelected && heroSkills.includes(skill.name);
-					const overLimit = !isSelected && !alreadyKnown && !isSingle && count !== -1 && selectedSkills.length >= count;
+					// Once at limit, gray every unselected option — even single-pick
+					// choices. To swap, the player deselects their current pick first.
+					const overLimit = !isSelected && !alreadyKnown && count !== -1 && selectedSkills.length >= count;
 					const disabled = alreadyKnown || overLimit;
 					return (
 						<div

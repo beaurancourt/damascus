@@ -272,7 +272,9 @@ export const ConfigClassAbility = (props: ConfigProps) => {
 				allAbilities.map(ability => {
 					const isSelected = selectedIDs.includes(ability.id);
 					const alreadyTaken = !isSelected && otherAbilityIDs.includes(ability.id);
-					const overLimit = !isSelected && !alreadyTaken && !isSingle && selectedIDs.length >= count;
+					// Once at limit, gray every unselected option — even single-pick
+					// choices. To swap, the player deselects their current pick first.
+					const overLimit = !isSelected && !alreadyTaken && selectedIDs.length >= count;
 					const disabled = alreadyTaken || overLimit;
 					return (
 						<div

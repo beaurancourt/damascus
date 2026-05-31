@@ -321,7 +321,10 @@ export const ConfigChoice = (props: ConfigProps) => {
 			{
 				sortedOptions.map(opt => {
 					const isSelected = selectedIDs.includes(opt.feature.id);
-					const overBudget = !isSelected && showCosts && opt.value > pointsLeft;
+					// Gray every unselected option once we're at the limit, whether
+					// that's "no more points" (showCosts) or just "all slots filled".
+					// To swap, the player deselects their current pick first.
+					const overBudget = !isSelected && opt.value > pointsLeft;
 					const disabled = overBudget;
 					// AbilityPanel renders the feature name itself; suppress the row-level name in that case.
 					const showName = !isAbilityFeature(opt.feature) && hasMeaningfulName(opt.feature);

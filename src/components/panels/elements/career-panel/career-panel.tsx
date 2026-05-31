@@ -96,12 +96,15 @@ export const CareerPanel = (props: Props) => {
 				{
 					props.career.incitingIncidents.options.map(opt => {
 						const isSelected = selectedIncident?.id === opt.id;
+						// Once an incident is picked, gray every other option to
+						// signal the choice is resolved. To swap, deselect first.
+						const disabled = editing && !isSelected && !!selectedIncident;
 						return (
 							<div
 								key={opt.id}
-								className={`choice-option${isSelected ? ' selected' : ''}`}
+								className={`choice-option${isSelected ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
 								onClick={() => {
-									if (!editing) { return; }
+									if (!editing || disabled) { return; }
 									props.onSelectIncitingIncident!(isSelected ? null : opt);
 								}}
 								style={editing ? undefined : { cursor: 'default' }}

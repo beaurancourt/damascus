@@ -140,7 +140,9 @@ export const ConfigLanguageChoice = (props: ConfigProps) => {
 				allLanguages.map(lang => {
 					const isSelected = selectedLanguages.includes(lang.name);
 					const alreadyKnown = !isSelected && heroLanguages.includes(lang.name);
-					const overLimit = !isSelected && !alreadyKnown && !isSingle && count !== -1 && selectedLanguages.length >= count;
+					// Once at limit, gray every unselected option — even single-pick
+					// choices. To swap, the player deselects their current pick first.
+					const overLimit = !isSelected && !alreadyKnown && count !== -1 && selectedLanguages.length >= count;
 					const disabled = alreadyKnown || overLimit;
 					return (
 						<div
