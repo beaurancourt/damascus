@@ -6,7 +6,7 @@
 	"repository": "https://github.com/beaurancourt/damascus.git",
 	"homepage": "https://github.com/beaurancourt/damascus",
 	"scripts": {
-		"start": "npm ci && vite --host",
+		"start": "npm install && vite --host",
 		"update": "npx npm-check-updates --peer --interactive --format group",
 		"lint": "eslint \"src/**/*.{ts,tsx}\" --concurrency auto",
 		"lint:fix": "eslint \"src/**/*.{ts,tsx}\" --concurrency auto --fix",
