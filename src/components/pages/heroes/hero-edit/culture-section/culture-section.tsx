@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Culture } from '@/models/culture';
 import { CulturePanel } from '@/components/panels/elements/culture-panel/culture-panel';
 import { CultureType } from '@/enums/culture-type';
-import { Element } from '@/models/element';
 import { EmptyMessage } from '@/components/pages/heroes/hero-edit/empty-message/empty-message';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { FeatureData } from '@/models/feature';
@@ -24,19 +23,9 @@ import { Utils } from '@/utils/utils';
 
 import './culture-section.scss';
 
-const matchElement = (element: Element, searchTerm: string) => {
-	const name = element.name.toLowerCase();
-	const desc = element.description.toLowerCase();
-	return searchTerm
-		.toLowerCase()
-		.split(' ')
-		.some(token => name.includes(token) || desc.includes(token));
-};
-
 interface CultureSectionProps {
 	hero: Hero;
 	sourcebooks: Sourcebook[];
-	searchTerm: string;
 	selectCulture: (culture: Culture) => void;
 	selectEnvironment: (id: string | null) => void;
 	selectOrganization: (id: string | null) => void;
@@ -58,8 +47,7 @@ export const CultureSection = (props: CultureSectionProps) => {
 	};
 
 	const cultures = [ CultureData.bespoke, ...SourcebookLogic.getCultures(props.sourcebooks, true) ]
-		.map(Utils.copy)
-		.filter(c => matchElement(c, props.searchTerm));
+		.map(Utils.copy);
 	const optionsYourAncestry = cultures.filter(c => c.id === (props.hero.ancestry?.culture?.id || '')).map(c => (
 		<SelectablePanel key={c.id} onSelect={() => props.selectCulture(c)}>
 			<CulturePanel culture={c} sourcebooks={props.sourcebooks} />

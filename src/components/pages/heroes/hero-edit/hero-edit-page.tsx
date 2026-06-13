@@ -27,7 +27,6 @@ import { FeatureType } from '@/enums/feature-type';
 import { Format } from '@/utils/format';
 import { HeroClass } from '@/models/class';
 import { HeroLogic } from '@/logic/hero-logic';
-import { SearchBox } from '@/components/controls/text-input/text-input';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { StartSection } from '@/components/pages/heroes/hero-edit/start-section/start-section';
@@ -64,7 +63,6 @@ export const HeroEditPage = (props: Props) => {
 	const originalHero = useMemo(() => heroes.find(h => h.id === heroID)!, [ heroID, heroes ]);
 	const [ hero, setHero ] = useState<Hero>(Utils.copy(originalHero));
 	const [ dirty, setDirty ] = useState<boolean>(false);
-	const [ searchTerm, setSearchTerm ] = useState<string>('');
 	useTitle('Hero Builder');
 
 	const getPageState = (page: HeroEditTab) => {
@@ -472,7 +470,7 @@ export const HeroEditPage = (props: Props) => {
 				}
 				{!isSmall && (
 					<Space orientation='vertical' size={4}>
-						<Button disabled={!allowRandom || !!searchTerm} icon={<ThunderboltOutlined />} onClick={selectRandom}>Random</Button>
+						<Button disabled={!allowRandom} icon={<ThunderboltOutlined />} onClick={selectRandom}>Random</Button>
 						<Button disabled={!unselect} icon={<CloseOutlined />} onClick={unselect}>Unselect</Button>
 					</Space>
 				)}
@@ -489,23 +487,6 @@ export const HeroEditPage = (props: Props) => {
 		);
 	};
 
-	const allowSearch = () => {
-		switch (page) {
-			case 'ancestry':
-				return !hero.ancestry;
-			case 'culture':
-				return !hero.culture;
-			case 'career':
-				return !hero.career;
-			case 'class':
-				return !hero.class;
-			case 'complication':
-				return !hero.complication;
-		}
-
-		return false;
-	};
-
 	const getContent = () => {
 		switch (page) {
 			case 'start':
@@ -515,7 +496,6 @@ export const HeroEditPage = (props: Props) => {
 					<AncestrySection
 						hero={hero}
 						sourcebooks={props.sourcebooks.filter(sb => hero.sourcebookIDs.includes(sb.id))}
-						searchTerm={searchTerm}
 						selectAncestry={setAncestry}
 						setFeatureData={setFeatureData}
 					/>
@@ -525,7 +505,6 @@ export const HeroEditPage = (props: Props) => {
 					<CultureSection
 						hero={hero}
 						sourcebooks={props.sourcebooks.filter(sb => hero.sourcebookIDs.includes(sb.id))}
-						searchTerm={searchTerm}
 						selectCulture={setCulture}
 						selectEnvironment={setEnvironment}
 						selectOrganization={setOrganization}
@@ -538,7 +517,6 @@ export const HeroEditPage = (props: Props) => {
 					<CareerSection
 						hero={hero}
 						sourcebooks={props.sourcebooks.filter(sb => hero.sourcebookIDs.includes(sb.id))}
-						searchTerm={searchTerm}
 						selectCareer={setCareer}
 						selectIncitingIncident={setIncitingIncident}
 						setFeatureData={setFeatureData}
@@ -549,7 +527,6 @@ export const HeroEditPage = (props: Props) => {
 					<ClassSection
 						hero={hero}
 						sourcebooks={props.sourcebooks.filter(sb => hero.sourcebookIDs.includes(sb.id))}
-						searchTerm={searchTerm}
 						selectClass={setClass}
 						setLevel={setLevel}
 						selectPrimaryCharacteristics={setPrimaryCharacteristics}
@@ -564,7 +541,6 @@ export const HeroEditPage = (props: Props) => {
 					<ComplicationSection
 						hero={hero}
 						sourcebooks={props.sourcebooks.filter(sb => hero.sourcebookIDs.includes(sb.id))}
-						searchTerm={searchTerm}
 						selectComplication={setComplication}
 						setFeatureData={setFeatureData}
 					/>
@@ -589,7 +565,6 @@ export const HeroEditPage = (props: Props) => {
 				<AppHeader subheader='Hero Builder'>
 					<ButtonGroup
 						buttons={[
-							...(isSmall ? [] : [ { type: 'control' as const, control: <SearchBox disabled={!allowSearch()} searchTerm={searchTerm} setSearchTerm={setSearchTerm} /> } ]),
 							{ type: 'button', label: isSmall ? undefined : 'Save Changes', icon: <SaveOutlined />, primary: true, disabled: !dirty, onClick: saveChanges },
 							{ type: 'button', label: isSmall ? undefined : 'Cancel', icon: <CloseOutlined />, onClick: () => navigation.goToHeroView(heroID!) }
 						]}
@@ -598,11 +573,6 @@ export const HeroEditPage = (props: Props) => {
 				<ErrorBoundary>
 					<div className={isSmall ? 'hero-edit-page-content small' : 'hero-edit-page-content'}>
 						{getControls()}
-						{isSmall && allowSearch() && (
-							<div className='hero-edit-mobile-search'>
-								<SearchBox searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-							</div>
-						)}
 						{getContent()}
 					</div>
 				</ErrorBoundary>

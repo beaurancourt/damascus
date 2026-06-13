@@ -4,7 +4,6 @@ import { Characteristic } from '@/enums/characteristic';
 import { ClassPanel } from '@/components/panels/elements/class-panel/class-panel';
 import { Collections } from '@/utils/collections';
 import { DoneBadge } from '@/components/controls/done-badge/done-badge';
-import { Element } from '@/models/element';
 import { EmptyMessage } from '@/components/pages/heroes/hero-edit/empty-message/empty-message';
 import { FeatureData } from '@/models/feature';
 import { Field } from '@/components/controls/field/field';
@@ -28,19 +27,9 @@ import { useOptions } from '@/contexts/data-context';
 import './class-section.scss';
 import '@/components/features/feature-data/choice.scss';
 
-const matchElement = (element: Element, searchTerm: string) => {
-	const name = element.name.toLowerCase();
-	const desc = element.description.toLowerCase();
-	return searchTerm
-		.toLowerCase()
-		.split(' ')
-		.some(token => name.includes(token) || desc.includes(token));
-};
-
 interface Props {
 	hero: Hero;
 	sourcebooks: Sourcebook[];
-	searchTerm: string;
 	selectClass: (heroClass: HeroClass) => void;
 	setLevel: (level: number) => void;
 	selectPrimaryCharacteristics: (characteristics: Characteristic[]) => void;
@@ -53,7 +42,7 @@ interface Props {
 export const ClassSection = (props: Props) => {
 	const appOptions = useOptions();
 
-	const classes = SourcebookLogic.getClasses(props.sourcebooks).map(Utils.copy).filter(c => matchElement(c, props.searchTerm));
+	const classes = SourcebookLogic.getClasses(props.sourcebooks).map(Utils.copy);
 	const options = classes.map(c => (
 		<SelectablePanel key={c.id} onSelect={() => props.selectClass(c)}>
 			<ClassPanel heroClass={c} sourcebooks={props.sourcebooks} />

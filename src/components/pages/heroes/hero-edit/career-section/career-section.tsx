@@ -13,26 +13,16 @@ import { Utils } from '@/utils/utils';
 
 import './career-section.scss';
 
-const matchElement = (element: Element, searchTerm: string) => {
-	const name = element.name.toLowerCase();
-	const desc = element.description.toLowerCase();
-	return searchTerm
-		.toLowerCase()
-		.split(' ')
-		.some(token => name.includes(token) || desc.includes(token));
-};
-
 interface Props {
 	hero: Hero;
 	sourcebooks: Sourcebook[];
-	searchTerm: string;
 	selectCareer: (career: Career) => void;
 	selectIncitingIncident: (value: Element | null) => void;
 	setFeatureData: (featureID: string, data: FeatureData) => void;
 }
 
 export const CareerSection = (props: Props) => {
-	const careers = SourcebookLogic.getCareers(props.sourcebooks).map(Utils.copy).filter(c => matchElement(c, props.searchTerm));
+	const careers = SourcebookLogic.getCareers(props.sourcebooks).map(Utils.copy);
 	const options = careers.map(c => (
 		<SelectablePanel key={c.id} onSelect={() => props.selectCareer(c)}>
 			<CareerPanel career={c} sourcebooks={props.sourcebooks} />

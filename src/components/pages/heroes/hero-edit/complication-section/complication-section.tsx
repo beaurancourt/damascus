@@ -1,7 +1,6 @@
 import { ReactNode, useLayoutEffect, useRef } from 'react';
 import { Complication } from '@/models/complication';
 import { ComplicationPanel } from '@/components/panels/elements/complication-panel/complication-panel';
-import { Element } from '@/models/element';
 import { EmptyMessage } from '@/components/pages/heroes/hero-edit/empty-message/empty-message';
 import { FeatureConfigPanel } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { FeatureData } from '@/models/feature';
@@ -17,19 +16,9 @@ import { useIsSmall } from '@/hooks/use-is-small';
 
 import './complication-section.scss';
 
-const matchElement = (element: Element, searchTerm: string) => {
-	const name = element.name.toLowerCase();
-	const desc = element.description.toLowerCase();
-	return searchTerm
-		.toLowerCase()
-		.split(' ')
-		.some(token => name.includes(token) || desc.includes(token));
-};
-
 interface Props {
 	hero: Hero;
 	sourcebooks: Sourcebook[];
-	searchTerm: string;
 	selectComplication: (complication: Complication) => void;
 	setFeatureData: (featureID: string, data: FeatureData) => void;
 }
@@ -46,7 +35,7 @@ export const ComplicationSection = (props: Props) => {
 		}
 	}, [ props.hero.complication ]);
 
-	const complications = SourcebookLogic.getComplications(props.sourcebooks).map(Utils.copy).filter(c => matchElement(c, props.searchTerm));
+	const complications = SourcebookLogic.getComplications(props.sourcebooks).map(Utils.copy);
 	const options = complications.map(c => (
 		<SelectablePanel
 			key={c.id}

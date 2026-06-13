@@ -1,6 +1,5 @@
 import { Ancestry } from '@/models/ancestry';
 import { AncestryPanel } from '@/components/panels/elements/ancestry-panel/ancestry-panel';
-import { Element } from '@/models/element';
 import { EmptyMessage } from '@/components/pages/heroes/hero-edit/empty-message/empty-message';
 import { FeatureData } from '@/models/feature';
 import { Hero } from '@/models/hero';
@@ -12,25 +11,15 @@ import { Utils } from '@/utils/utils';
 
 import './ancestry-section.scss';
 
-const matchElement = (element: Element, searchTerm: string) => {
-	const name = element.name.toLowerCase();
-	const desc = element.description.toLowerCase();
-	return searchTerm
-		.toLowerCase()
-		.split(' ')
-		.some(token => name.includes(token) || desc.includes(token));
-};
-
 interface Props {
 	hero: Hero;
 	sourcebooks: Sourcebook[];
-	searchTerm: string;
 	selectAncestry: (ancestry: Ancestry) => void;
 	setFeatureData: (featureID: string, data: FeatureData) => void;
 }
 
 export const AncestrySection = (props: Props) => {
-	const ancestries = SourcebookLogic.getAncestries(props.sourcebooks).map(Utils.copy).filter(a => matchElement(a, props.searchTerm));
+	const ancestries = SourcebookLogic.getAncestries(props.sourcebooks).map(Utils.copy);
 	const options = ancestries.map(a => (
 		<SelectablePanel key={a.id} onSelect={() => props.selectAncestry(a)}>
 			<AncestryPanel ancestry={a} sourcebooks={props.sourcebooks} />
