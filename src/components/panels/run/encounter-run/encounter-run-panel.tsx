@@ -1,5 +1,5 @@
 import { Button, Drawer, Flex } from 'antd';
-import { CheckCircleFilled, CheckCircleOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { CheckCircleFilled, CheckCircleOutlined, DeleteOutlined, ExportOutlined, PlusOutlined } from '@ant-design/icons';
 import { Encounter, EncounterGroup } from '@/models/encounter';
 import { EncounterDifficultyPanel } from '@/components/panels/encounter-difficulty/encounter-difficulty-panel';
 import { EncounterLogic } from '@/logic/encounter-logic';
@@ -19,6 +19,7 @@ import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { Terrain } from '@/models/terrain';
 import { TerrainPanel } from '@/components/panels/elements/terrain-panel/terrain-panel';
 import { Utils } from '@/utils/utils';
+import { VttExportLogic } from '@/logic/vtt-export-logic';
 import { useRef, useState } from 'react';
 
 import './encounter-run-panel.scss';
@@ -296,6 +297,14 @@ export const EncounterRunPanel = (props: Props) => {
 
 						<div className='encounter-run-add'>
 							<Button icon={<PlusOutlined />} onClick={() => openAddMonster(null)}>New group with monster…</Button>
+							<Button
+								icon={<ExportOutlined />}
+								disabled={encounter.groups.length === 0}
+								title='Download this encounter for import into the vtt app'
+								onClick={() => VttExportLogic.download(encounter)}
+							>
+								Export to VTT
+							</Button>
 						</div>
 
 						<HeaderText level={2}>Combatants</HeaderText>
