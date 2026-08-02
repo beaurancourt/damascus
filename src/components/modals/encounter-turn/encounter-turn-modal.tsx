@@ -144,7 +144,7 @@ export const EncounterTurnModal = (props: Props) => {
 			return (
 				<SelectablePanel key={group.id} onSelect={onClick}>
 					<HeaderText style={{ marginTop: '0' }}>
-						{group.name ? group.name : `Group ${encounter.groups.indexOf(group) + 1}`}
+						{group.name ? group.name : EncounterLogic.getDefaultGroupName(encounter.groups.indexOf(group))}
 					</HeaderText>
 					<Space orientation='vertical' style={{ width: '100%' }}>
 						{

@@ -153,7 +153,7 @@ export class EncounterYamlLogic {
 			}
 
 			const built: EncounterGroup = FactoryLogic.createEncounterGroup();
-			built.name = typeof group.name === 'string' ? group.name : `Group ${gi + 1}`;
+			built.name = typeof group.name === 'string' ? group.name : '';
 			built.minHeroCount = typeof group.minHeroCount === 'number' ? group.minHeroCount : undefined;
 
 			if (!Array.isArray(group.slots) || group.slots.length === 0) {

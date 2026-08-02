@@ -80,11 +80,11 @@ export const EncounterPanel = (props: Props) => {
 		return (
 			<div className='encounter-groups'>
 				{
-					groups.map((group, n) => (
+					groups.map(group => (
 						<SelectablePanel key={group.id} style={{ paddingTop: '0' }}>
 							{
 								groups.length > 1 ?
-									<HeaderText>{group.name || `Group ${n + 1}`}</HeaderText>
+									<HeaderText>{group.name || EncounterLogic.getDefaultGroupName(props.encounter.groups.findIndex(g => g.id === group.id))}</HeaderText>
 									:
 									<HeaderText>Monsters</HeaderText>
 							}

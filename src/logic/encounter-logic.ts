@@ -33,11 +33,17 @@ export class EncounterLogic {
 		return total;
 	};
 
+	static defaultGroupNames = [ 'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Indigo', 'Violet', 'Black', 'White' ];
+
+	static getDefaultGroupName = (index: number) => {
+		return EncounterLogic.defaultGroupNames[index] ?? `Group ${index + 1}`;
+	};
+
 	static getGroupName = (group: EncounterGroup, encounter: Encounter) => {
 		const names = group.slots.flatMap(s => s.monsters).map(m => m.name);
 		if (names.length === 0) {
 			const index = encounter.groups.findIndex(g => g.id === group.id);
-			return `Group ${index + 1}`;
+			return EncounterLogic.getDefaultGroupName(index);
 		}
 		if (names.length === 1) {
 			return names[0];

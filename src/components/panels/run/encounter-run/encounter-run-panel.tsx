@@ -2,6 +2,7 @@ import { Button, Drawer, Flex } from 'antd';
 import { CheckCircleFilled, CheckCircleOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Encounter, EncounterGroup } from '@/models/encounter';
 import { EncounterDifficultyPanel } from '@/components/panels/encounter-difficulty/encounter-difficulty-panel';
+import { EncounterLogic } from '@/logic/encounter-logic';
 import { EncounterSlot } from '@/models/encounter-slot';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { FactoryLogic } from '@/logic/factory-logic';
@@ -308,7 +309,7 @@ export const EncounterRunPanel = (props: Props) => {
 										encounter.groups.map((group, gIdx) => {
 											const acted = group.encounterState === 'finished';
 											const rows = buildGroupRows(group);
-											const label = group.name || `Group ${gIdx + 1}`;
+											const label = group.name || EncounterLogic.getDefaultGroupName(gIdx);
 											return (
 												<div key={group.id} className={[ 'tracker-group', acted ? 'acted' : '' ].filter(Boolean).join(' ')}>
 													<div className='group-header'>

@@ -66,6 +66,7 @@ import { MonsterGroup } from '@/models/monster-group';
 import { MonsterModal } from '@/components/modals/monster/monster-modal';
 import { Montage } from '@/models/montage';
 import { Negotiation } from '@/models/negotiation';
+import { OptionsLogic } from '@/logic/options-logic';
 import { PartyModal } from '@/components/modals/party/party-modal';
 import { Perk } from '@/models/perk';
 import { Plot } from '@/models/plot';
@@ -480,6 +481,10 @@ export const Main = () => {
 				encounter.groups.flatMap(g => g.slots).forEach(s => s.id = Utils.guid());
 			} else {
 				encounter = FactoryLogic.createEncounter();
+				const groupCount = OptionsLogic.getHeroCount(options, heroes);
+				for (let n = 0; n < groupCount; ++n) {
+					encounter.groups.push(FactoryLogic.createEncounterGroup());
+				}
 			}
 
 			sourcebook.encounters.push(encounter);

@@ -20,51 +20,48 @@ export class SessionLogic {
 		copy.id = Utils.guid();
 		copy.round = 0;
 
-		const monsterInfo: { monsterID: string, monster: Monster, name: string, count: number, added: number }[] = [];
+		// Numbering (eg 'Ghoul 1', 'Ghoul 2') is scoped per group, so each group
+		// re-uses 1, 2, 3... rather than continuing a count across the whole encounter.
 		copy.groups
 			.filter(g => {
 				const minHeroes = g.minHeroCount || heroes.length;
 				return heroes.length >= minHeroes;
 			})
-			.flatMap(g => g.slots)
-			.forEach(slot => {
-				const monster = EncounterLogic.getCustomizedMonster(slot.monsterID, slot.customization, sourcebooks);
-				const monsterGroup = SourcebookLogic.getMonsterGroup(sourcebooks, slot.monsterID);
-				if (monster && monsterGroup) {
-					const count = (slot.count * MonsterLogic.getRoleMultiplier(monster.role.organization)) + slot.customization.minionCountAdjustment;
-					const current = monsterInfo.find(info => info.monsterID === slot.monsterID);
-					if (current) {
-						current.count += count;
-					} else {
-						monsterInfo.push({
-							monsterID: slot.monsterID,
-							monster: monster,
-							name: MonsterLogic.getMonsterName(monster, monsterGroup),
-							count: count,
-							added: 0
-						});
+			.forEach(g => {
+				const monsterInfo: { monsterID: string, monster: Monster, name: string, count: number, added: number }[] = [];
+				g.slots.forEach(slot => {
+					const monster = EncounterLogic.getCustomizedMonster(slot.monsterID, slot.customization, sourcebooks);
+					const monsterGroup = SourcebookLogic.getMonsterGroup(sourcebooks, slot.monsterID);
+					if (monster && monsterGroup) {
+						const count = (slot.count * MonsterLogic.getRoleMultiplier(monster.role.organization)) + slot.customization.minionCountAdjustment;
+						const current = monsterInfo.find(info => info.monsterID === slot.monsterID);
+						if (current) {
+							current.count += count;
+						} else {
+							monsterInfo.push({
+								monsterID: slot.monsterID,
+								monster: monster,
+								name: MonsterLogic.getMonsterName(monster, monsterGroup),
+								count: count,
+								added: 0
+							});
+						}
 					}
-				}
-			});
+				});
 
-		copy.groups
-			.filter(g => {
-				const minHeroes = g.minHeroCount || heroes.length;
-				return heroes.length >= minHeroes;
-			})
-			.flatMap(g => g.slots)
-			.forEach(slot => {
-				const info = monsterInfo.find(info => info.monsterID === slot.monsterID);
-				if (info) {
-					const count = (slot.count * MonsterLogic.getRoleMultiplier(info.monster.role.organization)) + slot.customization.minionCountAdjustment;
-					for (let n = 1; n <= count; ++n) {
-						const monsterCopy = Utils.copy(info.monster);
-						monsterCopy.id = Utils.guid();
-						monsterCopy.name = info.count === 1 ? info.name : `${info.name} ${info.added + 1}`;
-						slot.monsters.push(monsterCopy);
-						info.added += 1;
+				g.slots.forEach(slot => {
+					const info = monsterInfo.find(info => info.monsterID === slot.monsterID);
+					if (info) {
+						const count = (slot.count * MonsterLogic.getRoleMultiplier(info.monster.role.organization)) + slot.customization.minionCountAdjustment;
+						for (let n = 1; n <= count; ++n) {
+							const monsterCopy = Utils.copy(info.monster);
+							monsterCopy.id = Utils.guid();
+							monsterCopy.name = info.count === 1 ? info.name : `${info.name} ${info.added + 1}`;
+							slot.monsters.push(monsterCopy);
+							info.added += 1;
+						}
 					}
-				}
+				});
 			});
 
 		copy.groups
@@ -73,14 +70,8 @@ export class SessionLogic {
 				return heroes.length >= minHeroes;
 			})
 			.forEach(g => {
-				const minions = g.slots.filter(s => {
-					const info = monsterInfo.find(info => info.monsterID === s.monsterID);
-					return info && (info.monster.role.organization === MonsterOrganizationType.Minion);
-				});
-				const nonMinions = g.slots.filter(s => {
-					const info = monsterInfo.find(info => info.monsterID === s.monsterID);
-					return info && (info.monster.role.organization !== MonsterOrganizationType.Minion);
-				});
+				const minions = g.slots.filter(s => s.monsters[0]?.role.organization === MonsterOrganizationType.Minion);
+				const nonMinions = g.slots.filter(s => s.monsters[0] && (s.monsters[0].role.organization !== MonsterOrganizationType.Minion));
 				if ((minions.length > 0) && (nonMinions.length > 0)) {
 					minions.forEach(s => s.state.captainID = nonMinions[0].monsters[0].id);
 				}

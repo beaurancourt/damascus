@@ -97,7 +97,7 @@ export const EncounterEditPanel = (props: Props) => {
 
 		encounter.groups.forEach((g, i) => {
 			if (g.slots.length === 0) { return; }
-			const label = g.name || `Group ${i + 1}`;
+			const label = g.name || EncounterLogic.getDefaultGroupName(i);
 			const strength = EncounterDifficultyLogic.getGroupStrength(g, props.sourcebooks);
 			const heroValue = EncounterDifficultyLogic.getHeroValue(options.heroLevel);
 			if (strength < heroValue) {
@@ -700,7 +700,7 @@ const GroupPanel = (props: GroupPanelProps) => {
 								onChange={value => props.setName(props.group, value)}
 							/>
 							:
-							(props.group.name || `Group ${props.index + 1}`)
+							(props.group.name || EncounterLogic.getDefaultGroupName(props.index))
 					}
 				</HeaderText>
 				<div className='group-slots'>
@@ -921,7 +921,7 @@ const MonsterSlotPanel = (props: MonsterSlotPanelProps) => {
 					label='Move To'
 					items={[
 						...props.encounter.groups
-							.map((g, n) => ({ id: g.id, name: `Group ${n + 1}` }))
+							.map((g, n) => ({ id: g.id, name: g.name || EncounterLogic.getDefaultGroupName(n) }))
 							.filter(g => g.id !== props.groupID)
 							.map(g => ({ key: g.id, label: <div className='ds-text centered-text'>{g.name}</div> })),
 						{ key: '', label: <div className='ds-text centered-text'>New Group</div> }
@@ -932,7 +932,7 @@ const MonsterSlotPanel = (props: MonsterSlotPanelProps) => {
 					label='Copy To'
 					items={[
 						...props.encounter.groups
-							.map((g, n) => ({ id: g.id, name: `Group ${n + 1}` }))
+							.map((g, n) => ({ id: g.id, name: g.name || EncounterLogic.getDefaultGroupName(n) }))
 							.filter(g => g.id !== props.groupID)
 							.map(g => ({ key: g.id, label: <div className='ds-text centered-text'>{g.name}</div> })),
 						{ key: '', label: <div className='ds-text centered-text'>New Group</div> }
@@ -1071,7 +1071,7 @@ const MonsterListItem = (props: MonsterListItemProps) => {
 								<Space orientation='vertical'>
 									{
 										props.encounter!.groups.map((group, n) => (
-											<Button key={group.id} type='text' block={true} onClick={() => props.addMonster!(props.monster, group.id)}>Group {n + 1}</Button>
+											<Button key={group.id} type='text' block={true} onClick={() => props.addMonster!(props.monster, group.id)}>{group.name || EncounterLogic.getDefaultGroupName(n)}</Button>
 										))
 									}
 									<Button key='' type='text' block={true} onClick={() => props.addMonster!(props.monster, null)}>New Group</Button>
