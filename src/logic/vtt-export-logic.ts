@@ -36,16 +36,7 @@ export class VttExportLogic {
 		};
 	};
 
-	static download = (encounter: Encounter) => {
-		const json = JSON.stringify(VttExportLogic.buildExport(encounter), null, '\t');
-		const blob = new Blob([ json ], { type: 'application/json' });
-
-		const a = document.createElement('a');
-		a.download = `${encounter.name || 'encounter'}.json`;
-		a.href = window.URL.createObjectURL(blob);
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		window.URL.revokeObjectURL(a.href);
+	static toJson = (encounter: Encounter) => {
+		return JSON.stringify(VttExportLogic.buildExport(encounter), null, '\t');
 	};
 }

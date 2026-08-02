@@ -1,5 +1,5 @@
-import { Button, Drawer, Flex } from 'antd';
-import { CheckCircleFilled, CheckCircleOutlined, DeleteOutlined, ExportOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Drawer, Flex, Input } from 'antd';
+import { CheckCircleFilled, CheckCircleOutlined, CopyOutlined, DeleteOutlined, ExportOutlined, PlusOutlined } from '@ant-design/icons';
 import { Encounter, EncounterGroup } from '@/models/encounter';
 import { EncounterDifficultyPanel } from '@/components/panels/encounter-difficulty/encounter-difficulty-panel';
 import { EncounterLogic } from '@/logic/encounter-logic';
@@ -47,6 +47,8 @@ export const EncounterRunPanel = (props: Props) => {
 	// of creating a fresh group.
 	const [ addTargetGroupID, setAddTargetGroupID ] = useState<string | null>(null);
 	const [ focusedBlock, setFocusedBlock ] = useState<string | null>(null);
+	const [ showVttExport, setShowVttExport ] = useState<boolean>(false);
+	const [ vttExportCopied, setVttExportCopied ] = useState<boolean>(false);
 
 	const blockRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -76,6 +78,12 @@ export const EncounterRunPanel = (props: Props) => {
 			g.encounterState = g.encounterState === 'finished' ? 'ready' : 'finished';
 		}
 		commit(copy);
+	};
+
+	const copyVttExport = () => {
+		navigator.clipboard.writeText(VttExportLogic.toJson(encounter));
+		setVttExportCopied(true);
+		setTimeout(() => setVttExportCopied(false), 1500);
 	};
 
 	const buildSlot = (monster: Monster) => {
@@ -300,8 +308,8 @@ export const EncounterRunPanel = (props: Props) => {
 							<Button
 								icon={<ExportOutlined />}
 								disabled={encounter.groups.length === 0}
-								title='Download this encounter for import into the vtt app'
-								onClick={() => VttExportLogic.download(encounter)}
+								title='Get a copyable JSON blob for import into the vtt app'
+								onClick={() => setShowVttExport(true)}
 							>
 								Export to VTT
 							</Button>
@@ -416,6 +424,25 @@ export const EncounterRunPanel = (props: Props) => {
 						onClose={() => setAddingMonsters(false)}
 						onSelect={m => { setAddingMonsters(false); addMonster(m); }}
 					/>
+				</Drawer>
+
+				<Drawer open={showVttExport} onClose={() => setShowVttExport(false)} closeIcon={null} size={500}>
+					<div className='vtt-export-panel'>
+						<HeaderText level={1}>Export to VTT</HeaderText>
+						<div className='ds-text dimmed-text'>
+							Copy this and paste it into the vtt app's "Import" box on the Initiative Tracker.
+						</div>
+						<Input.TextArea
+							rows={18}
+							readOnly={true}
+							value={VttExportLogic.toJson(encounter)}
+							className='vtt-export-textarea'
+							onFocus={e => e.target.select()}
+						/>
+						<Button type='primary' icon={<CopyOutlined />} onClick={copyVttExport}>
+							{vttExportCopied ? 'Copied!' : 'Copy to Clipboard'}
+						</Button>
+					</div>
 				</Drawer>
 			</div>
 		</ErrorBoundary>

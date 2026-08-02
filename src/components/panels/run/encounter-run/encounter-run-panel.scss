@@ -624,6 +624,21 @@
 	}
 }
 
+// --- VTT export drawer -------------------------------------------------------
+// Rendered via antd's Drawer portal, so it sits outside .encounter-run-panel's
+// DOM subtree — kept as its own top-level rule rather than nested.
+.vtt-export-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 20px;
+
+	.vtt-export-textarea {
+		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.8em;
+	}
+}
+
 // --- Light theme ------------------------------------------------------------
 html:not([data-theme="dark"]) {
 	.encounter-run-panel {
