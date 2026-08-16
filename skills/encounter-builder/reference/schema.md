@@ -35,8 +35,11 @@ monster: string             # required, must be a valid id from reference/monste
                             #   id: <same>
                             #   monsterID: <same>
 count: integer              # optional, default 1. Number of this monster.
-                            # For Minions this is "stamps of 1 minion" — a count of 4
-                            # places 4 individual minions.
+                            # For Minions this is squads of 4, not individual minions —
+                            # count: 1 places one squad (4 individual minions), and EV
+                            # is the stat block's per-squad EV times this count. To place
+                            # N individual minions, use count: N/4 (round up for a partial
+                            # squad).
 
 # Customization (all optional)
 level: integer              # signed level adjustment, e.g. +1, -1, +2
