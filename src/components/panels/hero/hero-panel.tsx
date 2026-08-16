@@ -23,7 +23,6 @@ import { HeroLogic } from '@/logic/hero-logic';
 import { HeroModalType } from '@/enums/hero-modal-type';
 import { Kit } from '@/models/kit';
 import { Monster } from '@/models/monster';
-import { NamePanel } from '@/components/panels/hero/name/name-panel';
 import { RetinuePanel } from '@/components/panels/hero/retinue/retinue-panel';
 import { RulesPage } from '@/enums/rules-page';
 import { Sourcebook } from '@/models/sourcebook';
@@ -83,10 +82,6 @@ export const HeroPanel = (props: Props) => {
 	return (
 		<ErrorBoundary>
 			<div className='hero-panel'>
-				<NamePanel
-					hero={props.hero}
-					onShowState={props.onShowState}
-				/>
 				<div className='hero-main-section'>
 					<div className='hero-center-column'>
 						<div className='center-content'>

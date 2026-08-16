@@ -13,67 +13,6 @@
 	display: flex;
 	flex-direction: column;
 
-	// --- Hero name plate ------------------------------------------------------
-	// The top HeaderText becomes the "name plate" — serif, generous tracking,
-	// bronze double-rule below, hero portrait pinned to the right via ribbon.
-	> .header-text-panel {
-		margin: 4px 6px 14px !important;
-		padding: 6px 0 10px !important;
-		border-bottom: 1px solid $bronze !important;
-		position: relative;
-
-		&::after {
-			content: '';
-			position: absolute;
-			left: 0;
-			right: 0;
-			bottom: -4px;
-			height: 1px;
-			background: $bronze-dim;
-		}
-
-		.header-text {
-			font-family: 'Merriweather', 'PT Sans', serif !important;
-			font-weight: 700;
-			font-size: 22px;
-			letter-spacing: 4px;
-			text-transform: uppercase;
-			color: rgba(255, 255, 255, 0.95);
-		}
-
-		.ant-tag {
-			font-family: 'Merriweather', serif;
-			font-size: 9px;
-			letter-spacing: 2px;
-			text-transform: uppercase;
-			padding: 2px 8px;
-			background: transparent;
-			border: 1px solid $bronze-dim;
-			color: $bronze;
-		}
-
-		// "Tools" button → bronze outline pill instead of stark white.
-		.ant-btn {
-			font-family: 'Merriweather', serif;
-			font-size: 10px;
-			letter-spacing: 1.5px;
-			text-transform: uppercase;
-			padding: 4px 12px;
-			height: auto;
-			border-radius: 3px;
-			border: 1px solid $bronze-dim;
-			background: transparent;
-			color: $bronze;
-			box-shadow: none;
-
-			&:hover {
-				border-color: $bronze;
-				background: rgba(201, 164, 90, 0.08);
-				color: $bronze;
-			}
-		}
-	}
-
 	.hero-main-section {
 		flex: 1 1 0;
 		display: flex;

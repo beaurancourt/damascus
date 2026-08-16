@@ -19,6 +19,8 @@ import { Hero } from '@/models/hero';
 import { HeroClass } from '@/models/class';
 import { HeroModalType } from '@/enums/hero-modal-type';
 import { HeroPanel } from '@/components/panels/hero/hero-panel';
+import { HeroToken } from '@/components/panels/token/token';
+import { HeroToolsPanel } from '@/components/panels/hero/name/name-panel';
 import { Kit } from '@/models/kit';
 import { Monster } from '@/models/monster';
 import { RulesPage } from '@/enums/rules-page';
@@ -107,7 +109,15 @@ export const HeroViewPage = (props: Props) => {
 	return (
 		<ErrorBoundary>
 			<div className='hero-view-page'>
-				<AppHeader subheader='Hero'>
+				<AppHeader
+					title={
+						<>
+							{hero.picture ? <HeroToken hero={hero} size={28} /> : null}
+							<span className='app-header-title-text'>{hero.name || 'Unnamed Hero'}</span>
+						</>
+					}
+				>
+					<HeroToolsPanel onShowState={page => props.showHeroState(hero, page)} />
 					<ButtonGroup
 						buttons={
 							isSmall

@@ -11,6 +11,27 @@
 		display: flex;
 		align-items: center;
 		gap: 5px;
+		// The title has to give way to the buttons on a narrow screen rather than
+		// pushing them off the bar.
+		min-width: 0;
+	}
+
+	.app-header-title {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		min-width: 0;
+		font-family: 'Merriweather', 'PT Sans', serif;
+		font-weight: 700;
+		font-size: 16px;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+
+		.app-header-title-text {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
 	}
 
 	.right-section {

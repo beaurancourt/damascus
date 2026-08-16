@@ -7,6 +7,11 @@ import './app-header.scss';
 
 interface Props {
 	subheader?: string;
+	// Names the thing on screen rather than the section - the hero sheet puts
+	// its hero here so the name doesn't need a second bar of its own. Takes the
+	// place of the logo, and unlike the logo it shows on small screens too,
+	// where the left of the bar was otherwise empty.
+	title?: ReactNode;
 	children?: ReactNode;
 }
 
@@ -17,7 +22,8 @@ export const AppHeader = (props: Props) => {
 		<ErrorBoundary>
 			<div className='app-header'>
 				<div className='left-section'>
-					{!isSmall ? <LogoPanel text={props.subheader} /> : null}
+					{props.title ? <div className='app-header-title'>{props.title}</div> : null}
+					{!isSmall && !props.title ? <LogoPanel text={props.subheader} /> : null}
 				</div>
 				<div className='right-section'>
 					{props.children}
