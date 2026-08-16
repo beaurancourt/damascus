@@ -5,7 +5,6 @@ import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
 import { useDataManager, useHeroes, useHomebrewSourcebooks, useOptions, useSession } from '@/contexts/data-context';
 import { Ability } from '@/models/ability';
 import { AbilityModal } from '@/components/modals/ability/ability-modal';
-import { AboutModal } from '@/components/modals/about/about-modal';
 import { Adventure } from '@/models/adventure';
 import { AdventureLogic } from '@/logic/adventure-logic';
 import { Ancestry } from '@/models/ancestry';
@@ -1257,14 +1256,6 @@ export const Main = () => {
 
 	// #region Modals
 
-	const showAbout = () => {
-		setDrawer(
-			<AboutModal
-				onClose={() => setDrawer(null)}
-			/>
-		);
-	};
-
 	const showSettings = () => {
 		setDrawer(
 			<SettingsModal
@@ -1540,7 +1531,6 @@ export const Main = () => {
 
 	const footerParams: FooterParams = {
 		errorsExist: errors.length > 0,
-		showAbout: showAbout,
 		showSettings: showSettings,
 		showErrors: showErrors
 	};

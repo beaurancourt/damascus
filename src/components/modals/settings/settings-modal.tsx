@@ -15,6 +15,9 @@ import { Utils } from '@/utils/utils';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/use-theme';
 
+import pbds from '@/assets/powered-by-draw-steel.png';
+import pkg from '../../../../package.json';
+
 import './settings-modal.scss';
 
 interface Props {
@@ -231,6 +234,31 @@ export const SettingsModal = (props: Props) => {
 		);
 	};
 
+	// The DRAW STEEL Creator License and the glyph font's CC BY-SA terms both
+	// require their notices to travel with the app, so they live here now that
+	// there's no About section to hold them.
+	const getNotices = () => {
+		return (
+			<div className='settings-notices'>
+				<div className='notice-logo'>
+					<img src={pbds} alt='Powered by Draw Steel' />
+				</div>
+				<div>
+					<b>DAMASCUS</b> is an independent product published under the DRAW STEEL Creator License and is not affiliated with MCDM Productions, LLC.
+				</div>
+				<div>
+					<b>DRAW STEEL</b> © 2024 <a href='https://mcdmproductions.com/' target='_blank'>MCDM Productions, LLC.</a>
+				</div>
+				<div>
+					<a href='https://mcdm.gg/DrawSteel/DrawSteelGlyphs.zip' target='_blank'>Draw Steel Glyphs Font</a> by <a href='https://mcdmproductions.com/' target='_blank'>MCDM Productions</a> is licensed under <a href='https://creativecommons.org/licenses/by-sa/4.0/' target='_blank'>CC BY-SA 4.0</a>.
+				</div>
+				<div>
+					A fork of <a href='https://github.com/andyaiken/forgesteel' target='_blank'>Forge Steel</a> by Andy Aiken. <a href='https://github.com/beaurancourt/damascus' target='_blank'>Source</a>, <a href='https://github.com/beaurancourt/damascus/issues' target='_blank'>issues</a>. Version {pkg.version}.
+				</div>
+			</div>
+		);
+	};
+
 	return (
 		<Modal
 			content={
@@ -240,6 +268,7 @@ export const SettingsModal = (props: Props) => {
 						{getHeroesSection()}
 						{getEncountersSection()}
 						{getDifficultySection()}
+						{getNotices()}
 					</Space>
 				</div>
 			}

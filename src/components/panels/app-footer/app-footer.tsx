@@ -1,4 +1,4 @@
-import { BookOutlined, InfoCircleOutlined, PlayCircleOutlined, SettingOutlined, TeamOutlined, WarningFilled } from '@ant-design/icons';
+import { BookOutlined, PlayCircleOutlined, SettingOutlined, TeamOutlined, WarningFilled } from '@ant-design/icons';
 import { Button, Divider, Drawer, Flex, Space } from 'antd';
 import { ButtonConfig, ButtonGroup } from '@/components/controls/button-group/button-group';
 import { useDataManager, useOptions } from '@/contexts/data-context';
@@ -16,7 +16,6 @@ import './app-footer.scss';
 
 export interface FooterParams {
 	errorsExist: boolean;
-	showAbout: () => void;
 	showSettings: () => void;
 	showErrors: () => void;
 }
@@ -46,8 +45,7 @@ export const AppFooter = (props: Props) => {
 	};
 
 	const actions: ButtonConfig[] = [
-		{ type: 'button', label: isSmall ? undefined : 'Settings', icon: <SettingOutlined />, tooltip: 'Settings', onClick: props.params.showSettings },
-		{ type: 'button', label: isSmall ? undefined : 'About', icon: <InfoCircleOutlined />, tooltip: 'About', onClick: props.params.showAbout }
+		{ type: 'button', label: isSmall ? undefined : 'Settings', icon: <SettingOutlined />, tooltip: 'Settings', onClick: props.params.showSettings }
 	];
 	if (props.params.errorsExist) {
 		actions.push({ type: 'button', icon: <WarningFilled className='danger' />, tooltip: 'Errors', onClick: props.params.showErrors });
