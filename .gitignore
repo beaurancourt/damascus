@@ -21,5 +21,11 @@ npm-debug.log*
 # Local dev scratch
 tmp/
 
-# Claude Code workspace state
-.claude/
+# Claude Code workspace state — session state stays local, but the project's
+# shared config (hooks, enabled plugins) is checked in. Note the pattern must
+# exclude the directory's *contents*, not the directory itself: git won't
+# descend into an excluded directory, so `.claude/` would make the negations
+# below unreachable.
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
