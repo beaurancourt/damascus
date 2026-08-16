@@ -9,4 +9,3 @@
   create a new group (which selects it for future additions) with shift+a
   keybind. can use threechest.io to get a sense of how this works
 - research better search infrastructure; would love to have semantic search and fuzzy search
-- fix or remove scripts/smoke-encounter-import.mjs

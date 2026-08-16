@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 import { mkdirSync } from 'node:fs';
 
-const SCREEN_DIR = 'tmp/screenshots';
+const SCREEN_DIR = 'tmp/audit';
 mkdirSync(SCREEN_DIR, { recursive: true });
 
 const browser = await chromium.launch();
@@ -22,6 +22,17 @@ page.on('console', msg => {
 page.on('pageerror', err => console.error('[pageerror]', err.message));
 
 const log = msg => console.log(`>>> ${msg}`);
+
+// Collect failures rather than throwing, so one broken check still lets the
+// rest run and screenshot - but exit non-zero at the end so this is a guard
+// and not just a screenshot generator.
+const failures = [];
+const check = (label, ok) => {
+	log(`${ok ? 'OK  ' : 'FAIL'} ${label}`);
+	if (!ok) {
+		failures.push(label);
+	}
+};
 
 log('navigate to root');
 await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
@@ -43,17 +54,13 @@ await addBtn.first().click();
 await page.waitForTimeout(400);
 await page.screenshot({ path: `${SCREEN_DIR}/02-add-popover.png`, fullPage: false });
 
-log('click "Import from YAML" expander');
-const yamlExpander = page.getByText(/Import from YAML/i).first();
-await yamlExpander.click();
-await page.waitForTimeout(300);
-await page.screenshot({ path: `${SCREEN_DIR}/03-expander-open.png`, fullPage: false });
-
-log('click "Open YAML importer"');
-const openBtn = page.getByRole('button', { name: /Open YAML importer/i });
-await openBtn.click();
+// The Add menu used to hide this behind an "Import from YAML" expander with an
+// "Open YAML importer" button inside it; it's a single button now.
+log('click "Paste YAML (from Claude)"');
+const yamlBtn = page.getByRole('button', { name: /Paste YAML/i }).first();
+await yamlBtn.click();
 await page.waitForTimeout(700);
-await page.screenshot({ path: `${SCREEN_DIR}/04-modal-open.png`, fullPage: false });
+await page.screenshot({ path: `${SCREEN_DIR}/03-modal-open.png`, fullPage: false });
 
 log('insert example YAML');
 const insertExample = page.getByRole('button', { name: /Insert example/i });
@@ -68,7 +75,7 @@ await page.waitForTimeout(500);
 await page.screenshot({ path: `${SCREEN_DIR}/06-bad-yaml-error.png`, fullPage: false });
 
 const errorVisible = await page.getByText(/Unknown monster id/i).first().isVisible().catch(() => false);
-log(`error visible? ${errorVisible}`);
+check('an unknown monster id is reported', errorVisible);
 
 log('restore good YAML');
 const goodYaml = readFileSync('skills/encounter-builder/reference/examples/standard-lvl1.yaml', 'utf8');
@@ -78,7 +85,7 @@ await page.screenshot({ path: `${SCREEN_DIR}/07-good-yaml-preview.png`, fullPage
 
 log('check the preview panel mentions EV');
 const evVisible = await page.getByText(/EV \d+/).first().isVisible().catch(() => false);
-log(`EV preview visible? ${evVisible}`);
+check('the preview shows an EV total', evVisible);
 
 log('switch to mobile viewport and screenshot');
 await page.setViewportSize({ width: 390, height: 844 });
@@ -95,7 +102,13 @@ await saveBtn.click();
 await page.waitForTimeout(1200);
 await page.screenshot({ path: `${SCREEN_DIR}/09-after-save.png`, fullPage: false });
 const onEditPage = page.url().includes('/library/edit/encounter/');
-log(`navigated to encounter edit page? ${onEditPage}  (url=${page.url()})`);
+check(`saving lands on the encounter edit page (url=${page.url()})`, onEditPage);
 
 await browser.close();
+
+if (failures.length > 0) {
+	console.error(`\n${failures.length} check(s) failed:`);
+	failures.forEach(f => console.error(`  - ${f}`));
+	process.exit(1);
+}
 console.log('done');

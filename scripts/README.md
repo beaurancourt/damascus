@@ -26,7 +26,9 @@ running on port 5173.
 
 ## Other
 
-- `smoke-encounter-import.mjs` — Exercises the encounter YAML import path
-  programmatically (no UI screenshots).
+- `smoke-encounter-import.mjs` — Drives the YAML import modal end to end:
+  paste bad YAML and expect the error, paste a shipped example and expect an
+  EV preview, then save and expect to land on the encounter edit page. Unlike
+  the others, this one asserts — it exits non-zero if a check fails.
 - `verify-skill-examples.mjs` — Validates that the example YAML encounters
   shipped in `skills/encounter-builder/` parse cleanly.
