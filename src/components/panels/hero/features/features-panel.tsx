@@ -29,7 +29,7 @@ export const FeaturesPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='features-section'>
+			<div className='features-section' data-hero-section='Features'>
 				{
 					features.map(f => (
 						<FeaturePanel

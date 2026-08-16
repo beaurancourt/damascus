@@ -51,7 +51,7 @@ export const StatsPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='stats-section'>
+			<div className='stats-section' data-hero-section='Stats'>
 				<Flex gap={10}>
 					<StatsRow caption={isSmall ? 'M' : 'Might'} onClick={() => props.onSelectCharacteristic(Characteristic.Might)} style={{ flex: '1 1 0' }}>
 						<Statistic value={HeroLogic.getCharacteristic(props.hero, Characteristic.Might)} />

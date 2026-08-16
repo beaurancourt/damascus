@@ -38,7 +38,7 @@ export const AbilitiesPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='abilities-section'>
+			<div className='abilities-section' data-hero-section={props.title}>
 				<HeaderText level={3}>{props.title}</HeaderText>
 				{(nonStandard.length === 0) && (standard.length === 0) ? <Empty /> : null}
 				<div className='abilities-list'>

@@ -24,6 +24,7 @@ import { HeroToolsPanel } from '@/components/panels/hero/name/name-panel';
 import { Kit } from '@/models/kit';
 import { Monster } from '@/models/monster';
 import { RulesPage } from '@/enums/rules-page';
+import { SectionMenuPanel } from '@/components/panels/hero/section-menu/section-menu-panel';
 import { Sourcebook } from '@/models/sourcebook';
 import { SummoningInfo } from '@/models/summon';
 import { Title } from '@/models/title';
@@ -117,6 +118,7 @@ export const HeroViewPage = (props: Props) => {
 						</>
 					}
 				>
+					<SectionMenuPanel />
 					<HeroToolsPanel onShowState={page => props.showHeroState(hero, page)} />
 					<ButtonGroup
 						buttons={

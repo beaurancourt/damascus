@@ -97,12 +97,14 @@ export const HeroPanel = (props: Props) => {
 							{
 								props.updateHero
 									? (
-										<HeroHealthPanel
-											hero={props.hero}
-											showEncounterControls={false}
-											sections={[ 'conditions' ]}
-											onChange={props.updateHero}
-										/>
+										<div data-hero-section='Conditions'>
+											<HeroHealthPanel
+												hero={props.hero}
+												showEncounterControls={false}
+												sections={[ 'conditions' ]}
+												onChange={props.updateHero}
+											/>
+										</div>
 									)
 									: null
 							}
@@ -163,7 +165,7 @@ export const HeroPanel = (props: Props) => {
 							{/* 10. Skills */}
 							{
 								skills.length > 0 ?
-									<div className='hero-skills-section'>
+									<div className='hero-skills-section' data-hero-section='Skills'>
 										<HeaderText>Skills</HeaderText>
 										{
 											skills.map(s => (
@@ -179,7 +181,7 @@ export const HeroPanel = (props: Props) => {
 							{/* 11. Languages */}
 							{
 								languages.length > 0 ?
-									<div className='hero-languages-section'>
+									<div className='hero-languages-section' data-hero-section='Languages'>
 										<HeaderText>Languages</HeaderText>
 										{languages.map(l => <div key={l.name} className='ds-text'>{l.name}</div>)}
 									</div>
