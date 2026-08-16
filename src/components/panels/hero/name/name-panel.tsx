@@ -16,20 +16,30 @@ export const HeroToolsPanel = (props: Props) => {
 	const isSmall = useIsSmall();
 	const [ open, setOpen ] = useState(false);
 
+	// Picking a tool opens a modal over the sheet, so the menu that launched it
+	// has done its job and should get out of the way.
+	const choose = (type: HeroModalType) => {
+		setOpen(false);
+		props.onShowState(type);
+	};
+
 	if (isSmall) {
 		return (
 			<Popover
+				trigger='click'
 				content={
 					<Space orientation='vertical'>
-						<Button block={true} type='text' onClick={() => props.onShowState(HeroModalType.Inventory)}>Inventory</Button>
-						<Button block={true} type='text' onClick={() => props.onShowState(HeroModalType.Projects)}>Projects</Button>
-						<Button block={true} type='text' onClick={() => props.onShowState(HeroModalType.Titles)}>Titles</Button>
-						<Button block={true} type='text' onClick={() => props.onShowState(HeroModalType.Respite)}>Respite</Button>
+						<Button block={true} type='text' onClick={() => choose(HeroModalType.Inventory)}>Inventory</Button>
+						<Button block={true} type='text' onClick={() => choose(HeroModalType.Projects)}>Projects</Button>
+						<Button block={true} type='text' onClick={() => choose(HeroModalType.Titles)}>Titles</Button>
+						<Button block={true} type='text' onClick={() => choose(HeroModalType.Respite)}>Respite</Button>
 						<Divider />
-						<Button block={true} type='text' icon={<ToolOutlined />} onClick={() => props.onShowState(HeroModalType.Customize)}>Customize</Button>
-						<Button block={true} type='text' icon={<ControlOutlined />} onClick={() => props.onShowState(HeroModalType.Conditional)}>Conditional Features</Button>
+						<Button block={true} type='text' icon={<ToolOutlined />} onClick={() => choose(HeroModalType.Customize)}>Customize</Button>
+						<Button block={true} type='text' icon={<ControlOutlined />} onClick={() => choose(HeroModalType.Conditional)}>Conditional Features</Button>
 					</Space>
 				}
+				open={open}
+				onOpenChange={setOpen}
 			>
 				<Button icon={<ToolOutlined />} />
 			</Popover>
@@ -50,8 +60,8 @@ export const HeroToolsPanel = (props: Props) => {
 							trigger='click'
 							content={
 								<Space orientation='vertical' style={{ width: '150px' }}>
-									<Button type='text' block={true} icon={<ToolOutlined />} onClick={() => { props.onShowState(HeroModalType.Customize); setOpen(false); }}>Customize</Button>
-									<Button type='text' block={true} icon={<ControlOutlined />} onClick={() => { props.onShowState(HeroModalType.Conditional); setOpen(false); }}>Conditional Features</Button>
+									<Button type='text' block={true} icon={<ToolOutlined />} onClick={() => choose(HeroModalType.Customize)}>Customize</Button>
+									<Button type='text' block={true} icon={<ControlOutlined />} onClick={() => choose(HeroModalType.Conditional)}>Conditional Features</Button>
 								</Space>
 							}
 							open={open}
