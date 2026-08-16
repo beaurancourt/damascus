@@ -7,7 +7,7 @@
 	"homepage": "https://github.com/beaurancourt/damascus",
 	"scripts": {
 		"start": "npm install && vite --host",
-		"start:gm": "vite --host --mode gm",
+		"start:gm": "vite --host --mode gm --port 5174",
 		"update": "npx npm-check-updates --peer --interactive --format group",
 		"lint": "eslint \"src/**/*.{ts,tsx}\" --concurrency auto",
 		"lint:fix": "eslint \"src/**/*.{ts,tsx}\" --concurrency auto --fix",

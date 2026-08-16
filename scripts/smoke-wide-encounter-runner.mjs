@@ -1,6 +1,10 @@
 // Capture the encounter runner on a wide (GM) viewport.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+
+// Base URL override, so this can be pointed at either dev server or a built
+// site. Defaults to the GM dev server (npm run start:gm).
+const BASE = process.env.SMOKE_BASE || 'http://localhost:5174/';
 mkdirSync('tmp/audit', { recursive: true });
 
 const browser = await chromium.launch();
@@ -12,16 +16,24 @@ const page = await ctx.newPage();
 page.on('pageerror', err => console.error('[pageerror]', err.message));
 const log = msg => console.log(`>>> ${msg}`);
 
-await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
+await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
 await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 
-// 1. Build a hero
-await page.locator('button:has-text("Use a Premade Hero")').first().click();
-await page.waitForTimeout(500);
-await page.locator('.ant-popover button').first().click();
-await page.waitForTimeout(1200);
-log(`hero created`);
+// 1. Build a hero, if this site has hero tools. The GM site doesn't - heroes
+// live on the player site - so the runner is exercised without one there.
+const pregenButton = page.locator('button:has-text("Use a Premade Hero")');
+if (await pregenButton.count()) {
+	await pregenButton.first().click();
+	await page.waitForTimeout(500);
+	await page.locator('.ant-popover button').first().click();
+	await page.waitForTimeout(1200);
+	log('hero created');
+} else {
+	log('no hero tools on this site; running the encounter without a hero');
+	await page.evaluate(() => location.hash = '#/');
+	await page.waitForTimeout(500);
+}
 
 // 2. Build an encounter with a group
 await page.evaluate(() => location.hash = '#/library/encounter');

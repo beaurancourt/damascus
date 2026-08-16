@@ -6,6 +6,10 @@ import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 import { mkdirSync } from 'node:fs';
 
+// Base URL override, so this can be pointed at either dev server or a built
+// site. Defaults to the player dev server (npm run start).
+const BASE = process.env.SMOKE_BASE || 'http://localhost:5173/';
+
 const SCREEN_DIR = 'tmp/audit';
 mkdirSync(SCREEN_DIR, { recursive: true });
 
@@ -35,7 +39,7 @@ const check = (label, ok) => {
 };
 
 log('navigate to root');
-await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
+await page.goto(BASE, { waitUntil: 'networkidle' });
 
 log('click Library footer link');
 await page.getByRole('link', { name: /Library/ }).first().click().catch(async () => {

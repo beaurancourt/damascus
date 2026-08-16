@@ -2,6 +2,10 @@
 // the two-column workspace+picker layout.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+
+// Base URL override, so this can be pointed at either dev server or a built
+// site. Defaults to the player dev server (npm run start).
+const BASE = process.env.SMOKE_BASE || 'http://localhost:5173/';
 mkdirSync('tmp/audit', { recursive: true });
 
 const browser = await chromium.launch();
@@ -13,7 +17,7 @@ const page = await ctx.newPage();
 page.on('pageerror', err => console.error('[pageerror]', err.message));
 const log = msg => console.log(`>>> ${msg}`);
 
-await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
+await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
 await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 

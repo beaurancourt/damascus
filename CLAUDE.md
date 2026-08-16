@@ -24,7 +24,7 @@ npx vitest run src/logic/encounter-logic.test.ts  # one file
 npx vitest run -t 'substring'                     # one test
 ```
 
-Playwright smokes in `scripts/` require the dev server already running on :5173; they write screenshots to `tmp/audit/`. See `scripts/README.md`. `tmp/` is gitignored — put throwaway scripts and captures there.
+Playwright smokes in `scripts/` require a dev server already running — port 5173 for most, 5174 (`npm run start:gm`) for the two session/runner ones, and `SMOKE_BASE` overrides either. They write screenshots to `tmp/audit/`. See `scripts/README.md`. `tmp/` is gitignored — put throwaway scripts and captures there.
 
 ## Claude Code setup
 
@@ -71,7 +71,7 @@ Damascus deploys as two sites. The **player site** (`/damascus/`) has Heroes and
 
 `src/utils/app-mode.ts` is the single source of truth. The mode is fixed at build time by `VITE_APP_MODE`, which `.env.gm` sets when you build with `--mode gm`; nothing chooses a mode at runtime. Gate on the capability (`AppMode.hasHeroes`, `AppMode.hasSession`), not on `isGM`, so the dev server keeps working:
 
-**The dev server is neither site** — `AppMode.isUnsplit` is true there and both areas are reachable, so one dev server serves every screen and the smoke scripts can drive all of them. That means a mode bug won't show up in dev; check it against a real build (`npm run build:gm`, serve `dist-gm` under a `/damascus-gm/` path).
+**The dev server is one site at a time**, so what you see locally is what the deployed site does: `npm start` is the player site on :5173, `npm run start:gm` is the GM site on :5174. Run both when you need both — they're separate origins, so they don't share IndexedDB the way the two deployed sites do.
 
 Adding a screen that only one audience needs means: gate its `<Route>` in `main.tsx`, gate its nav entry in `app-footer.tsx`, and gate anything that links to it from a shared screen — a live link to a route the other site dropped is a dead end, not a redirect worth having.
 

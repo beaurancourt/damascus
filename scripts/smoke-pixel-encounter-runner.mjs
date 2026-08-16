@@ -1,6 +1,10 @@
 // Open an existing encounter as a running session and screenshot the runner on Pixel 10.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+
+// Base URL override, so this can be pointed at either dev server or a built
+// site. Defaults to the GM dev server (npm run start:gm).
+const BASE = process.env.SMOKE_BASE || 'http://localhost:5174/';
 mkdirSync('tmp/audit', { recursive: true });
 
 const browser = await chromium.launch();
@@ -18,16 +22,25 @@ const page = await ctx.newPage();
 page.on('pageerror', err => console.error('[pageerror]', err.message));
 const log = msg => console.log(`>>> ${msg}`);
 
-await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
+await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
 await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 
-// 1. Make a hero via "Use a Premade Hero" so the session has a player to run with.
-await page.locator('button:has-text("Use a Premade Hero")').first().click();
-await page.waitForTimeout(500);
-await page.locator('.ant-popover button').first().click();
-await page.waitForTimeout(1200);
-log(`hero created, url: ${page.url()}`);
+// 1. If this site has heroes, make one so the session has a player to run with.
+// The GM site doesn't - heroes live on the player site - so this is optional
+// rather than a precondition.
+const pregenButton = page.locator('button:has-text("Use a Premade Hero")');
+if (await pregenButton.count()) {
+	await pregenButton.first().click();
+	await page.waitForTimeout(500);
+	await page.locator('.ant-popover button').first().click();
+	await page.waitForTimeout(1200);
+	log(`hero created, url: ${page.url()}`);
+} else {
+	log('no hero tools on this site; running the encounter without a hero');
+	await page.evaluate(() => location.hash = '#/');
+	await page.waitForTimeout(500);
+}
 
 // 2. Build an encounter from the library and seed it.
 await page.evaluate(() => location.hash = '#/library/encounter');

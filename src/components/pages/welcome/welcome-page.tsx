@@ -306,14 +306,6 @@ const Welcome = (props: WelcomeProps) => {
 
 	// Each site only offers the audiences it actually serves, so the player site
 	// has a single section and needs no tab strip at all.
-	const playerTab = {
-		value: 'player' as WelcomeType,
-		label: (
-			<div className='welcome-tab-button'>
-				<div className='title'>Players</div>
-			</div>
-		)
-	};
 	const directorTabs: { value: WelcomeType, label: ReactNode }[] = [
 		{
 			value: 'director-prep',
@@ -342,15 +334,13 @@ const Welcome = (props: WelcomeProps) => {
 			)
 		}
 	];
-	const tabs: { value: WelcomeType, label: ReactNode }[] = AppMode.isUnsplit ?
-		[ playerTab, ...directorTabs ]
-		: AppMode.hasSession ? directorTabs : [];
+	const tabs: { value: WelcomeType, label: ReactNode }[] = AppMode.hasSession ? directorTabs : [];
 
 	return (
 		<ErrorBoundary>
 			<div>
 				<div className='ds-text centered-text'>
-					<b>{AppMode.appName.toUpperCase()}</b> is an app for <b>DRAW STEEL</b> {AppMode.isUnsplit ? 'players, directors, and content creators' : AppMode.isGM ? 'directors and content creators' : 'players'}.
+					<b>{AppMode.appName.toUpperCase()}</b> is an app for <b>DRAW STEEL</b> {AppMode.isGM ? 'directors and content creators' : 'players'}.
 				</div>
 				{
 					tabs.length > 0 ?
@@ -366,14 +356,9 @@ const Welcome = (props: WelcomeProps) => {
 				<SelectablePanel>
 					{getContent()}
 				</SelectablePanel>
-				{
-					AppMode.isUnsplit ?
-						null
-						:
-						<div className='ds-text centered-text counterpart-link'>
-							Looking for {AppMode.counterpartName} <span className='dimmed-text'>({AppMode.counterpartDescription})</span>? <a href={AppMode.counterpartUrl}>Go there instead</a>.
-						</div>
-				}
+				<div className='ds-text centered-text counterpart-link'>
+					Looking for {AppMode.counterpartName} <span className='dimmed-text'>({AppMode.counterpartDescription})</span>? <a href={AppMode.counterpartUrl}>Go there instead</a>.
+				</div>
 			</div>
 		</ErrorBoundary>
 	);

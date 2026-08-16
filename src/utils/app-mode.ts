@@ -8,28 +8,23 @@
 // via .env.gm), so each deployed bundle knows which site it is; there is no
 // runtime switch to get wrong.
 //
-// The dev server is deliberately neither: it serves the whole app, so that
-// working on a session screen doesn't mean running a second dev server, and so
-// the smoke scripts can drive every page against one instance. Run
-// `npm run start:gm` to see the GM site's own shape locally.
+// The dev server is one site or the other too, so what you see locally is what
+// the deployed site does: `npm run start` is the player site on :5173 and
+// `npm run start:gm` is the GM site on :5174. Run both when you need both.
 
 export type AppModeName = 'player' | 'gm';
 
 const current: AppModeName = import.meta.env.VITE_APP_MODE === 'gm' ? 'gm' : 'player';
-const isDev = import.meta.env.DEV && import.meta.env.VITE_APP_MODE === undefined;
 
 export class AppMode {
 	static current = current;
 	static isPlayer = current === 'player';
 	static isGM = current === 'gm';
 
-	// True on the dev server, where neither site's restrictions apply.
-	static isUnsplit = isDev;
-
 	// Which of the three top-level areas this site offers.
-	static hasHeroes = isDev || current === 'player';
+	static hasHeroes = current === 'player';
 	static hasLibrary = true;
-	static hasSession = isDev || current === 'gm';
+	static hasSession = current === 'gm';
 
 	static appName = current === 'gm' ? 'Damascus GM' : 'Damascus';
 
