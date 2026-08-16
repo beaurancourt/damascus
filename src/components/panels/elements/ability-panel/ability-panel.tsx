@@ -1,7 +1,6 @@
 import { Ability, AbilitySectionField, AbilitySectionPackage, AbilitySectionRoll, AbilitySectionText } from '@/models/ability';
-import { Alert, Button, Space } from 'antd';
+import { Alert, Space } from 'antd';
 import { Pill, ResourcePill } from '@/components/controls/pill/pill';
-import { ThunderboltFilled, ThunderboltOutlined } from '@ant-design/icons';
 import { AbilityData } from '@/data/ability-data';
 import { AbilityInfoPanel } from '@/components/panels/ability-info/ability-info-panel';
 import { AbilityKeyword } from '@/enums/ability-keyword';
@@ -20,7 +19,7 @@ import { Monster } from '@/models/monster';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { PanelMode } from '@/enums/panel-mode';
 import { PowerRollPanel } from '@/components/panels/power-roll/power-roll-panel';
-import { useState } from 'react';
+import { useOptions } from '@/contexts/data-context';
 
 import './ability-panel.scss';
 
@@ -37,9 +36,15 @@ interface Props {
 }
 
 export const AbilityPanel = (props: Props) => {
-	const [ autoCalc, setAutoCalc ] = useState<boolean>(!!props.hero);
+	const options = useOptions();
+
+	// Auto-calculating damage and potency needs a hero to calculate against.
+	// This was a per-card button in the header; it's now a single setting, so
+	// the choice applies to every ability instead of resetting card by card.
+	const autoCalc = !!props.hero && options.abilityAutoCalc;
 
 	const keywords = AbilityLogic.getKeywords(props.ability, props.hero);
+	const allTags = [ ...(props.tags || []), ...keywords ];
 	const isSignature = (props.cost ?? props.ability.cost) === 'signature';
 
 	const getCost = () => {
@@ -68,23 +73,6 @@ export const AbilityPanel = (props: Props) => {
 		}
 
 		return text;
-	};
-
-	const autoCalcAvailable = () => {
-		if (!props.hero) {
-			return false;
-		}
-
-		if ((props.ability.sections || []).some(s => s.type === 'roll')) {
-			return true;
-		}
-
-		const texts = [
-			...(props.ability.sections || []).filter(s => s.type === 'text').map(s => s.text),
-			...(props.ability.sections || []).filter(s => s.type === 'field').map(s => s.effect)
-		];
-
-		return texts.some(text => AbilityLogic.getTextEffect(text, props.hero!) !== text);
 	};
 
 	const getWarnings = () => {
@@ -303,25 +291,19 @@ export const AbilityPanel = (props: Props) => {
 						))
 					}
 				</Space>
-				<HeaderText
-					ribbon={getRibbon()}
-					tags={[ ...(props.tags || []), ...keywords ]}
-					extra={
-						autoCalcAvailable() ?
-							<Button
-								type='text'
-								title='Auto-calculate damage, potency, etc'
-								icon={autoCalc ? <ThunderboltFilled style={{ color: '#c9a45a' }} /> : <ThunderboltOutlined />}
-								onClick={e => { e.stopPropagation(); setAutoCalc(!autoCalc); }}
-							/>
-							: null
-					}
-				>
+				<HeaderText ribbon={getRibbon()}>
 					{props.ability.name || 'Unnamed Ability'}
 				</HeaderText>
 				<Markdown text={props.ability.description} className='ability-description-text' />
 				<AbilityInfoPanel ability={props.ability} hero={props.hero} />
 				{(props.ability.sections || []).map(getSection)}
+				{
+					allTags.length > 0 ?
+						<div className='ability-tags'>
+							<Field label='Tags' value={allTags.join(', ')} />
+						</div>
+						: null
+				}
 				{
 					keywords.includes(AbilityKeyword.Charge) && (props.ability.id !== AbilityData.freeStrikeMelee.id) ?
 						<Alert

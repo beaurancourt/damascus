@@ -939,6 +939,7 @@ export class FactoryLogic {
 			showSkillsInGroups: false,
 			showSources: true,
 			compactView: false,
+			abilityAutoCalc: true,
 			// Encounter
 			party: '',
 			// Encounter: Running

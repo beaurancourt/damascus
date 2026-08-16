@@ -9,6 +9,7 @@ export interface Options {
 	showSkillsInGroups: boolean;
 	showSources: boolean;
 	compactView: boolean;
+	abilityAutoCalc: boolean;
 	// Encounter
 	party: string;
 	// Encounter: Running

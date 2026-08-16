@@ -108,6 +108,11 @@ export const SettingsModal = (props: Props) => {
 						value={options.compactView}
 						onChange={v => updateOption('compactView', v)}
 					/>
+					<Toggle
+						label='Auto-calculate ability damage'
+						value={options.abilityAutoCalc}
+						onChange={v => updateOption('abilityAutoCalc', v)}
+					/>
 					<div>
 						<LabelControl
 							label='Show standard abilities'

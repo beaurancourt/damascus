@@ -22,6 +22,12 @@ export class OptionsUpdateLogic {
 			options.compactView = false;
 		}
 
+		// True, not false: auto-calculation was always on for heroes before it
+		// became a setting, so an existing user's sheet shouldn't change.
+		if (options.abilityAutoCalc === undefined) {
+			options.abilityAutoCalc = true;
+		}
+
 		if (options.party === undefined) {
 			options.party = '';
 		}

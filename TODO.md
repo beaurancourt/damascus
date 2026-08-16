@@ -11,4 +11,3 @@
   keybind. can use threechest.io to get a sense of how this works
 - research better search infrastructure; would love to have semantic search and fuzzy search
 - fix or remove scripts/smoke-encounter-import.mjs
-- make sure ability headers fit on one line /tmp/damascus-ss/multi-line-header.jpg

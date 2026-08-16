@@ -5,4 +5,13 @@
 		font-style: italic;
 		opacity: 0.7;
 	}
+
+	// Keywords live at the foot of the card as plain text rather than a row of
+	// chips beside the name - that row was wider than the name itself and forced
+	// the header onto three lines on a half-width card.
+	.ability-tags {
+		margin-top: 10px;
+		opacity: 0.75;
+		font-size: 12px;
+	}
 }
