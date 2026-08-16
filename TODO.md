@@ -1,3 +1,2 @@
 - separate out the website into player-facing (this same url) and gm-facing (damascus-gm)
 - in character creation, i see a lot of '[Violation] 'click' handler took 291ms'
-- let's rip out search and reference entirely

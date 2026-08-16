@@ -127,9 +127,6 @@ const Welcome = (props: WelcomeProps) => {
 									Need to tweak your hero in a way that's not strictly by the book? No problem! You can customize your hero in any number of ways - an extra ability, bonuses to your characteristics, extra skills, retainers, etc.
 								</li>
 							</ul>
-							<div className='ds-text'>
-								In addition, you can quickly look up rules at any time using the Reference button at the bottom right of the screen.
-							</div>
 						</div>
 						<div className='welcome-buttons'>
 							<Flex align='center' justify='center' gap={10} wrap='wrap'>

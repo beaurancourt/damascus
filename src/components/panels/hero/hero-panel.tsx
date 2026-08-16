@@ -24,7 +24,6 @@ import { HeroModalType } from '@/enums/hero-modal-type';
 import { Kit } from '@/models/kit';
 import { Monster } from '@/models/monster';
 import { RetinuePanel } from '@/components/panels/hero/retinue/retinue-panel';
-import { RulesPage } from '@/enums/rules-page';
 import { Sourcebook } from '@/models/sourcebook';
 import { StatsPanel } from '@/components/panels/hero/stats/stats-panel';
 import { SummoningInfo } from '@/models/summon';
@@ -52,7 +51,6 @@ interface Props {
 	onSelectFeature: (feature: Feature) => void;
 	onSelectAbility: (ability: Ability) => void;
 	onShowState: (type: HeroModalType) => void;
-	onShowReference: (page: RulesPage) => void;
 	onAddSquad: (hero: Hero, monster: Monster, count: number) => void;
 	onRemoveSquad: (hero: Hero, slotID: string) => void;
 	onAddMonsterToSquad: (hero: Hero, slotID: string) => void;

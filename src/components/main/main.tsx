@@ -1,6 +1,6 @@
 import { Feature, FeatureCompanion, FeatureRetainer } from '@/models/feature';
 import { Navigate, Route, Routes } from 'react-router';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
 import { useDataManager, useHeroes, useHomebrewSourcebooks, useOptions, useSession } from '@/contexts/data-context';
 import { Ability } from '@/models/ability';
@@ -35,7 +35,6 @@ import { Follower } from '@/models/follower';
 import { FollowerModal } from '@/components/modals/follower/follower-modal';
 import { FooterParams } from '@/components/panels/app-footer/app-footer';
 import { Format } from '@/utils/format';
-import { GlobalSearchModal } from '@/components/modals/global-search/global-search-modal';
 import { Hero } from '@/models/hero';
 import { HeroClass } from '@/models/class';
 import { HeroConditionalModal } from '@/components/modals/hero-conditional/hero-conditional-modal';
@@ -69,9 +68,7 @@ import { OptionsLogic } from '@/logic/options-logic';
 import { Perk } from '@/models/perk';
 import { Plot } from '@/models/plot';
 import { Project } from '@/models/project';
-import { ReferenceModal } from '@/components/modals/reference/reference-modal';
 import { RollModal } from '@/components/modals/roll/roll-modal';
-import { RulesPage } from '@/enums/rules-page';
 import { Session } from '@/models/session';
 import { SessionDirectorPage } from '@/components/pages/session/director/session-director-page';
 import { SessionLogic } from '@/logic/session-logic';
@@ -113,29 +110,6 @@ export const Main = () => {
 	const [ playerView ] = useState<Window | null>(null);
 
 	useErrorListener(event => setErrors([ ...errors, event ]));
-
-	useEffect(() => {
-		const handler = (e: KeyboardEvent) => {
-			// Cmd/Ctrl+K, or "/" when not focused on an input
-			const target = e.target as HTMLElement | null;
-			const inEditableField = target && (
-				target.tagName === 'INPUT' ||
-				target.tagName === 'TEXTAREA' ||
-				target.isContentEditable
-			);
-			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-				e.preventDefault();
-				showSearch();
-				return;
-			}
-			if (e.key === '/' && !inEditableField) {
-				e.preventDefault();
-				showSearch();
-			}
-		};
-		window.addEventListener('keydown', handler);
-		return () => window.removeEventListener('keydown', handler);
-	}, []);
 
 	// #region Persistence
 
@@ -1290,20 +1264,6 @@ export const Main = () => {
 		);
 	};
 
-	const showSearch = () => {
-		setDrawer(
-			<GlobalSearchModal
-				sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-				heroes={heroes}
-				onShowRule={(page, label) => {
-					setDrawer(null);
-					onShowReference(null, page, label);
-				}}
-				onClose={() => setDrawer(null)}
-			/>
-		);
-	};
-
 	const showSettings = () => {
 		setDrawer(
 			<SettingsModal
@@ -1556,20 +1516,6 @@ export const Main = () => {
 		}
 	};
 
-	const onShowReference = (hero: Hero | null, page?: RulesPage, startRule?: string) => {
-		const sourcebooks = SourcebookLogic.getSourcebooks(homebrewSourcebooks);
-
-		setDrawer(
-			<ReferenceModal
-				hero={hero}
-				sourcebooks={sourcebooks}
-				startPage={page}
-				startRule={startRule}
-				onClose={() => setDrawer(null)}
-			/>
-		);
-	};
-
 	const showEncounterImport = (sourcebookID: string, setSourcebookID: (id: string) => void) => {
 		setDrawer(
 			<EncounterImportModal
@@ -1593,11 +1539,9 @@ export const Main = () => {
 
 	const footerParams: FooterParams = {
 		errorsExist: errors.length > 0,
-		showReference: () => onShowReference(null, RulesPage.Rules),
 		showAbout: showAbout,
 		showSettings: showSettings,
-		showErrors: showErrors,
-		showSearch: showSearch
+		showErrors: showErrors
 	};
 
 	return (
@@ -1662,7 +1606,6 @@ export const Main = () => {
 									showFeature={onSelectFeature}
 									showAbility={onSelectAbility}
 									showHeroState={onShowHeroState}
-									showHeroReference={onShowReference}
 									onAddSquad={addSquad}
 									onRemoveSquad={removeSquad}
 									onAddMonsterToSquad={addMonsterToSquad}

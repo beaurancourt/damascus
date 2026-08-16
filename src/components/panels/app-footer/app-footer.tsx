@@ -1,4 +1,4 @@
-import { BookOutlined, InfoCircleOutlined, PlayCircleOutlined, ReadOutlined, SearchOutlined, SettingOutlined, TeamOutlined, WarningFilled } from '@ant-design/icons';
+import { BookOutlined, InfoCircleOutlined, PlayCircleOutlined, SettingOutlined, TeamOutlined, WarningFilled } from '@ant-design/icons';
 import { Button, Divider, Drawer, Flex, Space } from 'antd';
 import { ButtonConfig, ButtonGroup } from '@/components/controls/button-group/button-group';
 import { useDataManager, useOptions } from '@/contexts/data-context';
@@ -15,11 +15,9 @@ import './app-footer.scss';
 
 export interface FooterParams {
 	errorsExist: boolean;
-	showReference: () => void;
 	showAbout: () => void;
 	showSettings: () => void;
 	showErrors: () => void;
-	showSearch: () => void;
 }
 
 interface Props {
@@ -47,8 +45,6 @@ export const AppFooter = (props: Props) => {
 	};
 
 	const actions: ButtonConfig[] = [
-		{ type: 'button', label: isSmall ? undefined : 'Search', icon: <SearchOutlined />, tooltip: 'Search (heroes, monsters, items, ...)', onClick: props.params.showSearch },
-		{ type: 'button', label: isSmall ? undefined : 'Reference', icon: <ReadOutlined />, tooltip: 'Reference', onClick: props.params.showReference },
 		{ type: 'button', label: isSmall ? undefined : 'Settings', icon: <SettingOutlined />, tooltip: 'Settings', onClick: props.params.showSettings },
 		{ type: 'button', label: isSmall ? undefined : 'About', icon: <InfoCircleOutlined />, tooltip: 'About', onClick: props.params.showAbout }
 	];

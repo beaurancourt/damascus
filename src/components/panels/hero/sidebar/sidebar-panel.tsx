@@ -12,7 +12,6 @@ import { HeroModalType } from '@/enums/hero-modal-type';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { Monster } from '@/models/monster';
 import { Pill } from '@/components/controls/pill/pill';
-import { RulesPage } from '@/enums/rules-page';
 import { Skill } from '@/models/skill';
 import { SkillList } from '@/enums/skill-list';
 import { Sourcebook } from '@/models/sourcebook';
@@ -24,7 +23,6 @@ interface Props {
 	hero: Hero;
 	sourcebooks: Sourcebook[];
 	onShowState: (type: HeroModalType) => void;
-	onShowReference: (page: RulesPage) => void;
 	onAddSquad: (hero: Hero, monster: Monster, count: number) => void;
 	onRemoveSquad: (hero: Hero, slotID: string) => void;
 	onAddMonsterToSquad: (hero: Hero, slotID: string) => void;
@@ -37,24 +35,6 @@ export const SidebarPanel = (props: Props) => {
 	const onShowStats = () => {
 		if (props.onShowState) {
 			props.onShowState(HeroModalType.Resources);
-		}
-	};
-
-	const onShowConditions = () => {
-		if (props.onShowReference) {
-			props.onShowReference(RulesPage.Conditions);
-		}
-	};
-
-	const onShowSkills = () => {
-		if (props.onShowReference) {
-			props.onShowReference(RulesPage.Skills);
-		}
-	};
-
-	const onShowLanguages = () => {
-		if (props.onShowReference) {
-			props.onShowReference(RulesPage.Languages);
 		}
 	};
 
@@ -71,11 +51,11 @@ export const SidebarPanel = (props: Props) => {
 	const getSkills = (label: string, skills: Skill[]) => {
 		return skills.length > 0 ?
 			useRows ?
-				<div className='selectable-row clickable' onClick={onShowSkills}>
+				<div className='selectable-row'>
 					<div>{label}: <b>{skills.map(s => s.name).join(', ')}</b></div>
 				</div>
 				:
-				<div key={label} className='overview-tile clickable' onClick={onShowSkills}>
+				<div key={label} className='overview-tile'>
 					<HeaderText>{label}</HeaderText>
 					{
 						skills.map(s => (
@@ -172,11 +152,11 @@ export const SidebarPanel = (props: Props) => {
 				{
 					conditionImmunities.length > 0 ?
 						useRows ?
-							<div className='selectable-row clickable' onClick={onShowConditions}>
+							<div className='selectable-row'>
 								<div>Cannot Be: <b>{conditionImmunities.join(', ')}</b></div>
 							</div>
 							:
-							<div className='overview-tile clickable' onClick={onShowConditions}>
+							<div className='overview-tile'>
 								<HeaderText>Cannot Be</HeaderText>
 								{conditionImmunities.map((c, n) => <div key={n} className='ds-text'>{c}</div>)}
 							</div>
@@ -210,11 +190,11 @@ export const SidebarPanel = (props: Props) => {
 				}
 				{
 					useRows ?
-						<div className='selectable-row clickable' onClick={onShowLanguages}>
+						<div className='selectable-row'>
 							<div>Languages: <b>{languages.map(l => l.name).join(', ')}</b></div>
 						</div>
 						:
-						<div className='overview-tile clickable' onClick={onShowLanguages}>
+						<div className='overview-tile'>
 							<HeaderText>Languages</HeaderText>
 							{
 								languages.length > 0 ?

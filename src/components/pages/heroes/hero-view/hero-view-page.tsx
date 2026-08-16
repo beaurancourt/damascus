@@ -23,7 +23,6 @@ import { HeroToken } from '@/components/panels/token/token';
 import { HeroToolsPanel } from '@/components/panels/hero/name/name-panel';
 import { Kit } from '@/models/kit';
 import { Monster } from '@/models/monster';
-import { RulesPage } from '@/enums/rules-page';
 import { SectionMenuPanel } from '@/components/panels/hero/section-menu/section-menu-panel';
 import { Sourcebook } from '@/models/sourcebook';
 import { SummoningInfo } from '@/models/summon';
@@ -58,7 +57,6 @@ interface Props {
 	showFeature: (feature: Feature, hero: Hero) => void;
 	showAbility: (ability: Ability, hero: Hero) => void;
 	showHeroState: (hero: Hero, type: HeroModalType) => void;
-	showHeroReference: (hero: Hero, page: RulesPage) => void;
 	onAddSquad: (hero: Hero, monster: Monster, count: number) => void;
 	onRemoveSquad: (hero: Hero, slotID: string) => void;
 	onAddMonsterToSquad: (hero: Hero, slotID: string) => void;
@@ -97,7 +95,6 @@ export const HeroViewPage = (props: Props) => {
 			onSelectFeature={feature => props.showFeature(feature, hero)}
 			onSelectAbility={ability => props.showAbility(ability, hero)}
 			onShowState={page => props.showHeroState(hero, page)}
-			onShowReference={page => props.showHeroReference(hero, page)}
 			onAddSquad={props.onAddSquad}
 			onRemoveSquad={props.onRemoveSquad}
 			onAddMonsterToSquad={props.onAddMonsterToSquad}
