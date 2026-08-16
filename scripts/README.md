@@ -9,10 +9,11 @@ Run with `node scripts/<name>.mjs` while the dev server is running.
 The app builds as two sites, and the dev server serves one at a time, so
 which server a smoke needs depends on what it drives:
 
-- **Player site** — `npm start`, port 5173. Everything hero-related, plus
-  the library (which both sites have).
-- **GM site** — `npm run start:gm`, port 5174. The two session/runner
-  smokes, since only the GM site has Session.
+- **Player site** — `npm start`, port 5173. The hero smokes.
+- **GM site** — `npm run start:gm`, port 5174. Everything encounter-related:
+  the builders, the importers and the runners. Encounters, montages,
+  negotiations, monsters and terrain are director content, so only that
+  site's library lists them, and only that site has Session.
 
 Each script defaults to the right one. Override with `SMOKE_BASE` to point
 a smoke somewhere else — the other dev server, or a built site being served
@@ -29,8 +30,8 @@ SMOKE_BASE=http://localhost:4173/damascus-gm/ node scripts/smoke-wide-encounter-
 - `smoke-pixel-encounter-builder.mjs` — Make a fresh encounter, screenshot
   the builder with picker open at multiple scroll positions.
 - `smoke-pixel-encounter-runner.mjs` — Build → start → screenshot the
-  encounter runner. Needs the GM site (port 5174). It seeds a hero first
-  when the site has hero tools, and skips that when it doesn't.
+  encounter runner. It seeds a hero first when the site has hero tools,
+  and skips that when it doesn't.
 - `smoke-pixel-yaml-import.mjs` — Drive the "Paste YAML" import flow.
 
 ## Wide-viewport (1440×900) smokes
@@ -38,7 +39,7 @@ SMOKE_BASE=http://localhost:4173/damascus-gm/ node scripts/smoke-wide-encounter-
 - `smoke-wide-encounter-builder.mjs` — Workspace + picker two-column
   layout, with a group seeded.
 - `smoke-wide-encounter-runner.mjs` — Two-column tracker + stat blocks,
-  with monsters added. Needs the GM site (port 5174).
+  with monsters added.
 
 ## Other
 

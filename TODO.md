@@ -5,7 +5,8 @@
 - the player-side settings menu doesn't need encounter or difficulty options
 - reduce the nesting of the settings menu
 - reduce the nesting of the library entries, especially items
-- in the player library, remove the "for directors" stuff, and get rid of the "for players" header
 - in the player hero viewer, when they select Tools -> Inventory, the selected item is hard to see
 - in the player hero inventory, de-nest the details. /tmp/damascus-ss/health-pot.jpg, i should be able to see all of the info at once, without clicking anything
-
+- let's get rid of the player library
+- move the settings icon in the player app to the top bar
+- once the bottom bar has nothing left in it, we can get rid of it

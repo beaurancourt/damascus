@@ -26,6 +26,12 @@ export class AppMode {
 	static hasLibrary = true;
 	static hasSession = current === 'gm';
 
+	// The library is on both sites, but only the GM site lists the half of it
+	// that's about running a game - adventures, encounters, monsters, montages,
+	// negotiations, terrain. With those gone the player site's library is one
+	// list, so it doesn't need the audience headings either.
+	static hasDirectorLibrary = current === 'gm';
+
 	static appName = current === 'gm' ? 'Damascus GM' : 'Damascus';
 
 	// Each site links to its counterpart, so someone who lands on the wrong one

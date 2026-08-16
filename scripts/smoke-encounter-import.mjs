@@ -1,14 +1,15 @@
 // Drives the YAML-import modal in a real browser. Run via:
 //   node scripts/smoke-encounter-import.mjs
-// Assumes dev server is up at http://localhost:5173.
+// Assumes the GM dev server is up at http://localhost:5174.
 
 import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 import { mkdirSync } from 'node:fs';
 
 // Base URL override, so this can be pointed at either dev server or a built
-// site. Defaults to the player dev server (npm run start).
-const BASE = process.env.SMOKE_BASE || 'http://localhost:5173/';
+// site. Defaults to the GM dev server (npm run start:gm), since encounters
+// are director content and only that site's library lists them.
+const BASE = process.env.SMOKE_BASE || 'http://localhost:5174/';
 
 const SCREEN_DIR = 'tmp/audit';
 mkdirSync(SCREEN_DIR, { recursive: true });
