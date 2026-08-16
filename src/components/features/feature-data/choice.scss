@@ -57,6 +57,18 @@
 		font-weight: 600;
 	}
 
+	// Element panels carry horizontal padding for standalone display. Nested in a
+	// choice row that already pays 12px of card padding plus the 28px indicator
+	// column, that padding costs another 20px a side, which on a phone leaves the
+	// prose about 60% of the screen. The row owns the inset, so drop theirs.
+	// Both nestings appear: kit options put the panel straight in the body, the
+	// generic options wrap it in .choice-option-content.
+	.choice-option-body > [class*='-panel'],
+	.choice-option-content > [class*='-panel'] {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
 	.choice-option-content {
 		font-size: 0.95em;
 
