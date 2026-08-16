@@ -106,6 +106,11 @@ export const Main = () => {
 
 	const [ errors, setErrors ] = useState<Event[]>([]);
 	const [ drawer, setDrawer ] = useState<ReactNode>(null);
+	// A hero being built but not yet saved. It deliberately lives here rather
+	// than in storage: the builder keeps every edit in local state until Save
+	// Changes, so persisting at creation only ever produced an empty husk if
+	// the user backed out.
+	const [ draftHero, setDraftHero ] = useState<Hero | null>(null);
 	const [ playerView ] = useState<Window | null>(null);
 
 	useErrorListener(event => setErrors([ ...errors, event ]));
@@ -202,7 +207,8 @@ export const Main = () => {
 		hero.folder = folder;
 
 		setDrawer(null);
-		persistHero(hero).then(() => navigation.goToHeroEdit(hero.id, 'start'));
+		setDraftHero(hero);
+		navigation.goToHeroEdit(hero.id, 'start');
 	};
 
 	const deleteHero = (hero: Hero) => {
@@ -224,7 +230,10 @@ export const Main = () => {
 	};
 
 	const saveHero = (hero: Hero) => {
-		persistHero(hero).then(() => navigation.goToHeroView(hero.id));
+		persistHero(hero).then(() => {
+			setDraftHero(current => current?.id === hero.id ? null : current);
+			navigation.goToHeroView(hero.id);
+		});
 	};
 
 	const importHero = (hero: Hero, folder: string, createCopy: boolean = false) => {
@@ -1685,6 +1694,7 @@ export const Main = () => {
 								<HeroEditPage
 									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
 									params={footerParams}
+									draftHero={draftHero}
 									saveChanges={saveHero}
 									importSourcebook={persistHomebrewSourcebook}
 								/>

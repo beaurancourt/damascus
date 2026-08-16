@@ -4,6 +4,7 @@ import { CloseOutlined, SaveOutlined, ThunderboltOutlined } from '@ant-design/ic
 import { CultureData, EnvironmentData, OrganizationData, UpbringingData } from '@/data/culture-data';
 import { Feature, FeatureClassAbilityData, FeatureData } from '@/models/feature';
 import { Hero, HeroEditTab } from '@/models/hero';
+import { Navigate, useParams } from 'react-router';
 import { useHeroes, useOptions } from '@/contexts/data-context';
 import { useMemo, useState } from 'react';
 import { Ancestry } from '@/models/ancestry';
@@ -22,6 +23,7 @@ import { CultureSection } from '@/components/pages/heroes/hero-edit/culture-sect
 import { DetailsSection } from '@/components/pages/heroes/hero-edit/details-section/details-section';
 import { Element } from '@/models/element';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
+import { FactoryLogic } from '@/logic/factory-logic';
 import { FeatureLogic } from '@/logic/feature-logic';
 import { FeatureType } from '@/enums/feature-type';
 import { Format } from '@/utils/format';
@@ -34,7 +36,6 @@ import { SubClass } from '@/models/subclass';
 import { Utils } from '@/utils/utils';
 import { useIsSmall } from '@/hooks/use-is-small';
 import { useNavigation } from '@/hooks/use-navigation';
-import { useParams } from 'react-router';
 import { useTitle } from '@/hooks/use-title';
 
 import './hero-edit-page.scss';
@@ -50,6 +51,9 @@ enum PageState {
 interface Props {
 	sourcebooks: Sourcebook[];
 	params: FooterParams;
+	// Set while building a hero that hasn't been saved yet - it isn't in the
+	// hero store, so it has to reach the builder directly.
+	draftHero: Hero | null;
 	saveChanges: (hero: Hero) => void;
 	importSourcebook: (sourcebook: Sourcebook) => void;
 }
@@ -60,8 +64,11 @@ export const HeroEditPage = (props: Props) => {
 	const heroes = useHeroes();
 	const navigation = useNavigation();
 	const { heroID, page } = useParams<{ heroID: string; page: HeroEditTab }>();
-	const originalHero = useMemo(() => heroes.find(h => h.id === heroID)!, [ heroID, heroes ]);
-	const [ hero, setHero ] = useState<Hero>(Utils.copy(originalHero));
+	const savedHero = useMemo(() => heroes.find(h => h.id === heroID), [ heroID, heroes ]);
+	const originalHero = savedHero ?? (props.draftHero?.id === heroID ? props.draftHero : undefined);
+	// Placeholder only: when there's no hero to edit the component renders a
+	// redirect below and never reads this state.
+	const [ hero, setHero ] = useState<Hero>(() => originalHero ? Utils.copy(originalHero) : FactoryLogic.createHero([]));
 	const [ dirty, setDirty ] = useState<boolean>(false);
 	useTitle('Hero Builder');
 
@@ -559,6 +566,22 @@ export const HeroEditPage = (props: Props) => {
 		}
 	};
 
+	// No saved hero and no draft: a stale link, or a reload part-way through
+	// building (the draft only lives in memory). There's nothing to edit.
+	if (!originalHero) {
+		return <Navigate to='/hero' replace={true} />;
+	}
+
+	// An unsaved hero has no sheet to go back to, so Cancel drops it and
+	// returns to the list; editing a saved hero returns to that hero.
+	const cancelChanges = () => {
+		if (savedHero) {
+			navigation.goToHeroView(heroID!);
+		} else {
+			navigation.goToHeroList(originalHero.folder || undefined);
+		}
+	};
+
 	return (
 		<ErrorBoundary>
 			<div className='hero-edit-page'>
@@ -566,7 +589,7 @@ export const HeroEditPage = (props: Props) => {
 					<ButtonGroup
 						buttons={[
 							{ type: 'button', label: isSmall ? undefined : 'Save Changes', icon: <SaveOutlined />, primary: true, disabled: !dirty, onClick: saveChanges },
-							{ type: 'button', label: isSmall ? undefined : 'Cancel', icon: <CloseOutlined />, onClick: () => navigation.goToHeroView(heroID!) }
+							{ type: 'button', label: isSmall ? undefined : 'Cancel', icon: <CloseOutlined />, onClick: cancelChanges }
 						]}
 					/>
 				</AppHeader>

@@ -1,6 +1,6 @@
+- IMPORTANT: fix all lint errors
 - Beastheart descriptions flow strangely /tmp/damascus-ss/bh-whitespace.jpg
 - use 2-column for abilities on wide screens /tmp/damascus-ss/ability-too-wide.jpg
-- starting and canceling a hero leaves empty charsheets
 - need navigation on charsheets
 - search is hard to read /tmp/damascus-ss/hard-search.jpg
 - combine "search" and "reference" into one tool. reference's search is weird.
