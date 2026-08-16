@@ -58,13 +58,34 @@ export const HeroListPage = (props: Props) => {
 	};
 
 	const getHeroesSection = (list: HeroOverview[], folder: string) => {
-		// Someone with no heroes is here to make one, so the empty state is the
-		// button rather than a note saying there's nothing to see.
+		// Someone with no heroes is here to get one, so the empty state offers the
+		// three ways to do that rather than a note saying there's nothing to see.
+		// The Add menu in the header has the same three plus the pregens.
 		if (list.length === 0) {
 			return (
 				<div className='hero-section-empty'>
 					<Button type='primary' size='large' icon={<PlusOutlined />} onClick={() => props.addHero(folder)}>
 						Create a New Hero
+					</Button>
+					<Upload
+						accept='.drawsteel-hero,.ds-hero'
+						showUploadList={false}
+						beforeUpload={file => {
+							file
+								.text()
+								.then(json => {
+									const hero = JSON.parse(json) as Hero;
+									props.importHero(hero, folder);
+								});
+							return false;
+						}}
+					>
+						<Button size='large' icon={<DownloadOutlined />}>
+							Import a Hero File
+						</Button>
+					</Upload>
+					<Button size='large' icon={<ThunderboltOutlined />} onClick={() => props.importHero(HeroLogic.createRandomHero(), folder)}>
+						Generate a Random Hero
 					</Button>
 				</div>
 			);

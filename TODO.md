@@ -5,8 +5,8 @@
 - in the player hero viewer, when they select Tools -> Inventory, the selected item is hard to see
 - in the player hero inventory, de-nest the details. /tmp/damascus-ss/health-pot.jpg, i should be able to see all of the info at once, without clicking anything
 - move the settings icon in the player app to the top bar
+- get rid of the cookies thing from the bottom bar
 - once the bottom bar has nothing left in it, we can get rid of it
-- when there are no heroes, alongside the mid-screen "create a hero button" we also need import and random
 - i'm seeing "contentscript.js:14083 ObjectMultiplex - orphaned data for stream "background-liveness"" in the console
 - i'm seeing "contentscript.js:14083 ObjectMultiplex - orphaned data for stream "app-init-liveness"" in the console
 - i'm seeing `contentscript.js:14083 MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 end listeners added. Use emitter.setMaxListeners() to increase limit` in the console
