@@ -1,3 +1,5 @@
+@import '@/colors.scss';
+
 .global-search-modal {
 	padding: 14px;
 	display: flex;
@@ -32,9 +34,13 @@
 			font-size: 0.85em;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
-			color: rgba(127, 127, 127, 0.95);
+			// A flat mid grey measured 2.99:1 against the panel - under the 4.5:1
+			// AA floor, on the very labels you scan to find a section, and dimmer
+			// than the count badge sitting next to them. Bronze is what the rest
+			// of the app uses for a section label and clears the bar.
+			color: $bronze;
 			padding: 4px 6px;
-			border-bottom: 1px solid rgba(127, 127, 127, 0.18);
+			border-bottom: 1px solid $bronze-faint;
 		}
 
 		.search-list {
@@ -80,5 +86,14 @@
 				text-overflow: ellipsis;
 			}
 		}
+	}
+}
+
+// Bronze is tuned for the dark surface; on the light one it needs darkening to
+// stay readable, the same way the hero sheet handles its tags.
+html:not([data-theme="dark"]) {
+	.global-search-modal .search-group .search-group-header {
+		color: darken($bronze, 25%);
+		border-bottom-color: rgba(201, 164, 90, 0.35);
 	}
 }

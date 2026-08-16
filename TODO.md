@@ -1,5 +1,4 @@
 - need navigation on charsheets
-- search is hard to read /tmp/damascus-ss/hard-search.jpg
 - combine "search" and "reference" into one tool. reference's search is weird.
 - separate out the website into player-facing (this same url) and gm-facing (damascus-gm)
 - in the encounter builder, i want the main UX to be searching for enemies to
