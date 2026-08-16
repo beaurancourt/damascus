@@ -25,6 +25,13 @@ export const AppFooter = (props: Props) => {
 	const isSmall = useIsSmall();
 	const navigation = useNavigation();
 
+	// The player site is one section deep, so a bar whose job is switching
+	// between sections had nothing to offer; settings, sync and errors moved to
+	// the header. The GM site still needs it to reach Library and Session.
+	if (AppMode.isPlayer) {
+		return null;
+	}
+
 	// The player site shows settings in the header instead; see AppHeader.
 	const actions: ButtonConfig[] = AppMode.isPlayer ?
 		[]

@@ -114,7 +114,7 @@ export const HeroViewPage = (props: Props) => {
 							<span className='app-header-title-text'>{hero.name || 'Unnamed Hero'}</span>
 						</>
 					}
-					showSettings={props.params.showSettings}
+					params={props.params}
 				>
 					<SectionMenuPanel />
 					<HeroToolsPanel onShowState={page => props.showHeroState(hero, page)} />
