@@ -107,7 +107,7 @@ export const HeroListPage = (props: Props) => {
 	return (
 		<ErrorBoundary>
 			<div className='hero-list-page'>
-				<AppHeader subheader='Heroes'>
+				<AppHeader subheader='Heroes' showSettings={props.params.showSettings}>
 					<ButtonGroup
 						buttons={[
 							{

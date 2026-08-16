@@ -585,7 +585,7 @@ export const HeroEditPage = (props: Props) => {
 	return (
 		<ErrorBoundary>
 			<div className='hero-edit-page'>
-				<AppHeader subheader='Hero Builder'>
+				<AppHeader subheader='Hero Builder' showSettings={props.params.showSettings}>
 					<ButtonGroup
 						buttons={[
 							{ type: 'button', label: isSmall ? undefined : 'Save Changes', icon: <SaveOutlined />, primary: true, disabled: !dirty, onClick: saveChanges },

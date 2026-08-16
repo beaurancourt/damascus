@@ -25,9 +25,12 @@ export const AppFooter = (props: Props) => {
 	const isSmall = useIsSmall();
 	const navigation = useNavigation();
 
-	const actions: ButtonConfig[] = [
-		{ type: 'button', label: isSmall ? undefined : 'Settings', icon: <SettingOutlined />, tooltip: 'Settings', onClick: props.params.showSettings }
-	];
+	// The player site shows settings in the header instead; see AppHeader.
+	const actions: ButtonConfig[] = AppMode.isPlayer ?
+		[]
+		: [
+			{ type: 'button', label: isSmall ? undefined : 'Settings', icon: <SettingOutlined />, tooltip: 'Settings', onClick: props.params.showSettings }
+		];
 	if (props.params.errorsExist) {
 		actions.push({ type: 'button', icon: <WarningFilled className='danger' />, tooltip: 'Errors', onClick: props.params.showErrors });
 	}
