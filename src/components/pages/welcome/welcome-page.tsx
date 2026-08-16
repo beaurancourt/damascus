@@ -43,7 +43,7 @@ export const WelcomePage = (props: Props) => {
 					popover: (
 						<Space orientation='vertical'>
 							{AppMode.hasHeroes ? <Button block={true} type='text' onClick={() => navigation.goToHeroList()}>Heroes</Button> : null}
-							<Button block={true} type='text' onClick={() => navigation.goToLibrary('ancestry')}>Library</Button>
+							{AppMode.hasLibrary ? <Button block={true} type='text' onClick={() => navigation.goToLibrary('ancestry')}>Library</Button> : null}
 							{AppMode.hasSession ? <Button block={true} type='text' onClick={() => navigation.goToSession()}>Session</Button> : null}
 							<Divider size='small' />
 							<Button block={true} type='text' onClick={() => navigation.goToBackup()}>Backup</Button>

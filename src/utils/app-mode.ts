@@ -1,8 +1,6 @@
 // Damascus ships as two sites built from this one codebase: the player site,
 // which is about building and playing a hero, and the GM site, which is about
-// running a session. The library sits on both - a player browsing ancestries
-// and a director writing homebrew want the same content - so only Heroes and
-// Session are actually split.
+// running a session and the library of content behind it.
 //
 // The mode is fixed at build time by VITE_APP_MODE (set by `npm run build:gm`
 // via .env.gm), so each deployed bundle knows which site it is; there is no
@@ -21,16 +19,12 @@ export class AppMode {
 	static isPlayer = current === 'player';
 	static isGM = current === 'gm';
 
-	// Which of the three top-level areas this site offers.
+	// Which of the three top-level areas this site offers. The library turned
+	// out to be a director's tool once the hero builder covered what a player
+	// needs to look up, so it sits with Session rather than on both sites.
 	static hasHeroes = current === 'player';
-	static hasLibrary = true;
+	static hasLibrary = current === 'gm';
 	static hasSession = current === 'gm';
-
-	// The library is on both sites, but only the GM site lists the half of it
-	// that's about running a game - adventures, encounters, monsters, montages,
-	// negotiations, terrain. With those gone the player site's library is one
-	// list, so it doesn't need the audience headings either.
-	static hasDirectorLibrary = current === 'gm';
 
 	static appName = current === 'gm' ? 'Damascus GM' : 'Damascus';
 

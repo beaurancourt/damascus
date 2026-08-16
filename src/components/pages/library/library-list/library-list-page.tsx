@@ -10,7 +10,6 @@ import { AdventurePanel } from '@/components/panels/elements/adventure-panel/adv
 import { Ancestry } from '@/models/ancestry';
 import { AncestryPanel } from '@/components/panels/elements/ancestry-panel/ancestry-panel';
 import { AppHeader } from '@/components/panels/app-header/app-header';
-import { AppMode } from '@/utils/app-mode';
 import { Career } from '@/models/career';
 import { CareerPanel } from '@/components/panels/elements/career-panel/career-panel';
 import { ClassPanel } from '@/components/panels/elements/class-panel/class-panel';
@@ -87,10 +86,6 @@ interface Props {
 	startNegotiation: (negotiation: Negotiation) => void;
 }
 
-// The half of the library that's about running a game rather than building a
-// hero. Only the GM site lists these.
-const DIRECTOR_CATEGORIES: SourcebookElementKind[] = [ 'adventure', 'encounter', 'monster-group', 'montage', 'negotiation', 'terrain' ];
-
 export const LibraryListPage = (props: Props) => {
 	const isSmall = useIsSmall();
 	const navigation = useNavigation();
@@ -115,14 +110,6 @@ export const LibraryListPage = (props: Props) => {
 		setCategory(kind || 'ancestry');
 		setPreviousCategory(kind);
 	}
-
-	// A director category reached by URL on the player site would render a list
-	// with nothing selected in the sidebar and no way back, so send it home.
-	useEffect(() => {
-		if (!AppMode.hasDirectorLibrary && DIRECTOR_CATEGORIES.includes(category)) {
-			navigation.goToLibrary('ancestry');
-		}
-	}, [ category ]);
 
 	if (elementID !== previousSelectedID) {
 		setSelectedID(elementID || null);
@@ -395,13 +382,9 @@ export const LibraryListPage = (props: Props) => {
 					showSidebar ?
 						<div className='selection-content'>
 							<div className='selection-list categories'>
-								{
-									AppMode.hasDirectorLibrary ?
-										<div className='selection-list-group-header'>
-											<HeaderText level={3}>For Players</HeaderText>
-										</div>
-										: null
-								}
+								<div className='selection-list-group-header'>
+									<HeaderText level={3}>For Players</HeaderText>
+								</div>
 								<SelectorRow selected={category === 'ancestry'} content='Ancestries' info={getList('ancestry').length} onSelect={() => navigation.goToLibrary('ancestry')} />
 								<SelectorRow selected={category === 'career'} content='Careers' info={getList('career').length} onSelect={() => navigation.goToLibrary('career')} />
 								<SelectorRow selected={category === 'class'} content='Classes' info={getList('class').length} onSelect={() => navigation.goToLibrary('class')} />
@@ -415,21 +398,15 @@ export const LibraryListPage = (props: Props) => {
 								<SelectorRow selected={category === 'project'} content='Projects' info={getList('project').length} onSelect={() => navigation.goToLibrary('project')} />
 								<SelectorRow selected={category === 'subclass'} content='Subclasses' info={getList('subclass').length} onSelect={() => navigation.goToLibrary('subclass')} />
 								<SelectorRow selected={category === 'title'} content='Titles' info={getList('title').length} onSelect={() => navigation.goToLibrary('title')} />
-								{
-									AppMode.hasDirectorLibrary ?
-										<>
-											<div className='selection-list-group-header'>
-												<HeaderText level={3}>For Directors</HeaderText>
-											</div>
-											<SelectorRow selected={category === 'adventure'} content='Adventures' info={getList('adventure').length} onSelect={() => navigation.goToLibrary('adventure')} />
-											<SelectorRow selected={category === 'encounter'} content='Encounters' info={getList('encounter').length} onSelect={() => navigation.goToLibrary('encounter')} />
-											<SelectorRow selected={category === 'monster-group'} content={showMonsters ? 'Monsters' : 'Monster Groups'} info={showMonsters ? getList('monster').length : getList('monster-group').length} onSelect={() => navigation.goToLibrary('monster-group')} />
-											<SelectorRow selected={category === 'montage'} content='Montages' info={getList('montage').length} onSelect={() => navigation.goToLibrary('montage')} />
-											<SelectorRow selected={category === 'negotiation'} content='Negotiations' info={getList('negotiation').length} onSelect={() => navigation.goToLibrary('negotiation')} />
-											<SelectorRow selected={category === 'terrain'} content='Terrain' info={getList('terrain').length} onSelect={() => navigation.goToLibrary('terrain')} />
-										</>
-										: null
-								}
+								<div className='selection-list-group-header'>
+									<HeaderText level={3}>For Directors</HeaderText>
+								</div>
+								<SelectorRow selected={category === 'adventure'} content='Adventures' info={getList('adventure').length} onSelect={() => navigation.goToLibrary('adventure')} />
+								<SelectorRow selected={category === 'encounter'} content='Encounters' info={getList('encounter').length} onSelect={() => navigation.goToLibrary('encounter')} />
+								<SelectorRow selected={category === 'monster-group'} content={showMonsters ? 'Monsters' : 'Monster Groups'} info={showMonsters ? getList('monster').length : getList('monster-group').length} onSelect={() => navigation.goToLibrary('monster-group')} />
+								<SelectorRow selected={category === 'montage'} content='Montages' info={getList('montage').length} onSelect={() => navigation.goToLibrary('montage')} />
+								<SelectorRow selected={category === 'negotiation'} content='Negotiations' info={getList('negotiation').length} onSelect={() => navigation.goToLibrary('negotiation')} />
+								<SelectorRow selected={category === 'terrain'} content='Terrain' info={getList('terrain').length} onSelect={() => navigation.goToLibrary('terrain')} />
 							</div>
 							<div className='selection-list elements'>
 								{getElementListHeader()}
@@ -467,11 +444,6 @@ export const LibraryListPage = (props: Props) => {
 		}
 
 		const getStart = () => {
-			// Starting anything runs it in the session, which only the GM site has.
-			if (!AppMode.hasSession) {
-				return null;
-			}
-
 			switch (category) {
 				case 'encounter':
 					return {
@@ -697,7 +669,7 @@ export const LibraryListPage = (props: Props) => {
 	const selected = getList(category).find(item => item.id == selectedID);
 	const getPanel = getElementPanel();
 
-	const ALL_CATEGORIES: { key: SourcebookElementKind, label: string }[] = [
+	const CATEGORIES: { key: SourcebookElementKind, label: string }[] = [
 		{ key: 'ancestry', label: 'Ancestries' },
 		{ key: 'career', label: 'Careers' },
 		{ key: 'class', label: 'Classes' },
@@ -718,9 +690,6 @@ export const LibraryListPage = (props: Props) => {
 		{ key: 'negotiation', label: 'Negotiations' },
 		{ key: 'terrain', label: 'Terrain' }
 	];
-	// The mobile chip strip is the small-screen equivalent of the sidebar, so it
-	// drops the director categories on the player site the same way.
-	const CATEGORIES = ALL_CATEGORIES.filter(c => AppMode.hasDirectorLibrary || !DIRECTOR_CATEGORIES.includes(c.key));
 
 	const selectedChipRef = useRef<HTMLButtonElement | null>(null);
 	const chipStripRef = useRef<HTMLDivElement | null>(null);

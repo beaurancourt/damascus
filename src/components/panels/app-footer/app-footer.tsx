@@ -72,10 +72,16 @@ export const AppFooter = (props: Props) => {
 									</>
 									: null
 							}
-							<Divider orientation='vertical' />
-							<Button type='text' className={props.page === 'library' ? 'selected' : ''} icon={<BookOutlined />} onClick={() => navigation.goToLibrary('ancestry')}>
-								{isSmall ? null : 'Library'}
-							</Button>
+							{
+								AppMode.hasLibrary ?
+									<>
+										<Divider orientation='vertical' />
+										<Button type='text' className={props.page === 'library' ? 'selected' : ''} icon={<BookOutlined />} onClick={() => navigation.goToLibrary('ancestry')}>
+											{isSmall ? null : 'Library'}
+										</Button>
+									</>
+									: null
+							}
 							{
 								AppMode.hasSession ?
 									<>

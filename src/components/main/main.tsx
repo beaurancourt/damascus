@@ -1637,43 +1637,47 @@ export const Main = () => {
 							</Route>
 							: null
 					}
-					<Route path='library'>
-						<Route
-							index={true}
-							element={<Navigate to='ancestry' replace={true} />}
-						/>
-						<Route
-							path=':kind/:elementID?'
-							element={
-								<LibraryListPage
-									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-									params={footerParams}
-									showMonster={monster => onSelectMonster(undefined, monster, undefined, undefined)}
-									showEncounterImport={showEncounterImport}
-									createElement={(kind, sourcebookID, element) => createLibraryElement(kind, sourcebookID, element)}
-									importElement={importLibraryElement}
-									moveElement={moveLibraryElement}
-									deleteElement={deleteLibraryElement}
-									exportElementData={exportLibraryElementData}
-									startEncounter={startEncounter}
-									startMontage={startMontage}
-									startNegotiation={startNegotiation}
+					{
+						AppMode.hasLibrary ?
+							<Route path='library'>
+								<Route
+									index={true}
+									element={<Navigate to='ancestry' replace={true} />}
 								/>
-							}
-						/>
-						<Route
-							path='edit/:kind/:sourcebookID/:elementID/:subElementID?'
-							element={
-								<LibraryEditPage
-									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-									params={footerParams}
-									showMonster={(monster, monsterGroup) => onSelectMonster(undefined, monster, monsterGroup, undefined)}
-									showTerrain={onSelectTerrain}
-									saveChanges={saveLibraryElement}
+								<Route
+									path=':kind/:elementID?'
+									element={
+										<LibraryListPage
+											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											params={footerParams}
+											showMonster={monster => onSelectMonster(undefined, monster, undefined, undefined)}
+											showEncounterImport={showEncounterImport}
+											createElement={(kind, sourcebookID, element) => createLibraryElement(kind, sourcebookID, element)}
+											importElement={importLibraryElement}
+											moveElement={moveLibraryElement}
+											deleteElement={deleteLibraryElement}
+											exportElementData={exportLibraryElementData}
+											startEncounter={startEncounter}
+											startMontage={startMontage}
+											startNegotiation={startNegotiation}
+										/>
+									}
 								/>
-							}
-						/>
-					</Route>
+								<Route
+									path='edit/:kind/:sourcebookID/:elementID/:subElementID?'
+									element={
+										<LibraryEditPage
+											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											params={footerParams}
+											showMonster={(monster, monsterGroup) => onSelectMonster(undefined, monster, monsterGroup, undefined)}
+											showTerrain={onSelectTerrain}
+											saveChanges={saveLibraryElement}
+										/>
+									}
+								/>
+							</Route>
+							: null
+					}
 					{
 						AppMode.hasSession ?
 							<Route path='session'>
