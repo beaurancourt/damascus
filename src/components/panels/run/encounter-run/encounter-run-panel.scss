@@ -141,6 +141,16 @@
 		overflow: hidden;
 		transition: opacity 0.2s, border-color 0.15s;
 
+		// The group that additions land in. Worth stating plainly, since with the
+		// search left open a click adds somewhere without any other feedback.
+		&.selected {
+			border-color: $bronze;
+
+			> .group-header {
+				background: linear-gradient(180deg, rgba(201, 164, 90, 0.22), rgba(201, 164, 90, 0.08));
+			}
+		}
+
 		.group-header {
 			display: flex;
 			align-items: center;
@@ -183,6 +193,10 @@
 			letter-spacing: 2.5px;
 			text-transform: uppercase;
 			color: rgba(255, 255, 255, 0.92);
+
+			&.selectable {
+				cursor: pointer;
+			}
 		}
 
 		.group-add,

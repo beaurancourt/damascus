@@ -1,7 +1,7 @@
 import { Button, Drawer, Flex, Input } from 'antd';
 import { CheckCircleFilled, CheckCircleOutlined, CopyOutlined, DeleteOutlined, ExportOutlined, PlusOutlined } from '@ant-design/icons';
 import { Encounter, EncounterGroup } from '@/models/encounter';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EncounterDifficultyPanel } from '@/components/panels/encounter-difficulty/encounter-difficulty-panel';
 import { EncounterLogic } from '@/logic/encounter-logic';
 import { EncounterSlot } from '@/models/encounter-slot';
@@ -43,14 +43,38 @@ const terrainBlockKey = (terrainID: string) => `terrain-${terrainID}`;
 export const EncounterRunPanel = (props: Props) => {
 	const [ encounter, setEncounter ] = useState<Encounter>(Utils.copy(props.encounter));
 	const [ addingMonsters, setAddingMonsters ] = useState<boolean>(false);
-	// When set, "Add monster" appends a slot to that existing group instead
-	// of creating a fresh group.
+	// The group additions land in. It persists between adds so the search can
+	// stay open and every click piles into the same group; adding with nothing
+	// selected creates a group and selects it.
 	const [ addTargetGroupID, setAddTargetGroupID ] = useState<string | null>(null);
 	const [ focusedBlock, setFocusedBlock ] = useState<string | null>(null);
 	const [ showVttExport, setShowVttExport ] = useState<boolean>(false);
 	const [ vttExportCopied, setVttExportCopied ] = useState<boolean>(false);
 
 	const blockRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+	// Shift+A starts a fresh group and points additions at it, so building an
+	// encounter is: search, click a few, shift+A, click a few more - without
+	// going back to the mouse to say where they land.
+	useEffect(() => {
+		const handler = (e: KeyboardEvent) => {
+			if (!e.shiftKey || e.key.toLowerCase() !== 'a') {
+				return;
+			}
+
+			const target = e.target as HTMLElement | null;
+			const typing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+			if (typing) {
+				return;
+			}
+
+			e.preventDefault();
+			addGroup();
+		};
+
+		window.addEventListener('keydown', handler);
+		return () => window.removeEventListener('keydown', handler);
+	});
 
 	const commit = (next: Encounter) => {
 		setEncounter(next);
@@ -113,6 +137,7 @@ export const EncounterRunPanel = (props: Props) => {
 			group.slots.push(slot);
 			EncounterLogic.renumberGroup(group);
 			copy.groups.push(group);
+			setAddTargetGroupID(group.id);
 		}
 		commit(copy);
 	};
@@ -171,6 +196,15 @@ export const EncounterRunPanel = (props: Props) => {
 	const openAddMonster = (groupID: string | null) => {
 		setAddTargetGroupID(groupID);
 		setAddingMonsters(true);
+	};
+
+	const addGroup = () => {
+		const copy = Utils.copy(encounter);
+		const group = FactoryLogic.createEncounterGroup();
+		copy.groups.push(group);
+		setAddTargetGroupID(group.id);
+		commit(copy);
+		return group.id;
 	};
 
 	// One row per individual monster (including each minion in a squad) —
@@ -332,8 +366,9 @@ export const EncounterRunPanel = (props: Props) => {
 											const acted = group.encounterState === 'finished';
 											const rows = buildGroupRows(group);
 											const label = group.name || EncounterLogic.getDefaultGroupName(gIdx);
+											const selected = group.id === addTargetGroupID;
 											return (
-												<div key={group.id} className={[ 'tracker-group', acted ? 'acted' : '' ].filter(Boolean).join(' ')}>
+												<div key={group.id} className={[ 'tracker-group', acted ? 'acted' : '', selected ? 'selected' : '' ].filter(Boolean).join(' ')}>
 													<div className='group-header'>
 														<Button
 															type='text'
@@ -342,7 +377,13 @@ export const EncounterRunPanel = (props: Props) => {
 															title={acted ? 'Mark as not yet acted' : 'Mark as acted this round'}
 															onClick={() => toggleGroupActed(group.id)}
 														/>
-														<div className='group-name'>{label}</div>
+														<div
+															className='group-name selectable'
+															title={selected ? 'Monsters you add land here' : 'Add monsters to this group'}
+															onClick={() => setAddTargetGroupID(group.id)}
+														>
+															{label}
+														</div>
 														<Button
 															type='text'
 															className='group-add'
@@ -427,7 +468,7 @@ export const EncounterRunPanel = (props: Props) => {
 						monsters={props.sourcebooks.flatMap(sb => sb.monsterGroups).flatMap(g => g.monsters)}
 						sourcebooks={props.sourcebooks}
 						onClose={() => setAddingMonsters(false)}
-						onSelect={m => { setAddingMonsters(false); addMonster(m); }}
+						onSelect={addMonster}
 					/>
 				</Drawer>
 
