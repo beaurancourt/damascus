@@ -13,11 +13,15 @@ export class Collections {
 			return k;
 		};
 
-		return [ ...collection ].sort((a, b) => {
-			const strA = getText(a);
-			const strB = getText(b);
-			return strA.localeCompare(strB);
-		});
+		// The sort key is computed once per item rather than twice per
+		// comparison: the comparator runs O(n log n) times, and stripping the
+		// leading article involves a lowercase and two startsWith each time.
+		// Array.sort is stable, so equal keys keep their original order, as
+		// they did when the key was derived inside the comparator.
+		return collection
+			.map(item => ({ item: item, text: getText(item) }))
+			.sort((a, b) => a.text.localeCompare(b.text))
+			.map(entry => entry.item);
 	};
 
 	static shuffle = <T>(collection: T[], rng: () => number = Math.random) => {

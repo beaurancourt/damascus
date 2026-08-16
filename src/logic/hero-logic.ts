@@ -202,13 +202,17 @@ export class HeroLogic {
 	};
 
 	static getFeatures = (hero: Hero, includeCustomizations = true) => {
-		return Collections
-			.sort(HeroLogic.getFeaturesRaw(hero), f => f.feature.name)
-			.map(f => {
-				if (!includeCustomizations) {
-					return f;
-				}
+		const sorted = Collections.sort(HeroLogic.getFeaturesRaw(hero), f => f.feature.name);
 
+		// Most heroes have no customizations at all, and this runs hundreds of
+		// times per render; without the guard every one of them walks the whole
+		// feature list allocating a replacement array for nothing.
+		if (!includeCustomizations || (hero.abilityCustomizations.length === 0)) {
+			return sorted;
+		}
+
+		return sorted
+			.map(f => {
 				const customization = hero.abilityCustomizations.find(ac => ac.abilityID === f.feature.id) || null;
 				if (!customization) {
 					return f;
@@ -454,23 +458,43 @@ export class HeroLogic {
 			.sort((a, b) => a.name.localeCompare(b.name));
 	};
 
-	static getCharacteristic = (hero: Hero, characteristic: Characteristic) => {
-		let value = 0;
+	// All five characteristics from a single pass over the feature tree. Callers
+	// that need more than one of them - getPotency wants the max of all five -
+	// should use this rather than calling getCharacteristic five times, since
+	// each of those rebuilds the whole tree again for the same answer.
+	static getCharacteristics = (hero: Hero) => {
+		const values = {
+			[Characteristic.Might]: 0,
+			[Characteristic.Agility]: 0,
+			[Characteristic.Reason]: 0,
+			[Characteristic.Intuition]: 0,
+			[Characteristic.Presence]: 0
+		} as Record<Characteristic, number>;
 
 		if (hero.class) {
-			const ch = hero.class.characteristics.find(ch => ch.characteristic === characteristic);
-			if (ch) {
-				value += ch.value;
-			}
+			// Only the first entry per characteristic counts, matching what the
+			// old per-characteristic lookup did.
+			const seen = new Set<Characteristic>();
+			hero.class.characteristics.forEach(ch => {
+				if (!seen.has(ch.characteristic)) {
+					seen.add(ch.characteristic);
+					values[ch.characteristic] += ch.value;
+				}
+			});
 		}
 
 		HeroLogic.getFeaturesRaw(hero)
 			.map(f => f.feature)
 			.filter(f => f.type === FeatureType.CharacteristicBonus)
-			.filter(f => f.data.characteristic === characteristic)
-			.forEach(f => value += f.data.value);
+			.forEach(f => {
+				values[f.data.characteristic] += f.data.value;
+			});
 
-		return value;
+		return values;
+	};
+
+	static getCharacteristic = (hero: Hero, characteristic: Characteristic) => {
+		return HeroLogic.getCharacteristics(hero)[characteristic];
 	};
 
 	static getLanguages = (hero: Hero, sourcebooks: Sourcebook[]) => {
@@ -1091,12 +1115,13 @@ export class HeroLogic {
 	};
 
 	static getPotency = (hero: Hero, strength: 'weak' | 'average' | 'strong') => {
+		const characteristics = HeroLogic.getCharacteristics(hero);
 		const value = Math.max(
-			HeroLogic.getCharacteristic(hero, Characteristic.Might),
-			HeroLogic.getCharacteristic(hero, Characteristic.Agility),
-			HeroLogic.getCharacteristic(hero, Characteristic.Reason),
-			HeroLogic.getCharacteristic(hero, Characteristic.Intuition),
-			HeroLogic.getCharacteristic(hero, Characteristic.Presence)
+			characteristics[Characteristic.Might],
+			characteristics[Characteristic.Agility],
+			characteristics[Characteristic.Reason],
+			characteristics[Characteristic.Intuition],
+			characteristics[Characteristic.Presence]
 		);
 
 		switch (strength) {
@@ -1110,9 +1135,12 @@ export class HeroLogic {
 	};
 
 	static calculateSurgeDamage = (hero: Hero) => {
-		return hero.class && (hero.class.characteristics.length > 0) ?
-			Math.max(...hero.class.characteristics.map(c => this.getCharacteristic(hero, c.characteristic)))
-			: 0;
+		if (!hero.class || (hero.class.characteristics.length === 0)) {
+			return 0;
+		}
+
+		const characteristics = HeroLogic.getCharacteristics(hero);
+		return Math.max(...hero.class.characteristics.map(c => characteristics[c.characteristic]));
 	};
 
 	static getCombatState = (hero: Hero) => {

@@ -4,6 +4,32 @@ import { v4 as uuidv4 } from 'uuid';
 export class Utils {
 	static showdownConverter = new Converter({ simpleLineBreaks: true, tables: true });
 
+	// Rendering the builder converts the same few hundred description strings to
+	// HTML on every keystroke and every click, and the conversion is a pure
+	// function of the text, so the result is worth keeping. The cap keeps a
+	// long session from holding on to every string a user has ever typed into a
+	// homebrew description; entries are evicted oldest-first.
+	private static markdownCache = new Map<string, string>();
+
+	static markdownToHtml = (text: string) => {
+		const cached = Utils.markdownCache.get(text);
+		if (cached !== undefined) {
+			return cached;
+		}
+
+		const html = Utils.showdownConverter.makeHtml(text);
+
+		if (Utils.markdownCache.size >= 2000) {
+			const oldest = Utils.markdownCache.keys().next();
+			if (!oldest.done) {
+				Utils.markdownCache.delete(oldest.value);
+			}
+		}
+		Utils.markdownCache.set(text, html);
+
+		return html;
+	};
+
 	static isDev = () => {
 		return window.location.hostname === 'localhost';
 	};

@@ -403,13 +403,16 @@ export class AbilityLogic {
 	};
 
 	static getTextEffect = (text: string, hero: Hero | undefined) => {
-		// Potency: [weak | average | strong]
+		// Potency: [weak | average | strong]. The replacements are lazy because
+		// getPotency has to walk the hero's whole feature tree, and most of the
+		// text run through here has no potency in it at all - computing four
+		// potencies for every string was the bulk of the work in a builder click.
 		if (hero) {
 			text = text
-				.replace(/<\s*[[({]?weak[\])}]?/gi, `< ${HeroLogic.getPotency(hero, 'weak')}`)
-				.replace(/<\s*[[({]?average[\])}]?/gi, `< ${HeroLogic.getPotency(hero, 'average')}`)
-				.replace(/<\s*[[({]?avg[\])}]?/gi, `< ${HeroLogic.getPotency(hero, 'average')}`)
-				.replace(/<\s*[[({]?strong[\])}]?/gi, `< ${HeroLogic.getPotency(hero, 'strong')}`);
+				.replace(/<\s*[[({]?weak[\])}]?/gi, () => `< ${HeroLogic.getPotency(hero, 'weak')}`)
+				.replace(/<\s*[[({]?average[\])}]?/gi, () => `< ${HeroLogic.getPotency(hero, 'average')}`)
+				.replace(/<\s*[[({]?avg[\])}]?/gi, () => `< ${HeroLogic.getPotency(hero, 'average')}`)
+				.replace(/<\s*[[({]?strong[\])}]?/gi, () => `< ${HeroLogic.getPotency(hero, 'strong')}`);
 		}
 
 		// N + [Characteristic]
