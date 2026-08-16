@@ -11,3 +11,8 @@
   create a new group (which selects it for future additions) with shift+a
   keybind. can use threechest.io to get a sense of how this works
 - research better search infrastructure; would love to have semantic search and fuzzy search
+- in the encounter builder, rather than restarting the index for duplicate
+  enemy names within the same group, instead we want to keep it going, so
+  rather than ["goblin warrior 1", "goblin spinecleaver 1", "goblin
+  spinecleaver 2"] i want ["[1] Goblin Warrior", "[2] Goblin Spinecleaver",
+  "[3] Goblin Spinecleaver"]

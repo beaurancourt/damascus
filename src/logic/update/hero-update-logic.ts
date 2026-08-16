@@ -3,6 +3,7 @@ import { AbilityUpdateLogic } from '@/logic/update/ability-update-logic';
 import { Ancestry } from '@/models/ancestry';
 import { AncestryData } from '@/data/ancestry-data';
 import { Characteristic } from '@/enums/characteristic';
+import { Collections } from '@/utils/collections';
 import { CultureData } from '@/data/culture-data';
 import { CultureType } from '@/enums/culture-type';
 import { FeatureLogic } from '@/logic/feature-logic';
@@ -410,7 +411,9 @@ export class HeroUpdateLogic {
 				case FeatureType.Choice: {
 					const oFeature = originalFeature as FeatureChoice;
 
-					const selectedIDs = oFeature.data.selected.map(s => s.id);
+					// Distinct, because a hero saved before this was fixed can already
+					// hold each pick twice - deduping here repairs it on load.
+					const selectedIDs = Collections.distinct(oFeature.data.selected.map(s => s.id), id => id);
 
 					let availableOptions = [ ...feature.data.options ];
 					if (feature.data.count === 'ancestry') {
@@ -422,12 +425,12 @@ export class HeroUpdateLogic {
 							.flatMap(f => f.data.options);
 					}
 
-					selectedIDs.forEach(id => {
-						const option = availableOptions.find(o => o.feature.id === id);
-						if (option) {
-							feature.data.selected.push(option.feature);
-						}
-					});
+					// Rebuild rather than append. The random hero generator fills
+					// selected in before this runs, so pushing doubled every pick.
+					feature.data.selected = selectedIDs
+						.map(id => availableOptions.find(o => o.feature.id === id))
+						.filter(option => !!option)
+						.map(option => option.feature);
 					feature.data.selected.forEach(child => {
 						const oChild = oFeature.data.selected.find(x => x.id === child.id);
 						if (oChild) {
