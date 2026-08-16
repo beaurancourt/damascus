@@ -1,5 +1,5 @@
-import { Button, Divider } from 'antd';
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
+import { Button, Divider } from 'antd';
 import { CloseOutlined, CopyOutlined, DeleteOutlined, EditOutlined, MoreOutlined, UploadOutlined } from '@ant-design/icons';
 import { Ability } from '@/models/ability';
 import { Ancestry } from '@/models/ancestry';

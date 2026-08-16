@@ -1,4 +1,4 @@
-import { Space } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import { AbilityData } from '@/data/ability-data';
 import { AbilityPanel } from '@/components/panels/elements/ability-panel/ability-panel';
 import { AbilityUsage } from '@/enums/ability-usage';
@@ -20,8 +20,8 @@ import { SelectablePanel } from '@/components/controls/selectable-panel/selectab
 import { SkillList } from '@/enums/skill-list';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
+import { Space } from 'antd';
 import { Utils } from '@/utils/utils';
-import { useEffect, useRef, useState } from 'react';
 
 import './reference-modal.scss';
 

@@ -1,5 +1,5 @@
-import { ControlOutlined, EllipsisOutlined, ToolOutlined } from '@ant-design/icons';
 import { Button, Divider, Popover, Space } from 'antd';
+import { ControlOutlined, EllipsisOutlined, ToolOutlined } from '@ant-design/icons';
 import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';

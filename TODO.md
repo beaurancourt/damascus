@@ -1,4 +1,3 @@
-- IMPORTANT: fix all lint errors
 - Beastheart descriptions flow strangely /tmp/damascus-ss/bh-whitespace.jpg
 - use 2-column for abilities on wide screens /tmp/damascus-ss/ability-too-wide.jpg
 - need navigation on charsheets
@@ -13,3 +12,4 @@
   add and then clicking them adds them to the currently selected group. we
   create a new group (which selects it for future additions) with shift+a
   keybind. can use threechest.io to get a sense of how this works
+- research better search infrastructure; would love to have semantic search and fuzzy search

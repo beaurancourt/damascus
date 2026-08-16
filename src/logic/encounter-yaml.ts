@@ -1,9 +1,9 @@
-import yaml from 'js-yaml';
 import { Encounter, EncounterGroup } from '@/models/encounter';
 import { EncounterSlot } from '@/models/encounter-slot';
 import { FactoryLogic } from '@/logic/factory-logic';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
+import yaml from 'js-yaml';
 
 export interface EncounterYamlIssue {
 	severity: 'error' | 'warning';

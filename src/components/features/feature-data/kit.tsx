@@ -1,5 +1,5 @@
-import { Select, Space } from 'antd';
 import { Feature, FeatureKitData } from '@/models/feature';
+import { Select, Space } from 'antd';
 import { Collections } from '@/utils/collections';
 import { Empty } from '@/components/controls/empty/empty';
 import { HeaderText } from '@/components/controls/header-text/header-text';

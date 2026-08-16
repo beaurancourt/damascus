@@ -1,7 +1,7 @@
 import { Button, Select, Space } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
 import { Characteristic } from '@/enums/characteristic';
 import { ClassPanel } from '@/components/panels/elements/class-panel/class-panel';
+import { CloseOutlined } from '@ant-design/icons';
 import { Collections } from '@/utils/collections';
 import { DoneBadge } from '@/components/controls/done-badge/done-badge';
 import { EmptyMessage } from '@/components/pages/heroes/hero-edit/empty-message/empty-message';
@@ -21,8 +21,8 @@ import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { StatsRow } from '@/components/panels/stats-row/stats-row';
 import { SubClass } from '@/models/subclass';
 import { Utils } from '@/utils/utils';
-import { useState } from 'react';
 import { useOptions } from '@/contexts/data-context';
+import { useState } from 'react';
 
 import './class-section.scss';
 import '@/components/features/feature-data/choice.scss';

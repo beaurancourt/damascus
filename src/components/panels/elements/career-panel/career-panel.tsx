@@ -1,8 +1,8 @@
+import { Feature, FeatureData } from '@/models/feature';
 import { Career } from '@/models/career';
 import { DoneBadge } from '@/components/controls/done-badge/done-badge';
 import { Element } from '@/models/element';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
-import { Feature, FeatureData } from '@/models/feature';
 import { FeatureConfigPanel } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { FeatureLogic } from '@/logic/feature-logic';
 import { FeaturePanel } from '@/components/panels/elements/feature-panel/feature-panel';

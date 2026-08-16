@@ -51,7 +51,7 @@ It also registers two hooks in `.claude/hooks/`: `eslint --fix` runs on every ed
 ## Conventions
 
 - **Lint is strict and error-level**: tabs, single quotes (including JSX), semicolons, no trailing commas, `curly` always, spaces inside array brackets (`[ 1, 2 ]`).
-- `sort-imports` is only a **warning** and the repo carries ~27 pre-existing ones — don't treat those as a regression you caused, but keep new imports alphabetical so you don't add more.
+- **`npm run lint` is clean — 0 errors and 0 warnings. Keep it that way.** `sort-imports` is warning-level, so a violation won't fail the build; it's on you not to reintroduce one. Within each blank-line-separated group, multi-member imports come before single-member ones, each alphabetical by first member and case-sensitive (so `Utils` sorts before `useIsSmall`).
 - Comments containing `todo`/`fix`/`fixme`/`hack`/`xxx` trip `no-warning-comments`; `console.log` warns, `console.warn`/`console.error` are allowed.
 - **SCSS**: `@import '@/colors.scss'` for the palette. `$bronze` (#c9a45a) is the accent that replaces AntD's blue throughout. Dark is the default theme; light overrides go in `html:not([data-theme="dark"])` blocks at the bottom of the file.
 - **Mobile**: `useIsSmall()` (max-width 1000px) drives layout branches; several pages pass a `compact` class to their content div on small screens.

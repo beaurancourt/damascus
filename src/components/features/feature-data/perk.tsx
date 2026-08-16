@@ -1,5 +1,5 @@
-import { Select, Space } from 'antd';
 import { Feature, FeaturePerkData } from '@/models/feature';
+import { Select, Space } from 'antd';
 import { Collections } from '@/utils/collections';
 import { Empty } from '@/components/controls/empty/empty';
 import { FeatureType } from '@/enums/feature-type';

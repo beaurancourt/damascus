@@ -1,6 +1,7 @@
 import { Button, Drawer, Flex, Input } from 'antd';
 import { CheckCircleFilled, CheckCircleOutlined, CopyOutlined, DeleteOutlined, ExportOutlined, PlusOutlined } from '@ant-design/icons';
 import { Encounter, EncounterGroup } from '@/models/encounter';
+import { useRef, useState } from 'react';
 import { EncounterDifficultyPanel } from '@/components/panels/encounter-difficulty/encounter-difficulty-panel';
 import { EncounterLogic } from '@/logic/encounter-logic';
 import { EncounterSlot } from '@/models/encounter-slot';
@@ -20,7 +21,6 @@ import { Terrain } from '@/models/terrain';
 import { TerrainPanel } from '@/components/panels/elements/terrain-panel/terrain-panel';
 import { Utils } from '@/utils/utils';
 import { VttExportLogic } from '@/logic/vtt-export-logic';
-import { useRef, useState } from 'react';
 
 import './encounter-run-panel.scss';
 

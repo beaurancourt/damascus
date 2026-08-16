@@ -1,6 +1,5 @@
 import { Button, Divider, Drawer, Space } from 'antd';
 import { CultureData, EnvironmentData, OrganizationData, UpbringingData } from '@/data/culture-data';
-import { useState } from 'react';
 import { Culture } from '@/models/culture';
 import { CulturePanel } from '@/components/panels/elements/culture-panel/culture-panel';
 import { CultureType } from '@/enums/culture-type';
@@ -20,6 +19,7 @@ import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { TextInput } from '@/components/controls/text-input/text-input';
 import { Utils } from '@/utils/utils';
+import { useState } from 'react';
 
 import './culture-section.scss';
 

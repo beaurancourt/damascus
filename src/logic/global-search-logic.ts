@@ -1,10 +1,10 @@
-import Fuse from 'fuse.js';
+import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
 import { ConditionLogic } from '@/logic/condition-logic';
 import { ConditionType } from '@/enums/condition-type';
+import Fuse from 'fuse.js';
 import { Hero } from '@/models/hero';
 import { RulesData } from '@/data/rules-data';
 import { RulesPage } from '@/enums/rules-page';
-import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 
 export interface SearchEntry {

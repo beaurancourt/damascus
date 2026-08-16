@@ -1,5 +1,5 @@
-import { Select, Space } from 'antd';
 import { Feature, FeatureClassAbilityData } from '@/models/feature';
+import { Select, Space } from 'antd';
 import { Ability } from '@/models/ability';
 import { AbilityPanel } from '@/components/panels/elements/ability-panel/ability-panel';
 import { Collections } from '@/utils/collections';

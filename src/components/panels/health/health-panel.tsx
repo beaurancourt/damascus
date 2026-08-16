@@ -1,6 +1,7 @@
 import { Alert, Button, Flex, InputNumber, Popover, Segmented, Space, Tag } from 'antd';
 import { ConditionEndType, ConditionType } from '@/enums/condition-type';
 import { DownOutlined, PlusOutlined } from '@ant-design/icons';
+import { useEffect, useState } from 'react';
 import { Collections } from '@/utils/collections';
 import { Condition } from '@/models/condition';
 import { ConditionLogic } from '@/logic/condition-logic';
@@ -25,7 +26,6 @@ import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { PanelMode } from '@/enums/panel-mode';
 import { Utils } from '@/utils/utils';
-import { useEffect, useState } from 'react';
 
 import './health-panel.scss';
 

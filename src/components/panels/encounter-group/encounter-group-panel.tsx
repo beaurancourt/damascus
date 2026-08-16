@@ -1,7 +1,7 @@
 import { Alert, Button, Flex, Popover, Segmented, Space, Tag, Tooltip } from 'antd';
 import { CaretDownOutlined, CaretUpOutlined, DownOutlined, EllipsisOutlined, HeartFilled, PlusOutlined } from '@ant-design/icons';
-import { HeroHealthPanel, MonsterHealthPanel } from '@/components/panels/health/health-panel';
 import { Encounter, EncounterGroup } from '@/models/encounter';
+import { HeroHealthPanel, MonsterHealthPanel } from '@/components/panels/health/health-panel';
 import { HeroInfo, MonsterInfo, TerrainInfo } from '@/components/panels/token/token';
 import { Characteristic } from '@/enums/characteristic';
 import { Collections } from '@/utils/collections';

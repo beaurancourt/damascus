@@ -1,6 +1,6 @@
+import { Feature, FeatureData } from '@/models/feature';
 import { Ancestry } from '@/models/ancestry';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
-import { Feature, FeatureData } from '@/models/feature';
 import { FeatureConfigPanel } from '@/components/panels/feature-config-panel/feature-config-panel';
 import { FeatureLogic } from '@/logic/feature-logic';
 import { FeaturePanel } from '@/components/panels/elements/feature-panel/feature-panel';
