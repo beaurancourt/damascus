@@ -2,6 +2,7 @@ import { Button, Drawer, Segmented, Select, Space } from 'antd';
 import { MoonOutlined, SettingOutlined, SunOutlined } from '@ant-design/icons';
 import { useDataManager, useHeroes, useOptions } from '@/contexts/data-context';
 import { AbilityData } from '@/data/ability-data';
+import { AppMode } from '@/utils/app-mode';
 import { Collections } from '@/utils/collections';
 import { Expander } from '@/components/controls/expander/expander';
 import { Field } from '@/components/controls/field/field';
@@ -266,8 +267,17 @@ export const SettingsModal = (props: Props) => {
 					<Space orientation='vertical' style={{ width: '100%' }}>
 						{getAppearance()}
 						{getHeroesSection()}
-						{getEncountersSection()}
-						{getDifficultySection()}
+						{
+							// Both of these configure running an encounter, which is
+							// the GM site's job; on the player site they were settings
+							// for a screen that isn't there.
+							AppMode.hasSession ?
+								<>
+									{getEncountersSection()}
+									{getDifficultySection()}
+								</>
+								: null
+						}
 						{getNotices()}
 					</Space>
 				</div>

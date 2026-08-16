@@ -1,5 +1,4 @@
 - when i open the encounter builder here's what I see /tmp/damascus-ss/encounter-builder.jpg. what i want is for 1/3rd of the screen to be the gorups, and the other 2rds to be the mosnter search area. have the first group be red, and starrt my focus already in the search bar, where I can fuzzy search by name. when i click a monster, it adds it to the active group, and when i press shift A it starts the next group
-- the player-side settings menu doesn't need encounter or difficulty options
 - reduce the nesting of the settings menu
 - reduce the nesting of the library entries, especially items
 - in the player hero viewer, when they select Tools -> Inventory, the selected item is hard to see
