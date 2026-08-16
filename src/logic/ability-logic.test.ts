@@ -97,6 +97,18 @@ describe('getTextEffect', () => {
 	});
 
 	test.each([
+		[ 'P < [strong], frightened (save ends)', 0, '`P < 0` frightened (save ends)' ],
+		[ 'P < [weak], taunted (save ends)', -2, '`P < -2` taunted (save ends)' ],
+		[ 'P < [average], taunted (save ends)', -1, '`P < -1` taunted (save ends)' ],
+		[ 'A < [strong], slowed (save ends)', 3, '`A < 3` slowed (save ends)' ]
+	])('should mark up a potency whether it is negative or not', (text: string, potency: number, expected: string) => {
+		const hero = {} as Hero;
+		HeroLogic.getPotency = vi.fn().mockReturnValue(potency);
+
+		expect(AbilityLogic.getTextEffect(text, hero)).toBe(expected);
+	});
+
+	test.each([
 		[ 'equal to your level', 1, 'equal to 1' ],
 		[ 'equal to 2 + your level', 1, 'equal to 3' ]
 	])('should properly calculate references to hero level', (text: string, level: number, expected: string) => {

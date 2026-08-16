@@ -558,8 +558,11 @@ export class AbilityLogic {
 			});
 		}
 
-		// Potencies
-		const potencyRegex = /[MARIP]\s*<\s*\[?(\d+|weak|average|avg|strong)\]?,?/gi;
+		// Potencies. The number can be negative - a low-level hero's weak and
+		// average potencies are below zero - and missing the minus sign left
+		// those tiers unwrapped while the tier that happened to reach 0 got
+		// boxed, so one ability showed all three tiers styled differently.
+		const potencyRegex = /[MARIP]\s*<\s*\[?(-?\d+|weak|average|avg|strong)\]?,?/gi;
 		[ ...text.matchAll(potencyRegex) ].map(r => r[0]).forEach(str => {
 			const x = str.endsWith(',') ? str.substring(0, str.length - 1) : str;
 			text = text.replace(str, `\`${x}\``);

@@ -1,4 +1,3 @@
-- Beastheart descriptions flow strangely /tmp/damascus-ss/bh-whitespace.jpg
 - need navigation on charsheets
 - search is hard to read /tmp/damascus-ss/hard-search.jpg
 - combine "search" and "reference" into one tool. reference's search is weird.
@@ -9,3 +8,4 @@
   create a new group (which selects it for future additions) with shift+a
   keybind. can use threechest.io to get a sense of how this works
 - research better search infrastructure; would love to have semantic search and fuzzy search
+- in character creation, i see a lot of '[Violation] 'click' handler took 291ms'
