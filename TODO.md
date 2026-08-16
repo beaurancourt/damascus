@@ -1,10 +1,9 @@
-- when i open the encounter builder here's what I see /tmp/damascus-ss/encounter-builder.jpg. what i want is for 1/3rd of the screen to be the gorups, and the other 2rds to be the mosnter search area. have the first group be red, and starrt my focus already in the search bar, where I can fuzzy search by name. when i click a monster, it adds it to the active group, and when i press shift A it starts the next group
+- when i open the encounter builder here's what I see /tmp/damascus-ss/encounter-builder.jpg. what i want is for 1/3rd of the screen to be the groups, and the other 2rds to be the mosnter search area. have the first group be red, and starrt my focus already in the search bar, where I can fuzzy search by name. when i click a monster, it adds it to the active group, and when i press shift A it starts the next group
 - reduce the nesting of the settings menu
 - reduce the nesting of the library entries, especially items
 - in the player hero viewer, when they select Tools -> Inventory, the selected item is hard to see
 - in the player hero inventory, de-nest the details. /tmp/damascus-ss/health-pot.jpg, i should be able to see all of the info at once, without clicking anything
 - move the settings icon in the player app to the top bar
-- get rid of the cookies thing from the bottom bar
 - once the bottom bar has nothing left in it, we can get rid of it
 - i'm seeing "contentscript.js:14083 ObjectMultiplex - orphaned data for stream "background-liveness"" in the console
 - i'm seeing "contentscript.js:14083 ObjectMultiplex - orphaned data for stream "app-init-liveness"" in the console

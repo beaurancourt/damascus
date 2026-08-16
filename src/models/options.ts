@@ -1,6 +1,4 @@
 export interface Options {
-	// App
-	cookieConsent: boolean;
 	// Hero
 	shownStandardAbilities: string[];
 	xpPerLevel: number;

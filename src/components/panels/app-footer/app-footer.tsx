@@ -1,16 +1,12 @@
 import { BookOutlined, PlayCircleOutlined, SettingOutlined, TeamOutlined, WarningFilled } from '@ant-design/icons';
-import { Button, Divider, Drawer, Flex, Space } from 'antd';
+import { Button, Divider, Flex, Space } from 'antd';
 import { ButtonConfig, ButtonGroup } from '@/components/controls/button-group/button-group';
-import { useDataManager, useOptions } from '@/contexts/data-context';
 import { AppMode } from '@/utils/app-mode';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
-import { Modal } from '@/components/modals/modal/modal';
-import { Options } from '@/models/options';
 import { SyncStatus } from '@/components/panels/sync-status/sync-status';
 import shield from '@/assets/shield.png';
 import { useIsSmall } from '@/hooks/use-is-small';
 import { useNavigation } from '@/hooks/use-navigation';
-import { useState } from 'react';
 
 import './app-footer.scss';
 
@@ -28,21 +24,6 @@ interface Props {
 export const AppFooter = (props: Props) => {
 	const isSmall = useIsSmall();
 	const navigation = useNavigation();
-	const [ showSidebar, setShowSidebar ] = useState<boolean>(false);
-	const options = useOptions();
-	const dataManager = useDataManager();
-	const saveOptions = (options: Options) => {
-		dataManager.saveOptions(options);
-	};
-
-	const onOK = () => {
-		saveOptions({ ...options, cookieConsent: true });
-		setShowSidebar(false);
-	};
-
-	const onCancel = () => {
-		window.location.assign('https://www.google.com');
-	};
 
 	const actions: ButtonConfig[] = [
 		{ type: 'button', label: isSmall ? undefined : 'Settings', icon: <SettingOutlined />, tooltip: 'Settings', onClick: props.params.showSettings }
@@ -92,40 +73,11 @@ export const AppFooter = (props: Props) => {
 							}
 						</Flex>
 				}
-				{
-					!options.cookieConsent ?
-						<ButtonGroup
-							buttons={[
-								{ type: 'button', label: 'Cookies', onClick: () => setShowSidebar(true) }
-							]}
-						/>
-						: null
-				}
 				<Space>
 					<SyncStatus />
 					<ButtonGroup buttons={actions} />
 				</Space>
 			</div>
-			<Drawer open={showSidebar} onClose={() => setShowSidebar(false)} closeIcon={null} size={500}>
-				<Modal
-					content={
-						showSidebar ?
-							<Space orientation='vertical' style={{ width: '100%', padding: '20px' }}>
-								<div className='ds-text'>
-									Just so you know, <b>DAMASCUS</b> uses cookies. We good?
-								</div>
-								<Button type='primary' block={true} onClick={onOK}>
-									Yes, obviously that's completely fine
-								</Button>
-								<Button block={true} onClick={onCancel}>
-									I'm not OK with that, I had a bad experience with cookies as a child
-								</Button>
-							</Space>
-							: null
-					}
-					onClose={() => setShowSidebar(false)}
-				/>
-			</Drawer>
 		</ErrorBoundary>
 	);
 };
