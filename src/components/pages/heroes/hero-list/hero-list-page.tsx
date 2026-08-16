@@ -15,10 +15,8 @@ import { HeroOverviewPanel } from '@/components/panels/hero-overview/hero-overvi
 import { PregenData } from '@/data/pregen-data';
 import { PregenInfo } from '@/components/panels/token/token';
 import { PregenLogic } from '@/logic/pregen-logic';
-import { SearchBox } from '@/components/controls/text-input/text-input';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { Sourcebook } from '@/models/sourcebook';
-import { Utils } from '@/utils/utils';
 import { useIsSmall } from '@/hooks/use-is-small';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useParams } from 'react-router';
@@ -40,7 +38,6 @@ export const HeroListPage = (props: Props) => {
 	const { folder } = useParams<{ folder: string }>();
 	const [ previousTab, setPreviousTab ] = useState<string | undefined>(folder);
 	const [ currentTab, setCurrentTab ] = useState<string>(folder ?? '');
-	const [ searchTerm, setSearchTerm ] = useState<string>('');
 	useTitle('Heroes');
 	const options = useOptions();
 	const fullHeroes = useHeroes();
@@ -59,15 +56,7 @@ export const HeroListPage = (props: Props) => {
 	}
 
 	const getHeroes = (folder: string) => {
-		return heroes
-			.filter(h => h.folder === folder)
-			.filter(h => Utils.textMatches([
-				h.name,
-				h.ancestry || '',
-				h.background || '',
-				h.class || '',
-				h.complication || ''
-			], searchTerm));
+		return heroes.filter(h => h.folder === folder);
 	};
 
 	const getHeroesSection = (list: HeroOverview[]) => {
@@ -96,7 +85,6 @@ export const HeroListPage = (props: Props) => {
 				<AppHeader subheader='Heroes'>
 					<ButtonGroup
 						buttons={[
-							{ type: 'control', control: <SearchBox searchTerm={searchTerm} setSearchTerm={setSearchTerm} /> },
 							{
 								type: 'dropdown',
 								label: isSmall ? undefined : 'Add',
