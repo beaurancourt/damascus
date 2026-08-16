@@ -83,6 +83,10 @@
 
 		.hero-center-column {
 			flex: 1 1 0;
+			// Without this, the column's automatic minimum size is its min-content
+			// width (the five characteristic tiles side by side), so on a narrow
+			// screen it grows past the viewport and .hero-main-section clips it.
+			min-width: 0;
 			display: flex;
 			flex-direction: column;
 			gap: 10px;

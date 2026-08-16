@@ -20,6 +20,10 @@
 
 		.welcome-column {
 			flex: 1 1 0;
+			// The four-tab Segmented control is the column's min-content width, so
+			// without this the column refuses to shrink below it on a phone and the
+			// text, tabs and buttons all run off the right of the screen.
+			min-width: 0;
 			max-width: 1000px;
 
 			.welcome-tab-button {

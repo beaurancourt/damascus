@@ -5,6 +5,9 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 10px;
+	// When the title and its 'extra' control can't share a line, drop the extra
+	// onto its own row instead of squeezing the title down to a few characters.
+	flex-wrap: wrap;
 
 	&.level-1 {
 		margin: 15px 0;
@@ -36,11 +39,24 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
-	
+		// A title plus its tag row can easily out-measure a phone screen; let the
+		// row wrap and shrink rather than run off the side of the panel.
+		flex: 0 1 auto;
+		min-width: 0;
+		flex-wrap: wrap;
+
+		// The tag list is its own nested flex row — it has to wrap too, or it
+		// just moves the overflow one level down.
+		> .ant-flex {
+			flex-wrap: wrap;
+		}
+
 		.header-text {
 			color: rgba(0, 0, 0, 0.88);
 			font-weight: 600;
 			text-transform: uppercase;
+			min-width: 0;
+			overflow-wrap: break-word;
 		}
 	}
 }

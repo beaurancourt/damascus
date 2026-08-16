@@ -11,6 +11,7 @@ import { PregenInfo } from '@/components/panels/token/token';
 import { PregenLogic } from '@/logic/pregen-logic';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { Sourcebook } from '@/models/sourcebook';
+import { useIsSmall } from '@/hooks/use-is-small';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useOptions } from '@/contexts/data-context';
 import { useState } from 'react';
@@ -29,6 +30,7 @@ interface Props {
 
 export const WelcomePage = (props: Props) => {
 	const navigation = useNavigation();
+	const isSmall = useIsSmall();
 
 	const topNav = (
 		<ButtonGroup
@@ -57,7 +59,7 @@ export const WelcomePage = (props: Props) => {
 					{topNav}
 				</AppHeader>
 				<ErrorBoundary>
-					<div className='welcome-page-content'>
+					<div className={isSmall ? 'welcome-page-content compact' : 'welcome-page-content'}>
 						<div className='welcome-column'>
 							<Welcome
 								sourcebooks={props.sourcebooks}
