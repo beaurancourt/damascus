@@ -2,6 +2,7 @@ import { BookOutlined, InfoCircleOutlined, PlayCircleOutlined, SettingOutlined, 
 import { Button, Divider, Drawer, Flex, Space } from 'antd';
 import { ButtonConfig, ButtonGroup } from '@/components/controls/button-group/button-group';
 import { useDataManager, useOptions } from '@/contexts/data-context';
+import { AppMode } from '@/utils/app-mode';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { Modal } from '@/components/modals/modal/modal';
 import { Options } from '@/models/options';
@@ -61,18 +62,30 @@ export const AppFooter = (props: Props) => {
 						:
 						<Flex className='navigation-buttons-panel' align='center' gap={2}>
 							<Button type='text' className={props.page === 'welcome' ? 'selected' : ''} icon={<img className='logo-icon' src={shield} />} onClick={() => navigation.goToWelcome()} />
-							<Divider orientation='vertical' />
-							<Button type='text' className={props.page === 'heroes' ? 'selected' : ''} icon={<TeamOutlined />} onClick={() => navigation.goToHeroList()}>
-								{isSmall ? null : 'Heroes'}
-							</Button>
+							{
+								AppMode.hasHeroes ?
+									<>
+										<Divider orientation='vertical' />
+										<Button type='text' className={props.page === 'heroes' ? 'selected' : ''} icon={<TeamOutlined />} onClick={() => navigation.goToHeroList()}>
+											{isSmall ? null : 'Heroes'}
+										</Button>
+									</>
+									: null
+							}
 							<Divider orientation='vertical' />
 							<Button type='text' className={props.page === 'library' ? 'selected' : ''} icon={<BookOutlined />} onClick={() => navigation.goToLibrary('ancestry')}>
 								{isSmall ? null : 'Library'}
 							</Button>
-							<Divider orientation='vertical' />
-							<Button type='text' className={props.page === 'session' ? 'selected' : ''} icon={<PlayCircleOutlined />} onClick={() => navigation.goToSession()}>
-								{isSmall ? null : 'Session'}
-							</Button>
+							{
+								AppMode.hasSession ?
+									<>
+										<Divider orientation='vertical' />
+										<Button type='text' className={props.page === 'session' ? 'selected' : ''} icon={<PlayCircleOutlined />} onClick={() => navigation.goToSession()}>
+											{isSmall ? null : 'Session'}
+										</Button>
+									</>
+									: null
+							}
 						</Flex>
 				}
 				{

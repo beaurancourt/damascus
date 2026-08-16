@@ -7,12 +7,14 @@
 	"homepage": "https://github.com/beaurancourt/damascus",
 	"scripts": {
 		"start": "npm install && vite --host",
+		"start:gm": "vite --host --mode gm",
 		"update": "npx npm-check-updates --peer --interactive --format group",
 		"lint": "eslint \"src/**/*.{ts,tsx}\" --concurrency auto",
 		"lint:fix": "eslint \"src/**/*.{ts,tsx}\" --concurrency auto --fix",
 		"test": "vitest",
 		"check": "npm run lint && tsc -p tsconfig.json && vitest run && npm audit",
-		"build": "vite build"
+		"build": "vite build",
+		"build:gm": "vite build --mode gm --outDir dist-gm"
 	},
 	"dependencies": {
 		"@ant-design/icons": "^6.2.3",

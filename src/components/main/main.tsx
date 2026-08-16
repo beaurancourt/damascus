@@ -9,6 +9,7 @@ import { AboutModal } from '@/components/modals/about/about-modal';
 import { Adventure } from '@/models/adventure';
 import { AdventureLogic } from '@/logic/adventure-logic';
 import { Ancestry } from '@/models/ancestry';
+import { AppMode } from '@/utils/app-mode';
 import { BackupPage } from '@/components/pages/backup/backup-page';
 import { Career } from '@/models/career';
 import { Characteristic } from '@/enums/characteristic';
@@ -1569,69 +1570,73 @@ export const Main = () => {
 							/>
 						}
 					/>
-					<Route path='hero'>
-						<Route
-							index={true}
-							path=':folder?'
-							element={
-								<HeroListPage
-									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-									params={footerParams}
-									addHero={newHero}
-									importHero={importHero}
+					{
+						AppMode.hasHeroes ?
+							<Route path='hero'>
+								<Route
+									index={true}
+									path=':folder?'
+									element={
+										<HeroListPage
+											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											params={footerParams}
+											addHero={newHero}
+											importHero={importHero}
+										/>
+									}
 								/>
-							}
-						/>
-						<Route
-							path='view/:heroID'
-							element={
-								<HeroViewPage
-									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-									params={footerParams}
-									exportHeroData={exportHeroData}
-									copyHero={copyHero}
-									deleteHero={deleteHero}
-									showAncestry={ancestry => onSelectLibraryElement(ancestry, 'ancestry')}
-									showCulture={culture => onSelectLibraryElement(culture, 'culture')}
-									showCareer={career => onSelectLibraryElement(career, 'career')}
-									showClass={heroClass => onSelectLibraryElement(heroClass, 'class')}
-									showComplication={complication => onSelectLibraryElement(complication, 'complication')}
-									showDomain={domain => onSelectLibraryElement(domain, 'domain')}
-									showKit={kit => onSelectLibraryElement(kit, 'kit')}
-									showTitle={title => onSelectLibraryElement(title, 'title')}
-									showMonster={(hero, monster, summon) => onSelectMonster(hero, monster, undefined, summon)}
-									showFollower={onSelectFollower}
-									showFixture={onSelectFixture}
-									showCharacteristic={onSelectCharacteristic}
-									showFeature={onSelectFeature}
-									showAbility={onSelectAbility}
-									showHeroState={onShowHeroState}
-									onAddSquad={addSquad}
-									onRemoveSquad={removeSquad}
-									onAddMonsterToSquad={addMonsterToSquad}
-									onSelectControlledMonster={selectControlledMonster}
-									onSelectControlledSquad={selectControlledSquad}
-									updateHero={persistHero}
+								<Route
+									path='view/:heroID'
+									element={
+										<HeroViewPage
+											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											params={footerParams}
+											exportHeroData={exportHeroData}
+											copyHero={copyHero}
+											deleteHero={deleteHero}
+											showAncestry={ancestry => onSelectLibraryElement(ancestry, 'ancestry')}
+											showCulture={culture => onSelectLibraryElement(culture, 'culture')}
+											showCareer={career => onSelectLibraryElement(career, 'career')}
+											showClass={heroClass => onSelectLibraryElement(heroClass, 'class')}
+											showComplication={complication => onSelectLibraryElement(complication, 'complication')}
+											showDomain={domain => onSelectLibraryElement(domain, 'domain')}
+											showKit={kit => onSelectLibraryElement(kit, 'kit')}
+											showTitle={title => onSelectLibraryElement(title, 'title')}
+											showMonster={(hero, monster, summon) => onSelectMonster(hero, monster, undefined, summon)}
+											showFollower={onSelectFollower}
+											showFixture={onSelectFixture}
+											showCharacteristic={onSelectCharacteristic}
+											showFeature={onSelectFeature}
+											showAbility={onSelectAbility}
+											showHeroState={onShowHeroState}
+											onAddSquad={addSquad}
+											onRemoveSquad={removeSquad}
+											onAddMonsterToSquad={addMonsterToSquad}
+											onSelectControlledMonster={selectControlledMonster}
+											onSelectControlledSquad={selectControlledSquad}
+											updateHero={persistHero}
+										/>
+									}
 								/>
-							}
-						/>
-						<Route
-							path='edit/:heroID'
-							element={<Navigate to='start' replace={true} />}
-						/>
-						<Route
-							path='edit/:heroID/:page'
-							element={
-								<HeroEditPage
-									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-									params={footerParams}
-									draftHero={draftHero}
-									saveChanges={saveHero}
-									importSourcebook={persistHomebrewSourcebook}
+								<Route
+									path='edit/:heroID'
+									element={<Navigate to='start' replace={true} />}
 								/>
-							}
-						/>
-					</Route>
+								<Route
+									path='edit/:heroID/:page'
+									element={
+										<HeroEditPage
+											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											params={footerParams}
+											draftHero={draftHero}
+											saveChanges={saveHero}
+											importSourcebook={persistHomebrewSourcebook}
+										/>
+									}
+								/>
+							</Route>
+							: null
+					}
 					<Route path='library'>
 						<Route
 							index={true}
@@ -1669,30 +1674,34 @@ export const Main = () => {
 							}
 						/>
 					</Route>
-					<Route path='session'>
-						<Route
-							index={true}
-							element={<Navigate to='director' replace={true} />}
-						/>
-						<Route
-							path='director'
-							element={
-								<SessionDirectorPage
-									sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-									params={footerParams}
-									startEncounter={startEncounter}
-									startMontage={startMontage}
-									startNegotiation={startNegotiation}
-									startCounter={startCounter}
-									updateEncounter={updateEncounter}
-									updateMontage={updateMontage}
-									updateNegotiation={updateNegotiation}
-									updateCounter={updateCounter}
-									finishSessionElement={finishSessionElement}
+					{
+						AppMode.hasSession ?
+							<Route path='session'>
+								<Route
+									index={true}
+									element={<Navigate to='director' replace={true} />}
 								/>
-							}
-						/>
-					</Route>
+								<Route
+									path='director'
+									element={
+										<SessionDirectorPage
+											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											params={footerParams}
+											startEncounter={startEncounter}
+											startMontage={startMontage}
+											startNegotiation={startNegotiation}
+											startCounter={startCounter}
+											updateEncounter={updateEncounter}
+											updateMontage={updateMontage}
+											updateNegotiation={updateNegotiation}
+											updateCounter={updateCounter}
+											finishSessionElement={finishSessionElement}
+										/>
+									}
+								/>
+							</Route>
+							: null
+					}
 				</Route>
 				<Route path='backup'>
 					<Route

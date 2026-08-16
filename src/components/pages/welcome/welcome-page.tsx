@@ -1,7 +1,9 @@
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
 import { BookOutlined, EllipsisOutlined, PlayCircleOutlined, TeamOutlined } from '@ant-design/icons';
 import { Button, Divider, Flex, Popover, Segmented, Space, Upload } from 'antd';
+import { ReactNode, useState } from 'react';
 import { AppHeader } from '@/components/panels/app-header/app-header';
+import { AppMode } from '@/utils/app-mode';
 import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { HeaderText } from '@/components/controls/header-text/header-text';
@@ -14,7 +16,6 @@ import { Sourcebook } from '@/models/sourcebook';
 import { useIsSmall } from '@/hooks/use-is-small';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useOptions } from '@/contexts/data-context';
-import { useState } from 'react';
 
 import './welcome-page.scss';
 
@@ -41,9 +42,9 @@ export const WelcomePage = (props: Props) => {
 					icon: <EllipsisOutlined />,
 					popover: (
 						<Space orientation='vertical'>
-							<Button block={true} type='text' onClick={() => navigation.goToHeroList()}>Heroes</Button>
+							{AppMode.hasHeroes ? <Button block={true} type='text' onClick={() => navigation.goToHeroList()}>Heroes</Button> : null}
 							<Button block={true} type='text' onClick={() => navigation.goToLibrary('ancestry')}>Library</Button>
-							<Button block={true} type='text' onClick={() => navigation.goToSession()}>Session</Button>
+							{AppMode.hasSession ? <Button block={true} type='text' onClick={() => navigation.goToSession()}>Session</Button> : null}
 							<Divider size='small' />
 							<Button block={true} type='text' onClick={() => navigation.goToBackup()}>Backup</Button>
 						</Space>
@@ -91,7 +92,7 @@ interface WelcomeProps {
 
 const Welcome = (props: WelcomeProps) => {
 	const navigation = useNavigation();
-	const [ page, setPage ] = useState<WelcomeType>('player');
+	const [ page, setPage ] = useState<WelcomeType>(AppMode.hasHeroes ? 'player' : 'director-prep');
 	const options = useOptions();
 
 	const getContent = () => {
@@ -303,57 +304,76 @@ const Welcome = (props: WelcomeProps) => {
 		}
 	};
 
+	// Each site only offers the audiences it actually serves, so the player site
+	// has a single section and needs no tab strip at all.
+	const playerTab = {
+		value: 'player' as WelcomeType,
+		label: (
+			<div className='welcome-tab-button'>
+				<div className='title'>Players</div>
+			</div>
+		)
+	};
+	const directorTabs: { value: WelcomeType, label: ReactNode }[] = [
+		{
+			value: 'director-prep',
+			label: (
+				<div className='welcome-tab-button'>
+					<div className='title'>Directors</div>
+					<div className='subtitle'>Prep Time</div>
+				</div>
+			)
+		},
+		{
+			value: 'director-run',
+			label: (
+				<div className='welcome-tab-button'>
+					<div className='title'>Directors</div>
+					<div className='subtitle'>Game Time</div>
+				</div>
+			)
+		},
+		{
+			value: 'creator',
+			label: (
+				<div className='welcome-tab-button'>
+					<div className='title'>Creators</div>
+				</div>
+			)
+		}
+	];
+	const tabs: { value: WelcomeType, label: ReactNode }[] = AppMode.isUnsplit ?
+		[ playerTab, ...directorTabs ]
+		: AppMode.hasSession ? directorTabs : [];
+
 	return (
 		<ErrorBoundary>
 			<div>
 				<div className='ds-text centered-text'>
-					<b>DAMASCUS</b> is an app for <b>DRAW STEEL</b> players, directors, and content creators.
+					<b>{AppMode.appName.toUpperCase()}</b> is an app for <b>DRAW STEEL</b> {AppMode.isUnsplit ? 'players, directors, and content creators' : AppMode.isGM ? 'directors and content creators' : 'players'}.
 				</div>
-				<Segmented
-					style={{ margin: '15px 0' }}
-					block={true}
-					options={[
-						{
-							value: 'player',
-							label: (
-								<div className='welcome-tab-button'>
-									<div className='title'>Players</div>
-								</div>
-							)
-						},
-						{
-							value: 'director-prep',
-							label: (
-								<div className='welcome-tab-button'>
-									<div className='title'>Directors</div>
-									<div className='subtitle'>Prep Time</div>
-								</div>
-							)
-						},
-						{
-							value: 'director-run',
-							label: (
-								<div className='welcome-tab-button'>
-									<div className='title'>Directors</div>
-									<div className='subtitle'>Game Time</div>
-								</div>
-							)
-						},
-						{
-							value: 'creator',
-							label: (
-								<div className='welcome-tab-button'>
-									<div className='title'>Creators</div>
-								</div>
-							)
-						}
-					]}
-					value={page}
-					onChange={setPage}
-				/>
+				{
+					tabs.length > 0 ?
+						<Segmented
+							style={{ margin: '15px 0' }}
+							block={true}
+							options={tabs}
+							value={page}
+							onChange={setPage}
+						/>
+						: null
+				}
 				<SelectablePanel>
 					{getContent()}
 				</SelectablePanel>
+				{
+					AppMode.isUnsplit ?
+						null
+						:
+						<div className='ds-text centered-text counterpart-link'>
+							Looking for {AppMode.counterpartName} <span className='dimmed-text'>({AppMode.counterpartDescription})</span>? <a href={AppMode.counterpartUrl}>Go there instead</a>.
+						</div>
+				}
 			</div>
 		</ErrorBoundary>
 	);

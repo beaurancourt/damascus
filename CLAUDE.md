@@ -12,9 +12,11 @@ Work lands on `damascus/main`, not `main`. The `upstream` remote points at the o
 
 ```
 npm run start    # vite dev server on :5173 (runs npm install first)
+npm run start:gm # dev server in GM mode, to see that site's shape locally
 npm run check    # lint + typecheck + tests + npm audit — the full gate
 npm run lint     # eslint (npm run lint:fix autofixes)
-npm run build    # production build into ./dist
+npm run build    # player-site production build into ./dist
+npm run build:gm # GM-site production build into ./dist-gm
 
 npx tsc -p tsconfig.json --noEmit                 # typecheck alone
 npx vitest run                                    # tests once (npm test watches)
@@ -63,9 +65,21 @@ It also registers two hooks in `.claude/hooks/`: `eslint --fix` runs on every ed
 - **`gh` resolves to the wrong repo.** With `upstream` pointing at andyaiken/forgesteel, `gh run list` and friends report on the upstream project — pass `--repo beaurancourt/damascus` explicitly.
 - **`npm run check` includes `npm audit`**, which can fail on advisories in upstream dependencies that have nothing to do with your change.
 
+## Two sites, one codebase
+
+Damascus deploys as two sites. The **player site** (`/damascus/`) has Heroes and the Library; the **GM site** (`/damascus-gm/`) has the Library and Session. The library is on both deliberately — players browse it, directors author in it — so only Heroes and Session are actually split.
+
+`src/utils/app-mode.ts` is the single source of truth. The mode is fixed at build time by `VITE_APP_MODE`, which `.env.gm` sets when you build with `--mode gm`; nothing chooses a mode at runtime. Gate on the capability (`AppMode.hasHeroes`, `AppMode.hasSession`), not on `isGM`, so the dev server keeps working:
+
+**The dev server is neither site** — `AppMode.isUnsplit` is true there and both areas are reachable, so one dev server serves every screen and the smoke scripts can drive all of them. That means a mode bug won't show up in dev; check it against a real build (`npm run build:gm`, serve `dist-gm` under a `/damascus-gm/` path).
+
+Adding a screen that only one audience needs means: gate its `<Route>` in `main.tsx`, gate its nav entry in `app-footer.tsx`, and gate anything that links to it from a shared screen — a live link to a route the other site dropped is a dead end, not a redirect worth having.
+
 ## Deploy
 
-Pushing to `damascus/main` triggers the `Deploy to GitHub Pages` workflow, publishing to https://beaurancourt.github.io/damascus/. `check.yml` runs lint, typecheck, tests and build on PRs. Production builds set Vite `base: '/damascus/'` while dev serves at `/`, so verify deployed asset paths against the built bundle, not the dev server.
+Pushing to `damascus/main` triggers the `Deploy to GitHub Pages` workflow, publishing the player build to https://beaurancourt.github.io/damascus/. The GM site lives in the separate `beaurancourt/damascus-gm` repo, whose workflow checks *this* repo out, runs `npm run build:gm`, and publishes `dist-gm` to https://beaurancourt.github.io/damascus-gm/ — so a change here needs that workflow re-run (or its schedule) to reach the GM site. `check.yml` runs lint, typecheck, tests and build on PRs.
+
+Production builds set Vite `base` to `/damascus/` or `/damascus-gm/` while dev serves at `/`, so verify deployed asset paths against the built bundle, not the dev server.
 
 ## Encounter builder skill
 

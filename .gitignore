@@ -1,6 +1,7 @@
 # Build artifacts
 coverage
 dist
+dist-gm
 node_modules
 playwright-report
 test-results

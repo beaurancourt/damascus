@@ -10,6 +10,7 @@ import { AdventurePanel } from '@/components/panels/elements/adventure-panel/adv
 import { Ancestry } from '@/models/ancestry';
 import { AncestryPanel } from '@/components/panels/elements/ancestry-panel/ancestry-panel';
 import { AppHeader } from '@/components/panels/app-header/app-header';
+import { AppMode } from '@/utils/app-mode';
 import { Career } from '@/models/career';
 import { CareerPanel } from '@/components/panels/elements/career-panel/career-panel';
 import { ClassPanel } from '@/components/panels/elements/class-panel/class-panel';
@@ -444,6 +445,11 @@ export const LibraryListPage = (props: Props) => {
 		}
 
 		const getStart = () => {
+			// Starting anything runs it in the session, which only the GM site has.
+			if (!AppMode.hasSession) {
+				return null;
+			}
+
 			switch (category) {
 				case 'encounter':
 					return {
