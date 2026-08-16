@@ -36,8 +36,12 @@ export const GlobalSearchModal = (props: Props) => {
 		[ props.sourcebooks, props.heroes ]
 	);
 
-	const grouped = useMemo(() => {
+	// Also returns the order the kinds should be shown in. fuse hands back hits
+	// sorted by score, so the order a kind first appears in them is the order of
+	// its best match - which is what a searcher expects to see first.
+	const { grouped, rankedKinds } = useMemo(() => {
 		const groups = new Map<SearchKind, SearchEntry[]>();
+		const ranked: SearchKind[] = [];
 		if (query.trim().length < 2) {
 			// Empty/short query — show a sampling of top entries (heroes + a few of each)
 			const sample: SearchEntry[] = [];
@@ -54,19 +58,22 @@ export const GlobalSearchModal = (props: Props) => {
 				if (!groups.has(e.kind)) { groups.set(e.kind, []); }
 				groups.get(e.kind)!.push(e);
 			});
-			return groups;
+			return { grouped: groups, rankedKinds: [] as SearchKind[] };
 		}
 
 		const hits = fuse.search(query, { limit: MAX_RESULTS });
 		hits.forEach(h => {
 			const e = h.item;
 			const list = groups.get(e.kind) ?? [];
+			if (!ranked.includes(e.kind)) {
+				ranked.push(e.kind);
+			}
 			if (list.length < MAX_PER_KIND) {
 				list.push(e);
 				groups.set(e.kind, list);
 			}
 		});
-		return groups;
+		return { grouped: groups, rankedKinds: ranked };
 	}, [ query, fuse, entries ]);
 
 	const handlePick = (entry: SearchEntry) => {
@@ -84,6 +91,8 @@ export const GlobalSearchModal = (props: Props) => {
 	const KIND_ORDER: SearchKind[] = [
 		'rule',
 		'condition',
+		'skill',
+		'language',
 		'hero',
 		'monster',
 		'monster-group',
@@ -107,7 +116,11 @@ export const GlobalSearchModal = (props: Props) => {
 		'terrain'
 	];
 
-	const visibleKinds = KIND_ORDER.filter(k => grouped.has(k) && grouped.get(k)!.length > 0);
+	// Ranked order while searching; the fixed order is only for the browse list
+	// shown before a query is typed.
+	const visibleKinds = rankedKinds.length > 0
+		? rankedKinds.filter(k => grouped.has(k) && grouped.get(k)!.length > 0)
+		: KIND_ORDER.filter(k => grouped.has(k) && grouped.get(k)!.length > 0);
 	const hitCount = Array.from(grouped.values()).reduce((sum, list) => sum + list.length, 0);
 	const showingShortQuery = query.trim().length < 2;
 

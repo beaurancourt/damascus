@@ -1,4 +1,3 @@
 - need navigation on charsheets
-- combine "search" and "reference" into one tool. reference's search is weird.
 - separate out the website into player-facing (this same url) and gm-facing (damascus-gm)
 - in character creation, i see a lot of '[Violation] 'click' handler took 291ms'

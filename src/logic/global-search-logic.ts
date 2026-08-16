@@ -43,9 +43,13 @@ export type SearchKind =
 	| 'negotiation'
 	| 'terrain'
 	| 'rule'
-	| 'condition';
+	| 'condition'
+	| 'skill'
+	| 'language';
 
 const KIND_LABEL: Record<SearchKind, string> = {
+	'skill': 'Skills',
+	'language': 'Languages',
 	'hero': 'Heroes',
 	'ancestry': 'Ancestries',
 	'career': 'Careers',
@@ -234,6 +238,30 @@ export class GlobalSearchLogic {
 				name: ct,
 				description: stripMarkdown(ConditionLogic.getDescription(ct)),
 				target: { type: 'rule', page: RulesPage.Conditions, label: ct }
+			});
+		});
+
+		// Skills and languages. The reference panel browses these, so the one
+		// search has to find them too - otherwise removing that panel's own
+		// search would lose the only way to look a skill up by name.
+		SourcebookLogic.getSkills(sourcebooks).forEach(skill => {
+			entries.push({
+				id: `skill:${skill.name}`,
+				kind: 'skill',
+				name: skill.name,
+				subtitle: skill.list,
+				description: stripMarkdown(skill.description),
+				target: { type: 'rule', page: RulesPage.Skills, label: skill.name }
+			});
+		});
+
+		SourcebookLogic.getLanguages(sourcebooks).forEach(language => {
+			entries.push({
+				id: `language:${language.name}`,
+				kind: 'language',
+				name: language.name,
+				description: stripMarkdown(language.description),
+				target: { type: 'rule', page: RulesPage.Languages, label: language.name }
 			});
 		});
 

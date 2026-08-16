@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { AbilityData } from '@/data/ability-data';
 import { AbilityPanel } from '@/components/panels/elements/ability-panel/ability-panel';
 import { AbilityUsage } from '@/enums/ability-usage';
@@ -15,13 +15,11 @@ import { PanelMode } from '@/enums/panel-mode';
 import { RulesData } from '@/data/rules-data';
 import { RulesItem } from '@/models/rules-item';
 import { RulesPage } from '@/enums/rules-page';
-import { SearchBox } from '@/components/controls/text-input/text-input';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { SkillList } from '@/enums/skill-list';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { Space } from 'antd';
-import { Utils } from '@/utils/utils';
 
 import './reference-modal.scss';
 
@@ -34,13 +32,16 @@ interface Props {
 }
 
 export const ReferenceModal = (props: Props) => {
-	const [ searchTerm, setSearchTerm ] = useState<string>('');
 	const rulesScrollRef = useRef<HTMLDivElement | null>(null);
 
 	const slugify = (label: string) =>
 		label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 	const ruleSlug = (label: string) => 'rule-' + slugify(label);
 	const conditionSlug = (label: string) => 'condition-' + slugify(label);
+	// Skills and languages are searchable now, so a search hit has to be able to
+	// land on the row itself rather than the top of the section.
+	const skillSlug = (label: string) => 'skill-' + slugify(label);
+	const languageSlug = (label: string) => 'language-' + slugify(label);
 
 	// Rewrite plain-text mentions of a rule label as markdown anchor links
 	// (e.g. "Forced Movement" → "[Forced Movement](#rule-forced-movement)") so
@@ -127,13 +128,15 @@ export const ReferenceModal = (props: Props) => {
 		let target: string | null = null;
 		if (props.startRule) {
 			// Try rule first, then condition (since both are passed via this prop).
-			const ruleId = ruleSlug(props.startRule);
-			const conditionId = conditionSlug(props.startRule);
-			target = document.getElementById(ruleId)
-				? ruleId
-				: document.getElementById(conditionId)
-					? conditionId
-					: ruleId; // fall back to rule slug; it may mount asynchronously
+			// One label prop carries all four kinds, so try each slug in turn.
+			const candidates = [
+				ruleSlug(props.startRule),
+				conditionSlug(props.startRule),
+				skillSlug(props.startRule),
+				languageSlug(props.startRule)
+			];
+			target = candidates.find(id => document.getElementById(id))
+				?? (props.startPage ? sectionSlug(props.startPage) : candidates[0]);
 		} else if (props.startPage) {
 			target = sectionSlug(props.startPage);
 		}
@@ -196,15 +199,11 @@ export const ReferenceModal = (props: Props) => {
 			return a.label.localeCompare(b.label);
 		});
 
-		const matchedLabels = new Set(
-			ordered.filter(r => Utils.textMatches([ r.label, r.content ], searchTerm)).map(r => r.label)
-		);
-
-		// If a search term is set, hide rules that don't match. (Don't try to be clever
-		// with ancestor inclusion — the order/heading hierarchy still shows structure.)
-		const visible = searchTerm
-			? ordered.filter(r => matchedLabels.has(r.label))
-			: ordered;
+		// This panel browses; searching is the global search's job. It used to
+		// filter with a substring match of its own, which behaved differently
+		// from the fuzzy, ranked search everywhere else and only ever looked
+		// inside the section you were already on.
+		const visible = ordered;
 
 		const conditionTypes: ConditionType[] = [
 			ConditionType.Bleeding,
@@ -271,7 +270,7 @@ export const ReferenceModal = (props: Props) => {
 		return (
 			<div id={sectionSlug(RulesPage.Rules)}>
 				{
-					visible.length === 0 && searchTerm ? <Empty text='No matches' /> : null
+					visible.length === 0 ? <Empty text='No matches' /> : null
 				}
 				{
 					entries.map((entry, idx) => {
@@ -315,9 +314,7 @@ export const ReferenceModal = (props: Props) => {
 			ConditionType.Taunted,
 			ConditionType.Weakened
 		];
-		const visible = searchTerm
-			? conditions.filter(c => Utils.textMatches([ c, ConditionLogic.getDescription(c) ], searchTerm))
-			: conditions;
+		const visible = conditions;
 		if (visible.length === 0) { return null; }
 
 		const allRules = [
@@ -348,9 +345,7 @@ export const ReferenceModal = (props: Props) => {
 		const allSkills = SourcebookLogic.getSkills(sourcebooks);
 		const skillNames = props.hero ? HeroLogic.getSkills(props.hero, sourcebooks).map(s => s.name) : [];
 
-		const visibleSkills = searchTerm
-			? allSkills.filter(s => Utils.textMatches([ s.name, s.description ], searchTerm))
-			: allSkills;
+		const visibleSkills = allSkills;
 		if (visibleSkills.length === 0) { return null; }
 
 		return (
@@ -372,12 +367,13 @@ export const ReferenceModal = (props: Props) => {
 								<Space orientation='vertical' style={{ paddingBottom: '20px', width: '100%' }}>
 									{
 										inGroup.map(s => (
-											<Field
-												key={s.name}
-												highlight={skillNames.includes(s.name)}
-												label={s.name}
-												value={s.description}
-											/>
+											<div key={s.name} id={skillSlug(s.name)}>
+												<Field
+													highlight={skillNames.includes(s.name)}
+													label={s.name}
+													value={s.description}
+												/>
+											</div>
 										))
 									}
 								</Space>
@@ -394,9 +390,7 @@ export const ReferenceModal = (props: Props) => {
 		const allLanguages = SourcebookLogic.getLanguages(sourcebooks);
 		const languageNames = props.hero ? HeroLogic.getLanguages(props.hero, sourcebooks).map(l => l.name) : [];
 
-		const visibleLangs = searchTerm
-			? allLanguages.filter(l => Utils.textMatches([ l.name, l.description ], searchTerm))
-			: allLanguages;
+		const visibleLangs = allLanguages;
 		if (visibleLangs.length === 0) { return null; }
 
 		return (
@@ -417,7 +411,7 @@ export const ReferenceModal = (props: Props) => {
 								<Space orientation='vertical' style={{ paddingBottom: '20px', width: '100%' }}>
 									{
 										inGroup.map(l => (
-											<div key={l.name}>
+											<div key={l.name} id={languageSlug(l.name)}>
 												<Field
 													highlight={languageNames.includes(l.name)}
 													label={l.name}
@@ -451,9 +445,7 @@ export const ReferenceModal = (props: Props) => {
 			{ label: 'Free Strikes', items: [ AbilityData.freeStrikeMelee, AbilityData.freeStrikeRanged ] }
 		];
 
-		const filtered = searchTerm
-			? groups.map(g => ({ ...g, items: g.items.filter(a => Utils.textMatches([ a.name, a.description ], searchTerm)) })).filter(g => g.items.length > 0)
-			: groups;
+		const filtered = groups;
 		if (filtered.length === 0) { return null; }
 
 		return (
@@ -483,7 +475,6 @@ export const ReferenceModal = (props: Props) => {
 		<Modal
 			content={
 				<div className='reference-modal'>
-					<SearchBox style={{ margin: '12px 0 8px 0' }} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 					<div ref={rulesScrollRef} className='rules-doc' style={{ flex: '1 1 0', overflowY: 'auto', paddingRight: 10 }} onClick={handleDocClick}>
 						{getRulesSection()}
 						{getConditionsSection()}
