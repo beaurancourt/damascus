@@ -44,7 +44,12 @@ export class HeroLogic {
 		return `Level ${hero.class.level} ${hero.ancestry.name} ${hero.class.name}`;
 	};
 
-	static getFeatures = (hero: Hero, includeCustomizations = true) => {
+	// The flattened feature tree, in the order the sources produce it. Sorting by
+	// name and applying ability customizations are display concerns, so they live
+	// in getFeatures below; the callers here that only sum or filter take this
+	// and skip both. getCharacteristic alone runs 3632 times for a single click
+	// in the builder, so that work is worth not doing.
+	static getFeaturesRaw = (hero: Hero) => {
 		let features: { feature: Feature, source: string, level: number | undefined }[] = [];
 
 		if (hero.ancestry) {
@@ -193,8 +198,12 @@ export class HeroLogic {
 		});
 		features.push(...FeatureLogic.simplifyFeatures(featuresFromControlledMonsters, hero));
 
+		return features;
+	};
+
+	static getFeatures = (hero: Hero, includeCustomizations = true) => {
 		return Collections
-			.sort(features, f => f.feature.name)
+			.sort(HeroLogic.getFeaturesRaw(hero), f => f.feature.name)
 			.map(f => {
 				if (!includeCustomizations) {
 					return f;
@@ -455,7 +464,7 @@ export class HeroLogic {
 			}
 		}
 
-		HeroLogic.getFeatures(hero)
+		HeroLogic.getFeaturesRaw(hero)
 			.map(f => f.feature)
 			.filter(f => f.type === FeatureType.CharacteristicBonus)
 			.filter(f => f.data.characteristic === characteristic)
@@ -559,7 +568,7 @@ export class HeroLogic {
 			value += v * CreatureLogic.getEchelon(hero.class.level);
 		}
 
-		HeroLogic.getFeatures(hero)
+		HeroLogic.getFeaturesRaw(hero)
 			.map(f => f.feature)
 			.filter(f => f.type === FeatureType.Bonus)
 			.map(f => f.data)
@@ -803,7 +812,7 @@ export class HeroLogic {
 				break;
 		}
 
-		HeroLogic.getFeatures(hero)
+		HeroLogic.getFeaturesRaw(hero)
 			.map(f => f.feature)
 			.filter(f => f.type === FeatureType.Bonus)
 			.map(f => f.data)
@@ -940,7 +949,7 @@ export class HeroLogic {
 		}
 		value += Collections.max(kitBonuses, x => x) || 0;
 
-		HeroLogic.getFeatures(hero)
+		HeroLogic.getFeaturesRaw(hero)
 			.map(f => f.feature)
 			.filter(f => f.type === FeatureType.AbilityDistance)
 			.filter(f => f.data.keywords.every(kw => keywords.includes(kw)))
