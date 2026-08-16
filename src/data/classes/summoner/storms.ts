@@ -151,7 +151,7 @@ Alternatively, you can spend 1 essence to transform the mote into any signature 
 								description: 'These massive clods of animated stone roll upon smaller piles of rocks that could be perceived as limbs. Walking boulders are useful for taking up space and forming barricades.',
 								level: 0,
 								role: FactoryLogic.createMonsterRole(MonsterOrganizationType.Minion, MonsterRoleType.Defender),
-								keywords: [ 'Elemental (fire)' ],
+								keywords: [ 'Elemental (earth)' ],
 								encounterValue: 0,
 								size: FactoryLogic.createSize(2),
 								speed: FactoryLogic.createSpeed(4, 'climb'),
@@ -170,10 +170,15 @@ Alternatively, you can spend 1 essence to transform the mote into any signature 
 										name: 'Obstruct',
 										description: 'The boulder obstructs line of effect for enemies'
 									}),
-									FactoryLogic.feature.create({
-										id: 'summoner-2-1-5c-3',
-										name: 'Pile Up',
-										description: 'When one or more boulders is reduced to 0 Stamina, they each leave behind a stone wall equal to their size in their space until the end of the encounter.'
+									FactoryLogic.feature.createAbility({
+										ability: FactoryLogic.createAbility({
+											id: 'summoner-2-1-5c-3',
+											name: 'Pile Up',
+											cost: 1,
+											sections: [
+												FactoryLogic.createAbilitySectionText('When one or more boulders is reduced to 0 Stamina, they each leave behind a stone wall equal to their size in their space until the end of the encounter.')
+											]
+										})
 									})
 								]
 							}),
@@ -581,7 +586,7 @@ Alternatively, you can spend 1 essence to transform the mote into any signature 
 									FactoryLogic.feature.createAbility({
 										ability: FactoryLogic.createAbility({
 											id: 'summoner-2-2-2c-2',
-											name: 'Freezing Strike',
+											name: 'Freezing Howl',
 											type: FactoryLogic.type.createMain(),
 											keywords: [ AbilityKeyword.Magic, AbilityKeyword.Ranged, AbilityKeyword.Strike ],
 											distance: [ FactoryLogic.distance.createRanged(5) ],
@@ -835,15 +840,13 @@ Alternatively, you can spend 1 essence to transform the mote into any signature 
 					id: 'summoner-2-8-1',
 					name: 'Control the Elements',
 					description: `
-Whenever you use Call Forth, you can spend essence to increase the size of one elemental minion you summon as shown on the following table.
+Whenever you use Call Forth, you can spend essence to change the size of one elemental minion you summon as shown on the following table.
 
 | Essence Cost | Size Change                |
 |:=============|============================|
 | 1            | The minion becomes size 2. |
 | 3            | The minion becomes size 3. |
-| 5            | The minion becomes size 4. |
-
-Enlarged minions have their melee distance increased by 1 and inherent damage immunities doubled.`
+| 5            | The minion becomes size 4. |`
 				}),
 				FactoryLogic.feature.createSummon({
 					id: 'summoner-2-8-2',
@@ -902,7 +905,7 @@ As a harbinger of ruin, the dragon’s Portent has incredibly potent impact and 
 									FactoryLogic.feature.create({
 										id: 'summoner-2-8-2a-2',
 										name: 'Sealing Strike',
-										description: 'The Portent’s free strikes inflict M < [strong] slowed (save ends). While slowed this way, the target takes 1d6 aﬃnity damage at the start of each of their turns.'
+										description: 'The Portent’s free strikes inflict M < [strong] slowed (save ends). While slowed this way, the target takes 1d6 affinity damage at the start of each of their turns.'
 									}),
 									FactoryLogic.feature.create({
 										id: 'summoner-2-8-2a-2',
@@ -931,11 +934,11 @@ As a harbinger of ruin, the dragon’s Portent has incredibly potent impact and 
 								FactoryLogic.feature.createAbility({
 									ability: FactoryLogic.createAbility({
 										id: 'summoner-2-8-2a-10-2',
-										name: 'A Breath Felt in a Hurricane ',
+										name: 'A Breath Felt in a Hurricane',
 										type: FactoryLogic.type.createChampionAction(),
 										keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic, AbilityKeyword.Ranged ],
-										distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Cube, value: 10, within: 4 }) ],
-										target: 'All enemies and objects in the area',
+										distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Cube, value: 4, within: 10 }) ],
+										target: 'Each enemy and object in the area',
 										cost: 1,
 										sections: [
 											FactoryLogic.createAbilitySectionText('9 affinity damage. The damage ignores immunity. The affected area becomes difficult terrain. An enemy has affinity weakness 5 while occupying an affected square.')

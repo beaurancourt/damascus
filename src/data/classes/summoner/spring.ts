@@ -69,7 +69,7 @@ You gain a bane on the test for each subsequent rumor you collect either on the 
 								stamina: 1,
 								stability: 0,
 								freeStrikeDamage: 1,
-								characteristics: FactoryLogic.createCharacteristics(-2, -2, 0, 2, 1),
+								characteristics: FactoryLogic.createCharacteristics(-2, -1, 0, 2, 1),
 								features: [
 									FactoryLogic.feature.create({
 										id: 'summoner-3-1-4a-1',
@@ -99,7 +99,7 @@ You gain a bane on the test for each subsequent rumor you collect either on the 
 								description: 'The bellringers are glowing pixies that jingle as they fly. Historically, these pixies worked alongside bowman to ensure their arrows struck true.',
 								level: 0,
 								role: FactoryLogic.createMonsterRole(MonsterOrganizationType.Minion, MonsterRoleType.Support),
-								keywords: [],
+								keywords: [ 'Fey' ],
 								encounterValue: 0,
 								size: FactoryLogic.createSize(1, 'T'),
 								speed: FactoryLogic.createSpeed(5, 'fly, hover'),
@@ -136,14 +136,14 @@ You gain a bane on the test for each subsequent rumor you collect either on the 
 								description: 'Dandeknights are sprite warriors whose dragonfly wingbeats emit a tonal drone. They’re usually clad in tassels that shift color as they swing their weapons.',
 								level: 0,
 								role: FactoryLogic.createMonsterRole(MonsterOrganizationType.Minion, MonsterRoleType.Ambusher),
-								keywords: [],
+								keywords: [ 'Fey' ],
 								encounterValue: 0,
-								size: FactoryLogic.createSize(1, 'M'),
-								speed: FactoryLogic.createSpeed(5),
-								stamina: 0,
+								size: FactoryLogic.createSize(1, 'T'),
+								speed: FactoryLogic.createSpeed(6, 'fly'),
+								stamina: 2,
 								stability: 0,
-								freeStrikeDamage: 0,
-								characteristics: FactoryLogic.createCharacteristics(0, 0, 0, 0, 0),
+								freeStrikeDamage: 1,
+								characteristics: FactoryLogic.createCharacteristics(2, 0, -1, -1, -1),
 								features: [
 									FactoryLogic.feature.create({
 										id: 'summoner-3-1-4c-1',
@@ -183,7 +183,7 @@ You gain a bane on the test for each subsequent rumor you collect either on the 
 								keywords: [ 'Fey' ],
 								encounterValue: 0,
 								size: FactoryLogic.createSize(1, 'T'),
-								speed: FactoryLogic.createSpeed(5),
+								speed: FactoryLogic.createSpeed(5, 'fly, hover'),
 								stamina: 5,
 								stability: 0,
 								freeStrikeDamage: 5,
@@ -288,7 +288,7 @@ You gain a bane on the test for each subsequent rumor you collect either on the 
 								stamina: 8,
 								stability: 2,
 								freeStrikeDamage: 4,
-								characteristics: FactoryLogic.createCharacteristics(0, 2, -1, 1, 1),
+								characteristics: FactoryLogic.createCharacteristics(2, 0, -1, -1, -1),
 								features: [
 									FactoryLogic.feature.create({
 										id: 'summoner-3-1-5c-1',

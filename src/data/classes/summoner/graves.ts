@@ -58,7 +58,7 @@ This ability becomes a free triggered action if the target was a minion (either 
 								stability: 1,
 								freeStrikeDamage: 1,
 								freeStrikeType: DamageType.Corruption,
-								characteristics: FactoryLogic.createCharacteristics(2, -2, 0, 0, -2),
+								characteristics: FactoryLogic.createCharacteristics(2, 0, -1, -1, -1),
 								features: [
 									FactoryLogic.feature.createDamageModifier({
 										id: 'summoner-4-1-4a-1',
@@ -153,7 +153,7 @@ This ability becomes a free triggered action if the target was a minion (either 
 								stamina: 2,
 								stability: 0,
 								freeStrikeDamage: 1,
-								characteristics: FactoryLogic.createCharacteristics(-2, 2, 0, 0, -2),
+								characteristics: FactoryLogic.createCharacteristics(2, 0, -1, -1, -1),
 								features: [
 									FactoryLogic.feature.createDamageModifier({
 										id: 'summoner-4-1-4c-1',
@@ -310,7 +310,7 @@ This ability becomes a free triggered action if the target was a minion (either 
 								speed: FactoryLogic.createSpeed(5),
 								stamina: 8,
 								stability: 0,
-								freeStrikeDamage: 4,
+								freeStrikeDamage: 1,
 								characteristics: FactoryLogic.createCharacteristics(2, -2, 0, 0, 1),
 								features: [
 									FactoryLogic.feature.createBonus({
@@ -443,7 +443,7 @@ This ability becomes a free triggered action if the target was a minion (either 
 						FactoryLogic.createSummon({
 							monster: FactoryLogic.createMonster({
 								id: 'summoner-4-2-2a',
-								name: 'Assursed Mummy',
+								name: 'Accursed Mummy',
 								description: 'The preserved dead, bound for eternal rest, know only violence when robbed of their future. Accursed mummies use their wrappings to bind others to the same fate.',
 								level: 0,
 								role: FactoryLogic.createMonsterRole(MonsterOrganizationType.Minion, MonsterRoleType.Hexer),
@@ -469,6 +469,11 @@ This ability becomes a free triggered action if the target was a minion (either 
 												damageType: DamageType.Poison,
 												modifierType: DamageModifierType.Immunity,
 												characteristics: [ Characteristic.Reason ]
+											}),
+											FactoryLogic.damageModifier.create({
+												damageType: DamageType.Fire,
+												modifierType: DamageModifierType.Weakness,
+												value: 1
 											})
 										]
 									}),
@@ -479,6 +484,7 @@ This ability becomes a free triggered action if the target was a minion (either 
 											type: FactoryLogic.type.createMain(),
 											keywords: [ AbilityKeyword.Melee, AbilityKeyword.Strike, AbilityKeyword.Weapon ],
 											distance: [ FactoryLogic.distance.createSpecial('Melee R') ],
+											target: 'One creature or object per minion',
 											cost: 'signature',
 											sections: [
 												FactoryLogic.createAbilitySectionRoll(
@@ -764,7 +770,7 @@ After you stop channeling their spirit, you can’t use this feature to channel 
 								stamina: 40,
 								stability: 0,
 								freeStrikeDamage: 7,
-								characteristics: FactoryLogic.createCharacteristics(4, 3, 0, 2, 3),
+								characteristics: FactoryLogic.createCharacteristics(4, -3, 0, 2, 3),
 								features: [
 									FactoryLogic.feature.createBonus({
 										id: 'summoner-4-5-3c-1',
@@ -888,7 +894,7 @@ The Avatar of death weighs down their foes with conditions so their army can tak
 														bonus: 5,
 														tier1: '9 corruption damage; M < [weak] bleeding (save ends)',
 														tier2: '12 corruption damage; M < [average] bleeding (save ends)',
-														tier3: '12 corruption damage; M < [strong] bleeding (save ends)'
+														tier3: '14 corruption damage; M < [strong] bleeding (save ends)'
 													})
 												),
 												FactoryLogic.createAbilitySectionText('If the target is a creature that isn’t a leader or a solo and they are still bleeding at the end of the encounter, they instantly die.')
@@ -921,7 +927,7 @@ The Avatar of death weighs down their foes with conditions so their army can tak
 									}),
 									FactoryLogic.feature.create({
 										id: 'summoner-4-8-2a-7',
-										name: '',
+										name: 'Drifting Spirit',
 										description: 'The Avatar is unaffected by difficult terrain and damage from forced movement.'
 									})
 								]

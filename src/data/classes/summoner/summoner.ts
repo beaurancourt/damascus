@@ -50,13 +50,18 @@ You can also take advantage of powerful magic to buff your allies, whittle down 
 					name: 'Essence',
 					gains: [
 						{
+							tag: 'combat-start',
+							trigger: 'Start of a combat encounter or other stressful situation tracked in rounds',
+							value: 'Victories'
+						},
+						{
 							tag: 'start',
 							trigger: 'Start of your turn',
 							value: '2'
 						},
 						{
 							tag: 'minion-death',
-							trigger: 'The first time each round that any minion dies unwillingly within your Summoner’s Range',
+							trigger: 'The first time each round that any minion (either yours or an enemy) dies unwillingly within your Summoner’s Range',
 							value: '1'
 						}
 					],
@@ -272,7 +277,7 @@ You can shift into squares that contain one of your minions, even if they occupy
 				}),
 				FactoryLogic.feature.createChoice({
 					id: 'summoner-1-8',
-					name: 'Tactic Call',
+					name: 'Quick Command',
 					description: 'You have a special command you can issue to your minions.',
 					options: [
 						{
@@ -298,7 +303,7 @@ You can shift into squares that contain one of your minions, even if they occupy
 							feature: FactoryLogic.feature.createAbility({
 								ability: FactoryLogic.createAbility({
 									id: 'summoner-1-8b',
-									name: 'Impede!',
+									name: 'Halt!',
 									description: 'You order a minion to get in the way.',
 									type: FactoryLogic.type.createTrigger('The target starts their turn, moves, or is force moved.'),
 									distance: [ FactoryLogic.distance.createSummoner() ],
@@ -323,6 +328,7 @@ You can shift into squares that contain one of your minions, even if they occupy
 									type: FactoryLogic.type.createTrigger('The target receives enough damage to die or be destroyed.'),
 									distance: [ FactoryLogic.distance.createSummoner() ],
 									target: 'One ally',
+									cost: 3,
 									sections: [
 										FactoryLogic.createAbilitySectionField({
 											name: 'Special',
@@ -338,7 +344,7 @@ You can shift into squares that contain one of your minions, even if they occupy
 							feature: FactoryLogic.feature.createAbility({
 								ability: FactoryLogic.createAbility({
 									id: 'summoner-1-8d',
-									name: 'Take the Hit!',
+									name: 'Shield!',
 									description: 'You call upon a minion to use their body to dampen the blow.',
 									type: FactoryLogic.type.createTrigger('The target is targeted by a strike.'),
 									distance: [ FactoryLogic.distance.createSummoner() ],
@@ -371,7 +377,7 @@ You can shift into squares that contain one of your minions, even if they occupy
 				}),
 				FactoryLogic.feature.create({
 					id: 'summoner-2-2',
-					name: 'Dominion',
+					name: 'Summoner’s Dominion',
 					description: `
 Once per encounter, you can use a maneuver to summon a fixture from your minions’ native manifold or origin into an unoccupied space on the ground within your Summoner’s Range. You can spend 1 essence to relocate the fixture as a free maneuver on your turn. The fixture stays until the end of the encounter, until its Stamina is reduced to 0, or until you become dying.
 
@@ -531,7 +537,7 @@ The chain lasts until the start of your next turn or until the chain is no longe
 				FactoryLogic.feature.createPerk({
 					id: 'summoner-6-1',
 					name: 'Perk',
-					lists: [ PerkList.Intrigue, PerkList.Lore, PerkList.Supernatural ]
+					lists: [ PerkList.Interpersonal, PerkList.Lore, PerkList.Supernatural ]
 				}),
 				FactoryLogic.feature.create({
 					id: 'summoner-6-2',
@@ -764,9 +770,14 @@ Your champion gains additional features at 10th level. This includes a special C
 					description: 'You have a double edge on tests made to dissuade or scare enemy minions or lackeys.'
 				}),
 				FactoryLogic.feature.create({
+					id: 'summoner-9-1d',
+					name: 'Kit Improvement',
+					description: 'Your clothing and equipment become adorned with distinct and elaborate regalia to make you stand out from your army, like massive rib cage pauldrons, a tooth crested helmet, or a billowing mantle of fire.'
+				}),
+				FactoryLogic.feature.create({
 					id: 'summoner-9-2',
 					name: 'Steward of Two Worlds',
-					description: 'Your clothing and equipment become adorned with distinct and elaborate regalia to make you stand out from your army, like massive rib cage pauldrons, a tooth crested helmet, or a billowing mantle of fire.'
+					description: 'You and your allies are now welcome in your circle’s source manifold. Negotiations with native denizens of your circle’s source manifold have their patience increased by 2.'
 				}),
 				FactoryLogic.feature.createClassAbilityChoice({
 					id: 'summoner-9-3',
@@ -945,7 +956,7 @@ If they move adjacent to their target, become targeted by an opportunity attack,
 		}),
 		FactoryLogic.createAbility({
 			id: 'summoner-ability-4',
-			name: 'Rally Cry',
+			name: 'Rallying Cry',
 			description: '“Show them what you’re made of!”',
 			type: FactoryLogic.type.createManeuver(),
 			keywords: [ AbilityKeyword.Magic, AbilityKeyword.Ranged ],
@@ -958,7 +969,7 @@ If they move adjacent to their target, become targeted by an opportunity attack,
 		}),
 		FactoryLogic.createAbility({
 			id: 'summoner-ability-5',
-			name: 'Summoner\'s Cradle',
+			name: 'Shields of Essence',
 			description: 'You call forth protective forces to keep you all from harm.',
 			type: FactoryLogic.type.createManeuver(),
 			keywords: [ AbilityKeyword.Magic, AbilityKeyword.Ranged ],
@@ -1101,7 +1112,7 @@ These minions die at the end of your turn, activate no effects upon death, and y
 			description: 'Your champion’s appearance has an enchanting impact on you and your allies.',
 			type: FactoryLogic.type.createManeuver(),
 			keywords: [ AbilityKeyword.Area, AbilityKeyword.Champion, AbilityKeyword.Magic ],
-			distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Burst, value: 3 }) ],
+			distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Burst, value: 4 }) ],
 			target: 'Self and all allies',
 			cost: 9,
 			sections: [
@@ -1158,7 +1169,7 @@ Until the end of the encounter, whenever a target gets a tier 1 result on a stri
 		}),
 		FactoryLogic.createAbility({
 			id: 'summoner-ability-15',
-			name: '1,000,000 Minions',
+			name: '10,000 Minions',
 			description: 'The battle is now a war. Your entire army storms the field.',
 			type: FactoryLogic.type.createMain(),
 			keywords: [ AbilityKeyword.Magic ],
@@ -1187,7 +1198,7 @@ Additionally, you can use Minion Bridge treating each affected square as an elig
 		}),
 		FactoryLogic.createAbility({
 			id: 'summoner-ability-17',
-			name: 'I Unsummon Thee',
+			name: 'I Abjure Thee',
 			description: 'Cast those not affixed to this manifold into the void of a minion’s existence.',
 			type: FactoryLogic.type.createMain(),
 			keywords: [ AbilityKeyword.Area, AbilityKeyword.Magic ],
@@ -1203,7 +1214,7 @@ A leader or a solo enemy in the area that has R, I, or P < [average] is weakened
 		}),
 		FactoryLogic.createAbility({
 			id: 'summoner-ability-18',
-			name: 'Wrath of a Champion',
+			name: 'The Champion\'s Wrath',
 			description: 'Your champion appears and goes into a rampage, clearing the way for your minions to march forth.',
 			type: FactoryLogic.type.createMain(),
 			keywords: [ AbilityKeyword.Area, AbilityKeyword.Champion, AbilityKeyword.Magic, AbilityKeyword.Weapon ],

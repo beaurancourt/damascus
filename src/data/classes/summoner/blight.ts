@@ -297,8 +297,8 @@ When you finish a respite, you can always perceive the soul trails of each creat
 													FactoryLogic.createPowerRoll({
 														characteristic: Characteristic.Reason,
 														tier1: '4 damage; P < [weak] twisted (save ends)',
-														tier2: '4 damage; P < [average] twisted (save ends)',
-														tier3: '4 damage; P < [strong] twisted (save ends)'
+														tier2: '6 damage; P < [average] twisted (save ends)',
+														tier3: '8 damage; P < [strong] twisted (save ends)'
 													})
 												),
 												FactoryLogic.createAbilitySectionText('A twisted target can’t take advantage of edges or search for hidden creatures until the condition ends.')
@@ -871,7 +871,7 @@ The demon lord’s Aspect enjoys bringing enemies in close with their appendages
 								FactoryLogic.feature.createAbility({
 									ability: FactoryLogic.createAbility({
 										id: 'summoner-1-8-2a-10-2',
-										name: 'Flensing Reality',
+										name: 'Reality Flense',
 										type: FactoryLogic.type.createChampionAction(),
 										distance: [ FactoryLogic.distance.create({ type: AbilityDistanceType.Burst, value: 20 }) ],
 										target: 'Self and each non-minion ally in the area',
