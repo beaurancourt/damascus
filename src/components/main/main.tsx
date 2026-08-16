@@ -1621,6 +1621,7 @@ export const Main = () => {
 								sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
 								params={footerParams}
 								onNewHero={() => newHero('')}
+								onImportHero={hero => importHero(hero, '')}
 								onPregen={hero => importHero(hero, '')}
 								onNewEncounter={() => createLibraryElement('encounter', '', null)}
 							/>

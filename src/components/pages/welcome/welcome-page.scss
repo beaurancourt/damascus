@@ -54,6 +54,15 @@
 				.ant-btn {
 					flex: 1 1 0;
 				}
+
+				// The import action is a Button wrapped in an antd Upload, so the
+				// wrapper - not the button - is the flex child; it has to share the
+				// row on equal terms with the plain buttons either side of it. Leave
+				// its automatic minimum size alone: that's what makes the row wrap
+				// instead of squeezing this one item down to nothing.
+				.ant-upload-wrapper {
+					flex: 1 1 0;
+				}
 			}
 		}
 

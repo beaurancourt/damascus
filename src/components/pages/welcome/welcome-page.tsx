@@ -1,6 +1,6 @@
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
 import { BookOutlined, EllipsisOutlined, PlayCircleOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Divider, Flex, Popover, Segmented, Space } from 'antd';
+import { Button, Divider, Flex, Popover, Segmented, Space, Upload } from 'antd';
 import { AppHeader } from '@/components/panels/app-header/app-header';
 import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
@@ -24,6 +24,7 @@ interface Props {
 	sourcebooks: Sourcebook[];
 	params: FooterParams;
 	onNewHero: () => void;
+	onImportHero: (hero: Hero) => void;
 	onPregen: (hero: Hero) => void;
 	onNewEncounter: () => void;
 }
@@ -64,6 +65,7 @@ export const WelcomePage = (props: Props) => {
 							<Welcome
 								sourcebooks={props.sourcebooks}
 								onNewHero={props.onNewHero}
+								onImportHero={props.onImportHero}
 								onPregen={props.onPregen}
 								onNewEncounter={props.onNewEncounter}
 							/>
@@ -82,6 +84,7 @@ export const WelcomePage = (props: Props) => {
 interface WelcomeProps {
 	sourcebooks: Sourcebook[];
 	onNewHero: () => void;
+	onImportHero: (hero: Hero) => void;
 	onPregen: (hero: Hero) => void;
 	onNewEncounter: () => void;
 }
@@ -129,8 +132,23 @@ const Welcome = (props: WelcomeProps) => {
 							</div>
 						</div>
 						<div className='welcome-buttons'>
-							<Flex align='center' justify='center' gap={10}>
+							<Flex align='center' justify='center' gap={10} wrap='wrap'>
 								<Button type='primary' onClick={props.onNewHero}>Create a New Hero</Button>
+								<Upload
+									accept='.drawsteel-hero,.ds-hero'
+									showUploadList={false}
+									beforeUpload={file => {
+										file
+											.text()
+											.then(json => {
+												const hero = JSON.parse(json) as Hero;
+												props.onImportHero(hero);
+											});
+										return false;
+									}}
+								>
+									<Button block={true}>Import a Hero File</Button>
+								</Upload>
 								<Popover
 									trigger='click'
 									content={
