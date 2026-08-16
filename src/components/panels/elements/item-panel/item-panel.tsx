@@ -1,4 +1,4 @@
-import { Alert, Button, Divider, Drawer, Segmented, Space } from 'antd';
+import { Alert, Button, Divider, Drawer, Space } from 'antd';
 import { CSSProperties, useState } from 'react';
 import { Empty } from '@/components/controls/empty/empty';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
@@ -37,7 +37,6 @@ interface Props {
 
 export const ItemPanel = (props: Props) => {
 	const [ item, setItem ] = useState<Item>(Utils.copy(props.item));
-	const [ page, setPage ] = useState<string>('overview');
 	const [ imbuementsOpen, setImbuementsOpen ] = useState<boolean>(false);
 
 	const getOverview = () => {
@@ -249,46 +248,34 @@ export const ItemPanel = (props: Props) => {
 		);
 	};
 
+	// Everything about the item, stacked. This used to be a tab strip, which
+	// meant two thirds of an item was one click away at all times - and for a
+	// potion with nothing but a description, two of the three tabs were empty.
+	// Sections that have nothing to say are left out instead.
 	const getContent = () => {
-		let content = null;
-		switch (page) {
-			case 'overview':
-				content = getOverview();
-				break;
-			case 'features':
-				content = getFeatures();
-				break;
-			case 'imbuements':
-				content = getImbuements();
-				break;
-			case 'crafting':
-				content = getCrafting();
-				break;
-		}
-
-		const pages = [
-			{ value: 'overview', label: 'Overview' },
-			{ value: 'features', label: 'Features' }
-		];
 		const imbueable = item.type === ItemType.ImbuedArmor || item.type === ItemType.ImbuedImplement || item.type === ItemType.ImbuedWeapon;
-		if (imbueable) {
-			pages.push({ value: 'imbuements', label: 'Imbuements' });
-		}
-		if (item.crafting) {
-			pages.push({ value: 'crafting', label: 'Crafting' });
-		}
+		const hasFeatures = !!item.effect || item.featuresByLevel.some(lvl => lvl.features.length > 0);
 
 		return (
 			<>
-				<Segmented
-					style={{ marginBottom: '20px' }}
-					block={true}
-					options={pages}
-					value={page}
-					onChange={setPage}
-					onClick={e => e.stopPropagation()}
-				/>
-				{content}
+				{getOverview()}
+				{
+					hasFeatures ?
+						<>
+							<HeaderText level={2}>Features</HeaderText>
+							{getFeatures()}
+						</>
+						: null
+				}
+				{imbueable ? getImbuements() : null}
+				{
+					item.crafting ?
+						<>
+							<HeaderText level={2}>Crafting</HeaderText>
+							{getCrafting()}
+						</>
+						: null
+				}
 			</>
 		);
 	};
