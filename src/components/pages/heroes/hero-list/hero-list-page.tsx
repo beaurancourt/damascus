@@ -1,6 +1,6 @@
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
 import { Button, Divider, Space, Tabs, Upload } from 'antd';
-import { DownloadOutlined, PlusOutlined, TeamOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { DownloadOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Hero, HeroOverview } from '@/models/hero';
 import { useHeroes, useOptions } from '@/contexts/data-context';
 import { useMemo, useState } from 'react';
@@ -29,7 +29,6 @@ interface Props {
 	params: FooterParams;
 	addHero: (folder: string) => void;
 	importHero: (hero: Hero, folder: string) => void;
-	showParty: (folder: string) => void;
 }
 
 export const HeroListPage = (props: Props) => {
@@ -138,8 +137,7 @@ export const HeroListPage = (props: Props) => {
 										</Expander>
 									</Space>
 								)
-							},
-							{ type: 'button', label: isSmall ? undefined : 'Party', icon: <TeamOutlined />, disabled: getHeroes(currentTab).length < 2, onClick: () => props.showParty(currentTab) }
+							}
 						]}
 					/>
 				</AppHeader>

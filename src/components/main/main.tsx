@@ -66,7 +66,6 @@ import { MonsterModal } from '@/components/modals/monster/monster-modal';
 import { Montage } from '@/models/montage';
 import { Negotiation } from '@/models/negotiation';
 import { OptionsLogic } from '@/logic/options-logic';
-import { PartyModal } from '@/components/modals/party/party-modal';
 import { Perk } from '@/models/perk';
 import { Plot } from '@/models/plot';
 import { Project } from '@/models/project';
@@ -1557,16 +1556,6 @@ export const Main = () => {
 		}
 	};
 
-	const onShowParty = (folder: string) => {
-		setDrawer(
-			<PartyModal
-				heroes={heroes.filter(h => h.folder === folder)}
-				sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-				onClose={() => setDrawer(null)}
-			/>
-		);
-	};
-
 	const onShowReference = (hero: Hero | null, page?: RulesPage, startRule?: string) => {
 		const sourcebooks = SourcebookLogic.getSourcebooks(homebrewSourcebooks);
 
@@ -1646,7 +1635,6 @@ export const Main = () => {
 									params={footerParams}
 									addHero={newHero}
 									importHero={importHero}
-									showParty={onShowParty}
 								/>
 							}
 						/>
