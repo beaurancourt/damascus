@@ -3,6 +3,12 @@
 $bronze: #c9a45a;
 $bronze-dim: rgba(201, 164, 90, 0.4);
 $bronze-faint: rgba(201, 164, 90, 0.18);
+// Bronze is mid-luminance, so it reads as an accent on dark surfaces but not
+// on light ones. These two are the versions that carry contrast either way:
+// $bronze-deep for a marker on a light background, $bronze-shade for a
+// selected surface in dark mode, where lightening washes out white text.
+$bronze-deep: #8a6d2f;
+$bronze-shade: rgb(48, 42, 30);
 
 $ability-default: rgb(0, 0, 0);
 $ability-main: rgb(220, 0, 0);

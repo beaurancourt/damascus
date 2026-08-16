@@ -1,3 +1,5 @@
+@import '@/colors.scss';
+
 .ant-collapse {
 	box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1), 0 3px 6px 0 rgba(0, 0, 0, 0.12);
 	line-height: unset;
@@ -18,6 +20,12 @@
 			>.ant-collapse-header {
 				border-bottom-left-radius: 0 !important;
 				border-bottom-right-radius: 0 !important;
+				// The row you have open is the one you're reading. Without a
+				// colour of its own it was pixel-identical to every collapsed
+				// row as soon as focus moved off it, leaving the caret and the
+				// panel below as the only clues.
+				background-color: $bronze-faint;
+				box-shadow: inset 4px 0 0 0 $bronze-deep;
 			}
 		}
 	}
@@ -48,6 +56,16 @@ html[data-theme="dark"] {
 			>.ant-collapse-header {
 				background-color: rgb(80, 80, 80);
 				color: rgba(255, 255, 255, 0.88) !important;
+			}
+
+			&.ant-collapse-item-active {
+				>.ant-collapse-header {
+					// Darker rather than lighter: a bronze wash bright enough to
+					// separate from the surrounding grey drags the white label
+					// below AA.
+					background-color: $bronze-shade;
+					box-shadow: inset 4px 0 0 0 $bronze;
+				}
 			}
 
 			>.ant-collapse-panel {
