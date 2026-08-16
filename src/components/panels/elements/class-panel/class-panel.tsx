@@ -119,14 +119,31 @@ export const ClassPanel = (props: Props) => {
 						: null
 				}
 				{
-					props.heroClass.featuresByLevel
-						.filter(lvl => lvl.features.length > 0 && lvl.level <= visibleMax)
-						.map(lvl => (
-							<div key={lvl.level} className='class-level-block'>
-								<HeaderText>Level {lvl.level}</HeaderText>
-								{lvl.features.flatMap(f => renderFeature(f))}
-							</div>
-						))
+					Collections.distinct(
+						[
+							...props.heroClass.featuresByLevel.map(lvl => lvl.level),
+							...props.heroClass.subclasses.filter(sc => sc.selected).flatMap(sc => sc.featuresByLevel.map(lvl => lvl.level))
+						],
+						x => x
+					)
+						.sort((a, b) => a - b)
+						.filter(level => level <= visibleMax)
+						.map(level => {
+							const classFeatures = props.heroClass.featuresByLevel.find(lvl => lvl.level === level)?.features || [];
+							const subclassFeatures = props.heroClass.subclasses
+								.filter(sc => sc.selected)
+								.flatMap(sc => sc.featuresByLevel.find(lvl => lvl.level === level)?.features || []);
+							const features = [ ...classFeatures, ...subclassFeatures ];
+							if (features.length === 0) {
+								return null;
+							}
+							return (
+								<div key={level} className='class-level-block'>
+									<HeaderText>Level {level}</HeaderText>
+									{features.flatMap(f => renderFeature(f))}
+								</div>
+							);
+						})
 				}
 				{
 					!editing && props.heroClass.abilities.length > 0 ?

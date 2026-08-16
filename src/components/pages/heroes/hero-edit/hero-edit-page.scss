@@ -21,6 +21,12 @@
 
 				.hero-edit-content-column {
 					flex: 0 1 auto;
+					width: 100%;
+
+					&.single-column {
+						max-width: 100%;
+						margin: 0;
+					}
 				}
 			}
 		}
@@ -126,6 +132,7 @@
 
 			.hero-edit-content-column {
 				flex: 1 1 0;
+				min-width: 0;
 
 				&.single-column {
 					max-width: 1100px;
