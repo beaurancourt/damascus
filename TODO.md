@@ -1,3 +1,5 @@
+- IMPORTANT: add relevant claude hooks. research anthropic's suggestions for hooks
+- IMPORTANT: add relevant LSPs. research anthropic's suggestions for hooks
 - Beastheart descriptions flow strangely /tmp/damascus-ss/bh-whitespace.jpg
 - use 2-column for abilities on wide screens /tmp/damascus-ss/ability-too-wide.jpg
 - starting and canceling a hero leaves empty charsheets
