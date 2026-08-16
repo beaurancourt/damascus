@@ -20,15 +20,16 @@ export class SessionLogic {
 		copy.id = Utils.guid();
 		copy.round = 0;
 
-		// Numbering (eg 'Ghoul 1', 'Ghoul 2') is scoped per group, so each group
-		// re-uses 1, 2, 3... rather than continuing a count across the whole encounter.
+		// Numbering (eg '[1] Ghoul', '[2] Ghoul') is scoped per group, so each
+		// group re-uses 1, 2, 3... rather than continuing a count across the
+		// whole encounter.
 		copy.groups
 			.filter(g => {
 				const minHeroes = g.minHeroCount || heroes.length;
 				return heroes.length >= minHeroes;
 			})
 			.forEach(g => {
-				const monsterInfo: { monsterID: string, monster: Monster, name: string, count: number, added: number }[] = [];
+				const monsterInfo: { monsterID: string, monster: Monster, name: string, count: number }[] = [];
 				g.slots.forEach(slot => {
 					const monster = EncounterLogic.getCustomizedMonster(slot.monsterID, slot.customization, sourcebooks);
 					const monsterGroup = SourcebookLogic.getMonsterGroup(sourcebooks, slot.monsterID);
@@ -42,8 +43,7 @@ export class SessionLogic {
 								monsterID: slot.monsterID,
 								monster: monster,
 								name: MonsterLogic.getMonsterName(monster, monsterGroup),
-								count: count,
-								added: 0
+								count: count
 							});
 						}
 					}
@@ -56,12 +56,13 @@ export class SessionLogic {
 						for (let n = 1; n <= count; ++n) {
 							const monsterCopy = Utils.copy(info.monster);
 							monsterCopy.id = Utils.guid();
-							monsterCopy.name = info.count === 1 ? info.name : `${info.name} ${info.added + 1}`;
+							monsterCopy.name = info.name;
 							slot.monsters.push(monsterCopy);
-							info.added += 1;
 						}
 					}
 				});
+
+				EncounterLogic.renumberGroup(g);
 			});
 
 		copy.groups

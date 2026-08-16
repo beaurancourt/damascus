@@ -86,15 +86,14 @@ export const EncounterRunPanel = (props: Props) => {
 		setTimeout(() => setVttExportCopied(false), 1500);
 	};
 
+	// Naming is left to EncounterLogic.renumberGroup once the slot is in a
+	// group: numbers run across the group, so a slot on its own can't know them.
 	const buildSlot = (monster: Monster) => {
 		const slot = FactoryLogic.createEncounterSlot(monster.id);
 		slot.count = MonsterLogic.getRoleMultiplier(monster.role.organization);
 		while (slot.monsters.length < slot.count) {
 			const m = Utils.copy(monster);
 			m.id = Utils.guid();
-			if (slot.count > 1) {
-				m.name = `${monster.name} ${slot.monsters.length + 1}`;
-			}
 			slot.monsters.push(m);
 		}
 		return slot;
@@ -105,10 +104,14 @@ export const EncounterRunPanel = (props: Props) => {
 		const copy = Utils.copy(encounter);
 		if (addTargetGroupID) {
 			const target = copy.groups.find(g => g.id === addTargetGroupID);
-			if (target) { target.slots.push(slot); }
+			if (target) {
+				target.slots.push(slot);
+				EncounterLogic.renumberGroup(target);
+			}
 		} else {
 			const group = FactoryLogic.createEncounterGroup();
 			group.slots.push(slot);
+			EncounterLogic.renumberGroup(group);
 			copy.groups.push(group);
 		}
 		commit(copy);
@@ -125,6 +128,8 @@ export const EncounterRunPanel = (props: Props) => {
 		copy.groups.forEach(g => {
 			g.slots.forEach(s => { s.monsters = s.monsters.filter(m => m.id !== monsterID); });
 			g.slots = g.slots.filter(s => s.monsters.length > 0);
+			// Close the gap the removed monster left rather than skipping a number.
+			EncounterLogic.renumberGroup(g);
 		});
 		copy.groups = copy.groups.filter(g => g.slots.length > 0);
 		commit(copy);

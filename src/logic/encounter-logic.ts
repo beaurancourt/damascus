@@ -33,6 +33,23 @@ export class EncounterLogic {
 		return total;
 	};
 
+	// Numbering is per group and runs across the whole group, not per monster
+	// type, so a director can call out "number 3" without first agreeing which
+	// goblin. The single owner of monster numbering: call it after anything
+	// that adds or removes monsters in a group.
+	static renumberGroup = (group: EncounterGroup) => {
+		const monsters = group.slots.flatMap(s => s.monsters);
+
+		// Strip any number this monster already carries, in either the current
+		// '[1] Goblin' form or the older 'Goblin 1' suffix, so repeated
+		// renumbering doesn't stack prefixes.
+		const baseName = (name: string) => name.replace(/^\[\d+\]\s*/, '').replace(/\s+\d+$/, '');
+
+		monsters.forEach((monster, n) => {
+			monster.name = monsters.length === 1 ? baseName(monster.name) : `[${n + 1}] ${baseName(monster.name)}`;
+		});
+	};
+
 	static defaultGroupNames = [ 'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Teal', 'Violet', 'Black', 'White' ];
 
 	static getDefaultGroupName = (index: number) => {
