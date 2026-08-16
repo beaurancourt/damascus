@@ -7,7 +7,6 @@ import { useMemo, useState } from 'react';
 import { AppHeader } from '@/components/panels/app-header/app-header';
 import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { Collections } from '@/utils/collections';
-import { Empty } from '@/components/controls/empty/empty';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { Expander } from '@/components/controls/expander/expander';
 import { HeroLogic } from '@/logic/hero-logic';
@@ -58,10 +57,16 @@ export const HeroListPage = (props: Props) => {
 		return heroes.filter(h => h.folder === folder);
 	};
 
-	const getHeroesSection = (list: HeroOverview[]) => {
+	const getHeroesSection = (list: HeroOverview[], folder: string) => {
+		// Someone with no heroes is here to make one, so the empty state is the
+		// button rather than a note saying there's nothing to see.
 		if (list.length === 0) {
 			return (
-				<Empty />
+				<div className='hero-section-empty'>
+					<Button type='primary' size='large' icon={<PlusOutlined />} onClick={() => props.addHero(folder)}>
+						Create a New Hero
+					</Button>
+				</div>
 			);
 		}
 
@@ -150,10 +155,9 @@ export const HeroListPage = (props: Props) => {
 								label: (
 									<div className='section-header'>
 										<div className='section-title'>{f || 'Heroes'}</div>
-										<div className='section-count'>{getHeroes(f).length}</div>
 									</div>
 								),
-								children: getHeroesSection(getHeroes(f))
+								children: getHeroesSection(getHeroes(f), f)
 							}))}
 							onChange={navigation.goToHeroList}
 						/>

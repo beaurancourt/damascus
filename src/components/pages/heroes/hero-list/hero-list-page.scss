@@ -16,15 +16,19 @@
 			display: flex;
 			flex-direction: column;
 			align-items: center;
+		}
 
-			.section-count {
-				opacity: 0.3;
-			}
+		.hero-section-empty {
+			display: flex;
+			justify-content: center;
+			padding: 40px 0;
 		}
 
 		.hero-section-row {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+			// min() on the track floor, or a 350px card sits in a 320px phone
+			// and gets clipped by the scroller with no scrollbar to show for it.
+			grid-template-columns: repeat(auto-fill, minmax(min(350px, 100%), 1fr));
 			gap: 10px;
 		}
 	}
