@@ -766,7 +766,7 @@ const HealthPanel = (props: Props) => {
 						: null
 				}
 				{
-					props.stamina && ![ 'healthy', 'injured', 'dying' ].includes(props.stamina.state) ?
+					showStamina && props.stamina && ![ 'healthy', 'injured', 'dying' ].includes(props.stamina.state) ?
 						<Alert
 							type='warning'
 							showIcon={true}
@@ -775,7 +775,7 @@ const HealthPanel = (props: Props) => {
 						: null
 				}
 				{
-					props.stamina && (props.stamina.state === 'dying') ?
+					showStamina && props.stamina && (props.stamina.state === 'dying') ?
 						<Alert
 							type='warning'
 							showIcon={true}
@@ -793,12 +793,12 @@ Your allies can help you spend Recoveries in combat, and you can spend Recoverie
 						: null
 				}
 				{
-					props.stamina && props.stamina.immunities.length > 0 ?
+					showStamina && props.stamina && props.stamina.immunities.length > 0 ?
 						<Field label='Immunities' value={props.stamina.immunities.map(dm => `${dm.damageType} ${dm.value}`).join(', ')} />
 						: null
 				}
 				{
-					props.stamina && props.stamina.weaknesses.length > 0 ?
+					showStamina && props.stamina && props.stamina.weaknesses.length > 0 ?
 						<Field label='Weakness' value={props.stamina.weaknesses.map(dm => `${dm.damageType} ${dm.value}`).join(', ')} />
 						: null
 				}

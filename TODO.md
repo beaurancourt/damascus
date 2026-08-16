@@ -6,7 +6,6 @@
 - remove search bar on the hero screen
 - remove party button on the hero screen
 - top bar on hero screen takes up too much screen space, combine features into one static name bar
-- hero screen shows immunities twice
 - separate out the website into player-facing (this same url) and gm-facing (damascus-gm)
 - in the encounter builder, i want the main UX to be searching for enemies to
   add and then clicking them adds them to the currently selected group. we
