@@ -41,8 +41,10 @@ export const AbilitiesPanel = (props: Props) => {
 			<div className='abilities-section'>
 				<HeaderText level={3}>{props.title}</HeaderText>
 				{(nonStandard.length === 0) && (standard.length === 0) ? <Empty /> : null}
-				{nonStandard.map(renderAbility)}
-				{standard.map(renderAbility)}
+				<div className='abilities-list'>
+					{nonStandard.map(renderAbility)}
+					{standard.map(renderAbility)}
+				</div>
 			</div>
 		</ErrorBoundary>
 	);

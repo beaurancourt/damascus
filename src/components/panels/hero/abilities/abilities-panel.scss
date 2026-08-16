@@ -3,4 +3,26 @@
 	flex-direction: column;
 	gap: 10px;
 	padding: 5px;
+
+	// One card per row wastes half a wide sheet and stretches the body text into
+	// long lines. auto-fit gives two columns once there's room for two full
+	// cards and collapses back to one below that, so phones are untouched.
+	.abilities-list {
+		display: grid;
+		// min() matters: a bare minmax(460px, 1fr) keeps a 460px floor even when
+		// the container is narrower than that, so a phone gets one column that
+		// overflows the screen. auto-fit only drops the column count, not the
+		// track's minimum.
+		grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr));
+		gap: 10px;
+		// Cards are different heights; without this a short one stretches to
+		// match the tallest in its row.
+		align-items: start;
+
+		// A grid item's automatic minimum is its min-content width, so a card
+		// with a wide power-roll table would otherwise push past its column.
+		> * {
+			min-width: 0;
+		}
+	}
 }
