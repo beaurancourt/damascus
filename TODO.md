@@ -1,5 +1,4 @@
 - need navigation on charsheets
 - combine "search" and "reference" into one tool. reference's search is weird.
 - separate out the website into player-facing (this same url) and gm-facing (damascus-gm)
-- research better search infrastructure; would love to have semantic search and fuzzy search
 - in character creation, i see a lot of '[Violation] 'click' handler took 291ms'
