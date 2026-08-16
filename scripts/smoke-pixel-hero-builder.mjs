@@ -23,13 +23,15 @@ await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
 await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 
-// "Create a New Hero" → ancestry tab
-const createBtn = page.locator('button').filter({ hasText: /Create a New Hero|Create Hero|New Hero/i }).first();
-if (await createBtn.count()) {
-	await createBtn.click().catch(() => {});
-	await page.waitForTimeout(800);
-}
+// The site lands on the hero list; "Create a New Hero" lives in its Add menu.
+await page.locator('.app-header button:has([aria-label="plus"])').first().click();
+await page.waitForTimeout(600);
+await page.locator('.ant-popover button', { hasText: 'Create a New Hero' }).first().click();
+await page.waitForTimeout(1200);
 log(`url after create: ${page.url()}`);
+if (!/\/hero\/edit\//.test(page.url())) {
+	throw new Error(`expected to land in the hero builder, got ${page.url()}`);
+}
 
 // Navigate to Ancestry tab
 await page.evaluate(() => {

@@ -1,32 +1,22 @@
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
-import { BookOutlined, EllipsisOutlined, PlayCircleOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Divider, Flex, Popover, Segmented, Space, Upload } from 'antd';
+import { BookOutlined, EllipsisOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import { Button, Divider, Flex, Segmented, Space } from 'antd';
 import { ReactNode, useState } from 'react';
 import { AppHeader } from '@/components/panels/app-header/app-header';
 import { AppMode } from '@/utils/app-mode';
 import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { HeaderText } from '@/components/controls/header-text/header-text';
-import { Hero } from '@/models/hero';
-import { PregenData } from '@/data/pregen-data';
-import { PregenInfo } from '@/components/panels/token/token';
-import { PregenLogic } from '@/logic/pregen-logic';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
-import { Sourcebook } from '@/models/sourcebook';
 import { useIsSmall } from '@/hooks/use-is-small';
 import { useNavigation } from '@/hooks/use-navigation';
-import { useOptions } from '@/contexts/data-context';
 
 import './welcome-page.scss';
 
-type WelcomeType = 'player' | 'director-prep' | 'director-run' | 'creator';
+type WelcomeType = 'director-prep' | 'director-run' | 'creator';
 
 interface Props {
-	sourcebooks: Sourcebook[];
 	params: FooterParams;
-	onNewHero: () => void;
-	onImportHero: (hero: Hero) => void;
-	onPregen: (hero: Hero) => void;
 	onNewEncounter: () => void;
 }
 
@@ -64,10 +54,6 @@ export const WelcomePage = (props: Props) => {
 					<div className={isSmall ? 'welcome-page-content compact' : 'welcome-page-content'}>
 						<div className='welcome-column'>
 							<Welcome
-								sourcebooks={props.sourcebooks}
-								onNewHero={props.onNewHero}
-								onImportHero={props.onImportHero}
-								onPregen={props.onPregen}
 								onNewEncounter={props.onNewEncounter}
 							/>
 						</div>
@@ -83,98 +69,15 @@ export const WelcomePage = (props: Props) => {
 };
 
 interface WelcomeProps {
-	sourcebooks: Sourcebook[];
-	onNewHero: () => void;
-	onImportHero: (hero: Hero) => void;
-	onPregen: (hero: Hero) => void;
 	onNewEncounter: () => void;
 }
 
 const Welcome = (props: WelcomeProps) => {
 	const navigation = useNavigation();
-	const [ page, setPage ] = useState<WelcomeType>(AppMode.hasHeroes ? 'player' : 'director-prep');
-	const options = useOptions();
+	const [ page, setPage ] = useState<WelcomeType>('director-prep');
 
 	const getContent = () => {
 		switch (page) {
-			case 'player':
-				return (
-					<div className='welcome-section'>
-						<div>
-							<HeaderText
-								extra={
-									<Button icon={<TeamOutlined />} onClick={() => navigation.goToHeroList()}>Go to your Heroes</Button>
-								}
-							>
-								For Players
-							</HeaderText>
-							<div className='ds-text'>
-								If you're a <b>DRAW STEEL</b> player, you've come to the right place.
-							</div>
-							<div className='ds-text'>
-								In the <b>HEROES</b> screen you can easily create your characters; the hero builder leads you through the process step-by-step.
-							</div>
-							<ul>
-								<li>
-									All the official content is included, and you can also use any homebrew content your director has created.
-								</li>
-								<li>
-									You can use the app to track your hero's stamina, conditions, surges, and so on.
-								</li>
-								<li>
-									Want something a little different? You can customize any of your abilities to make them more unique to your hero.
-								</li>
-								<li>
-									Need to tweak your hero in a way that's not strictly by the book? No problem! You can customize your hero in any number of ways - an extra ability, bonuses to your characteristics, extra skills, retainers, etc.
-								</li>
-							</ul>
-						</div>
-						<div className='welcome-buttons'>
-							<Flex align='center' justify='center' gap={10} wrap='wrap'>
-								<Button type='primary' onClick={props.onNewHero}>Create a New Hero</Button>
-								<Upload
-									accept='.drawsteel-hero,.ds-hero'
-									showUploadList={false}
-									beforeUpload={file => {
-										file
-											.text()
-											.then(json => {
-												const hero = JSON.parse(json) as Hero;
-												props.onImportHero(hero);
-											});
-										return false;
-									}}
-								>
-									<Button block={true}>Import a Hero File</Button>
-								</Upload>
-								<Popover
-									trigger='click'
-									content={
-										<Space orientation='vertical' style={{ width: '300px', maxHeight: '330px', overflowY: 'auto' }}>
-											{
-												PregenData.getPregens().map(p => (
-													<Button
-														key={p.id}
-														className='container-button'
-														block={true}
-														onClick={() => {
-															const hero = PregenLogic.pregenToHero(p, props.sourcebooks, options);
-															props.onPregen(hero);
-														}}
-													>
-														<PregenInfo pregen={p} />
-													</Button>
-												))
-											}
-										</Space>
-									}
-								>
-									<Button>Use a Premade Hero</Button>
-								</Popover>
-							</Flex>
-						</div>
-					</div>
-				);
 			case 'director-prep':
 				return (
 					<div className='welcome-section'>
@@ -304,8 +207,6 @@ const Welcome = (props: WelcomeProps) => {
 		}
 	};
 
-	// Each site only offers the audiences it actually serves, so the player site
-	// has a single section and needs no tab strip at all.
 	const directorTabs: { value: WelcomeType, label: ReactNode }[] = [
 		{
 			value: 'director-prep',
@@ -334,25 +235,19 @@ const Welcome = (props: WelcomeProps) => {
 			)
 		}
 	];
-	const tabs: { value: WelcomeType, label: ReactNode }[] = AppMode.hasSession ? directorTabs : [];
-
 	return (
 		<ErrorBoundary>
 			<div>
 				<div className='ds-text centered-text'>
 					<b>{AppMode.appName.toUpperCase()}</b> is an app for <b>DRAW STEEL</b> {AppMode.isGM ? 'directors and content creators' : 'players'}.
 				</div>
-				{
-					tabs.length > 0 ?
-						<Segmented
-							style={{ margin: '15px 0' }}
-							block={true}
-							options={tabs}
-							value={page}
-							onChange={setPage}
-						/>
-						: null
-				}
+				<Segmented
+					style={{ margin: '15px 0' }}
+					block={true}
+					options={directorTabs}
+					value={page}
+					onChange={setPage}
+				/>
 				<SelectablePanel>
 					{getContent()}
 				</SelectablePanel>

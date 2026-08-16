@@ -1560,14 +1560,17 @@ export const Main = () => {
 					<Route
 						index={true}
 						element={
-							<WelcomePage
-								sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
-								params={footerParams}
-								onNewHero={() => newHero('')}
-								onImportHero={hero => importHero(hero, '')}
-								onPregen={hero => importHero(hero, '')}
-								onNewEncounter={() => createLibraryElement('encounter', '', null)}
-							/>
+							AppMode.isPlayer ?
+								// The player site is the hero list and nothing else, so a
+								// welcome page in front of it was a door into a room with
+								// one door. Everything it offered - create, import, random,
+								// premade - is in the list's own Add menu.
+								<Navigate to='/hero' replace={true} />
+								:
+								<WelcomePage
+									params={footerParams}
+									onNewEncounter={() => createLibraryElement('encounter', '', null)}
+								/>
 						}
 					/>
 					{

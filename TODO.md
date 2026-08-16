@@ -1,4 +1,3 @@
-- get rid of https://beaurancourt.github.io/damascus/#/, have the landing page be the heroes screeon
 - when i open the encounter builder here's what I see /tmp/damascus-ss/encounter-builder.jpg. what i want is for 1/3rd of the screen to be the gorups, and the other 2rds to be the mosnter search area. have the first group be red, and starrt my focus already in the search bar, where I can fuzzy search by name. when i click a monster, it adds it to the active group, and when i press shift A it starts the next group
 - rework the hero selection screen /tmp/damascus-ss/hero-selection.jpg. i don't need a count of the heroes in the top left. if there are no heroes, replace the section with a button to create a hero
 - get rid of the about section

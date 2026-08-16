@@ -29,12 +29,14 @@ await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
 await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 
-// Welcome page has the "Use a Premade Hero" popover button. Click it, then click the first pregen.
-await page.locator('button:has-text("Use a Premade Hero")').first().click();
-await page.waitForTimeout(500);
+// The site lands on the hero list, whose Add menu holds the pregens behind an
+// expander. Open it and take the first one ("Ashley" or whatever).
+await page.locator('.app-header button:has([aria-label="plus"])').first().click();
+await page.waitForTimeout(600);
+await page.locator('.ant-popover').getByText('Use a premade example').first().click();
+await page.waitForTimeout(600);
 
-// Pregens are buttons in the Popover. Pick the first one ("Ashley" or whatever).
-const pregenButtons = page.locator('.ant-popover button');
+const pregenButtons = page.locator('.ant-popover .container-button');
 const count = await pregenButtons.count();
 log(`pregen options visible: ${count}`);
 if (count === 0) {
@@ -43,7 +45,7 @@ if (count === 0) {
 const firstName = (await pregenButtons.first().textContent())?.trim().slice(0, 80);
 log(`picking pregen: ${firstName}`);
 await pregenButtons.first().click();
-await page.waitForTimeout(1500);
+await page.waitForTimeout(1800);
 
 log(`url after pregen pick: ${page.url()}`);
 
