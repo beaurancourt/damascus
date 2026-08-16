@@ -33,7 +33,7 @@ export class EncounterLogic {
 		return total;
 	};
 
-	static defaultGroupNames = [ 'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Indigo', 'Violet', 'Black', 'White' ];
+	static defaultGroupNames = [ 'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Teal', 'Violet', 'Black', 'White' ];
 
 	static getDefaultGroupName = (index: number) => {
 		return EncounterLogic.defaultGroupNames[index] ?? `Group ${index + 1}`;
