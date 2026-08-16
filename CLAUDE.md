@@ -24,6 +24,16 @@ npx vitest run -t 'substring'                     # one test
 
 Playwright smokes in `scripts/` require the dev server already running on :5173; they write screenshots to `tmp/audit/`. See `scripts/README.md`. `tmp/` is gitignored — put throwaway scripts and captures there.
 
+## Claude Code setup
+
+`.claude/settings.json` is checked in. It enables the `typescript-lsp` plugin (hover, go-to-definition, find-references across `.ts`/`.tsx`) — the plugin only wires up the connection, so the server itself has to be installed once per machine:
+
+```
+npm install -g typescript-language-server typescript
+```
+
+It also registers two hooks in `.claude/hooks/`: `eslint --fix` runs on every edited `src/**/*.ts(x)` file, and edits to `package-lock.json` or `dist/` are blocked as generated output. Newly installed plugins need a session restart before their language server starts.
+
 ## Architecture
 
 **Persistence flows one way through a manager.** Components never touch storage. `DataService` (`src/services/`) wraps localforage/IndexedDB; `DataManager` (`src/contexts/data-context.tsx`) wraps DataService and dispatches into reducers behind four contexts. Read state through the hooks — `useHeroes`, `useOptions`, `useSession`, `useHomebrewSourcebooks`, `useAllSourcebooks` — and write it through `useDataManager()`.
