@@ -1,4 +1,3 @@
 - in the inventory screen, make items uncollapsed by default
-- pick a better icon for the wrench, it's a list of additional features like inventory and titles, but wrench implies adjustment
 - sync the summoner code with upstream's implementation
 - update the readme to show how to run the GM page locally

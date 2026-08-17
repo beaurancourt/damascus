@@ -1,5 +1,5 @@
+import { AppstoreOutlined, ControlOutlined, EllipsisOutlined } from '@ant-design/icons';
 import { Button, Divider, Popover, Space } from 'antd';
-import { ControlOutlined, EllipsisOutlined, ToolOutlined } from '@ant-design/icons';
 import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { HeroModalType } from '@/enums/hero-modal-type';
 import { useIsSmall } from '@/hooks/use-is-small';
@@ -11,7 +11,10 @@ interface Props {
 
 // The hero's tools - inventory, projects, titles, respite and the customization
 // menus. These used to sit in a name plate below the app header; they're a
-// header control now so the sheet only pays for one bar.
+// header control now so the sheet only pays for one bar. The collapsed button
+// carries a grid rather than a wrench: it opens a set of the sheet's other
+// screens, and nothing behind it adjusts anything. It also has to read apart
+// from the section menu's list glyph sitting next to it.
 export const HeroToolsPanel = (props: Props) => {
 	const isSmall = useIsSmall();
 	const [ open, setOpen ] = useState(false);
@@ -40,7 +43,7 @@ export const HeroToolsPanel = (props: Props) => {
 				open={open}
 				onOpenChange={setOpen}
 			>
-				<Button icon={<ToolOutlined />} title='Tools' />
+				<Button icon={<AppstoreOutlined />} title='Tools' />
 			</Popover>
 		);
 	}
