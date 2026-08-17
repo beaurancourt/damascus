@@ -1,5 +1,7 @@
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
-import { CloseOutlined, CopyOutlined, DeleteOutlined, EditOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button, Divider, Popover, Space } from 'antd';
+import { CloseOutlined, CopyOutlined, DeleteOutlined, EditOutlined, SettingOutlined, UploadOutlined } from '@ant-design/icons';
+import { useMemo, useState } from 'react';
 import { Ability } from '@/models/ability';
 import { Ancestry } from '@/models/ancestry';
 import { AppHeader } from '@/components/panels/app-header/app-header';
@@ -28,7 +30,6 @@ import { SummoningInfo } from '@/models/summon';
 import { Title } from '@/models/title';
 import { useHeroes } from '@/contexts/data-context';
 import { useIsSmall } from '@/hooks/use-is-small';
-import { useMemo } from 'react';
 import { useNavigation } from '@/hooks/use-navigation';
 import { useParams } from 'react-router';
 import { useTitle } from '@/hooks/use-title';
@@ -66,6 +67,7 @@ interface Props {
 
 export const HeroViewPage = (props: Props) => {
 	const isSmall = useIsSmall();
+	const [ sheetMenuOpen, setSheetMenuOpen ] = useState<boolean>(false);
 	const navigation = useNavigation();
 	const { heroID } = useParams<{ heroID: string }>();
 	const heroes = useHeroes();
@@ -116,34 +118,50 @@ export const HeroViewPage = (props: Props) => {
 					params={props.params}
 					settingsMenu={
 						isSmall ?
-							// One menu on a phone: tools, sheet actions and app
-							// settings, instead of three icons that all look
-							// like "more".
-							<HeroToolsPanel
-								onShowState={page => props.showHeroState(hero, page)}
-								onCopy={() => props.copyHero(hero)}
-								onExport={() => props.exportHeroData(hero)}
-								onDelete={() => props.deleteHero(hero)}
-								onShowSettings={props.params.showSettings}
-							/>
+							// The wrench keeps the hero's tools; the cog holds
+							// what was behind the overflow, plus app settings.
+							<Popover
+								trigger='click'
+								open={sheetMenuOpen}
+								onOpenChange={setSheetMenuOpen}
+								content={
+									<Space orientation='vertical' style={{ minWidth: '190px' }}>
+										<Button block={true} type='text' icon={<CopyOutlined />} onClick={() => { setSheetMenuOpen(false); props.copyHero(hero); }}>Copy hero</Button>
+										<Button block={true} type='text' icon={<UploadOutlined />} onClick={() => { setSheetMenuOpen(false); props.exportHeroData(hero); }}>Export as Data</Button>
+										<Button block={true} type='text' danger={true} icon={<DeleteOutlined />} onClick={() => { setSheetMenuOpen(false); props.deleteHero(hero); }}>Delete hero</Button>
+										<Divider />
+										<Button block={true} type='text' icon={<SettingOutlined />} onClick={() => { setSheetMenuOpen(false); props.params.showSettings(); }}>Settings</Button>
+									</Space>
+								}
+							>
+								<Button type='text' icon={<SettingOutlined />} title='More' />
+							</Popover>
 							: undefined
+					}
+					trailing={
+						<Button
+							type='text'
+							icon={<CloseOutlined />}
+							title='Close'
+							onClick={() => navigation.goToHeroList(hero.folder)}
+						>
+							{isSmall ? null : 'Close'}
+						</Button>
 					}
 				>
 					<SectionMenuPanel />
-					{isSmall ? null : <HeroToolsPanel onShowState={page => props.showHeroState(hero, page)} />}
+					<HeroToolsPanel onShowState={page => props.showHeroState(hero, page)} />
 					<ButtonGroup
 						buttons={
 							isSmall
 								? [
-									{ type: 'button', icon: <EditOutlined />, onClick: () => navigation.goToHeroEdit(heroID!, 'details') },
-									{ type: 'button', icon: <CloseOutlined />, onClick: () => navigation.goToHeroList(hero.folder) }
+									{ type: 'button', icon: <EditOutlined />, onClick: () => navigation.goToHeroEdit(heroID!, 'details') }
 								]
 								: [
 									{ type: 'button', label: 'Edit', icon: <EditOutlined />, onClick: () => navigation.goToHeroEdit(heroID!, 'details') },
 									{ type: 'button', label: 'Copy', icon: <CopyOutlined />, onClick: () => props.copyHero(hero) },
 									{ type: 'button', label: 'Export', icon: <UploadOutlined />, onClick: () => props.exportHeroData(hero) },
-									{ type: 'danger', label: 'Delete', icon: <DeleteOutlined />, onClick: () => props.deleteHero(hero) },
-									{ type: 'button', label: 'Close', icon: <CloseOutlined />, onClick: () => navigation.goToHeroList(hero.folder) }
+									{ type: 'danger', label: 'Delete', icon: <DeleteOutlined />, onClick: () => props.deleteHero(hero) }
 								]
 						}
 					/>

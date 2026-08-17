@@ -25,6 +25,9 @@ interface Props {
 	// A page can replace the plain settings cog with its own menu, so a screen
 	// that already has two menus of its own doesn't end up wearing three.
 	settingsMenu?: ReactNode;
+	// Rendered after the app-level controls, so a page can keep "get me out of
+	// here" in the corner where the thumb expects it.
+	trailing?: ReactNode;
 	children?: ReactNode;
 }
 
@@ -56,6 +59,7 @@ export const AppHeader = (props: Props) => {
 							</>
 							: null
 					}
+					{props.trailing}
 				</div>
 			</div>
 		</ErrorBoundary>
