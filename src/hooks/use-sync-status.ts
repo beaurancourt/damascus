@@ -15,6 +15,14 @@ enum Messages {
 	Offline = 'Offline - using cached data'
 }
 
+// The service worker's cache, by name: this hook reports on what it holds and
+// tops it up, rather than keeping a second copy of the same files. Everything
+// is resolved against BASE_URL, since the sites live at /damascus/ and
+// /damascus-gm/ rather than at a domain root.
+const SHELL_CACHE = 'damascus-shell';
+const base = import.meta.env.BASE_URL;
+const SHELL_URLS = [ base, `${base}index.html`, `${base}manifest.json` ];
+
 export const useSyncStatus = () => {
 	const [ syncStatus, setSyncStatus ] = useState<SyncStatus>({
 		isSynced: false,
@@ -41,7 +49,7 @@ export const useSyncStatus = () => {
 	const checkSyncStatus = useCallback(async () => {
 		if ('serviceWorker' in navigator && 'caches' in window) {
 			try {
-				const cache = await caches.open('damascus-v1');
+				const cache = await caches.open(SHELL_CACHE);
 				const keys = await cache.keys();
 
 				// Check if we have the essential files cached
@@ -87,20 +95,20 @@ export const useSyncStatus = () => {
 			}));
 
 			try {
-				const cache = await caches.open('damascus-v1');
+				const cache = await caches.open(SHELL_CACHE);
 
-				// Cache essential files
-				const urlsToCache = [
-					'/',
-					'/index.html',
-					'/manifest.json'
-				];
+				// The shell, plus the bundle this page is actually running.
+				// Reading the asset URLs off the document means we cache the
+				// current hashed filenames without the build having to tell us
+				// what they are - and without it, a first-load-then-offline
+				// user got a blank page, since the service worker only sees
+				// asset requests from the second load onwards.
+				const assets = [
+					...Array.from(document.querySelectorAll<HTMLScriptElement>('script[src]')).map(el => el.src),
+					...Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][href]')).map(el => el.href)
+				].filter(url => new URL(url).origin === window.location.origin);
 
-				await cache.addAll(urlsToCache);
-
-				// Cache current page and any loaded assets
-				const currentUrl = window.location.href;
-				await cache.add(currentUrl);
+				await cache.addAll([ ...SHELL_URLS, ...assets ]);
 
 				setSyncStatus(prev => {
 					const newStatus = {

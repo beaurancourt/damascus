@@ -20,13 +20,23 @@ interface ServiceWorkerGlobalScope extends EventTarget {
 // Cast self to the service worker global scope
 const swSelf = self as unknown as ServiceWorkerGlobalScope;
 
-// Cache version - will be unique for each build
-const CACHE_VERSION = new Date().toISOString().replace(/[:.]/g, '-');
-const CACHE_NAME = `damascus-${CACHE_VERSION}`;
+// Both sites are served from a subdirectory - /damascus/ and /damascus-gm/ -
+// so every URL the worker touches has to be resolved against its own scope.
+// Rooted at '/' these fetched https://<host>/index.html, which 404s, which
+// rejected cache.addAll and failed the install: nothing was ever cached.
+const BASE = new URL('./', self.location.href);
+const scoped = (path: string) => new URL(path, BASE).toString();
+
+// A fixed name. This used to be a timestamp taken when the script ran, so a
+// worker that had been terminated and restarted would compute a different name
+// from the one it installed with, write into a fresh empty cache, and leave the
+// old one behind uncollected. Asset filenames carry their own hashes, so the
+// cache doesn't need a version in its name.
+const CACHE_NAME = 'damascus-shell';
 const STATIC_CACHE_URLS = [
-	'/',
-	'/index.html',
-	'/manifest.json'
+	scoped('.'),
+	scoped('index.html'),
+	scoped('manifest.json')
 ];
 
 // Install event - cache static assets
@@ -88,10 +98,18 @@ self.addEventListener('fetch', (event: Event) => {
 				// Online: Just fetch from network (transparent)
 				const response = await fetch(fetchEvent.request);
 
-				// Cache for offline use only
-				if (response && response.status === 200 && fetchEvent.request.url.includes('/')) {
-					const cache = await caches.open(CACHE_NAME);
-					await cache.put(fetchEvent.request, response.clone());
+				// Keep a copy for offline use. Same-origin only - putting an
+				// opaque cross-origin response throws - and deliberately not
+				// awaited: a rejected put used to land in the catch below and
+				// serve the offline branch while the network was working fine.
+				if (response && response.status === 200 && new URL(fetchEvent.request.url).origin === self.location.origin) {
+					const copy = response.clone();
+					caches
+						.open(CACHE_NAME)
+						.then((cache: Cache) => cache.put(fetchEvent.request, copy))
+						.catch(() => {
+							// caching is best effort; the response still stands
+						});
 				}
 
 				return response;
@@ -104,7 +122,7 @@ self.addEventListener('fetch', (event: Event) => {
 
 				// Fallback to main page for navigation
 				if (fetchEvent.request.destination === 'document') {
-					const fallback = await caches.match('/index.html');
+					const fallback = await caches.match(scoped('index.html'));
 					if (fallback) {
 						return fallback;
 					}
