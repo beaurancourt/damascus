@@ -82,7 +82,10 @@ export const ItemPanel = (props: Props) => {
 						item.featuresByLevel
 							.filter(lvl => lvl.features.length > 0)
 							.map(lvl => (
-								<Expander key={lvl.level} title={`Level ${lvl.level.toString()}`}>
+								// Open by default: these bands are the item's actual
+								// effects, so a full panel that hides them puts the
+								// thing you opened the item for behind another click.
+								<Expander key={lvl.level} title={`Level ${lvl.level.toString()}`} expandedByDefault={true}>
 									{
 										lvl.features.map(f => (
 											<FeaturePanel
