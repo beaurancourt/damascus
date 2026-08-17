@@ -1,6 +1,7 @@
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
 import { Button, Divider, Popover, Space } from 'antd';
 import { CloseOutlined, CopyOutlined, DeleteOutlined, EditOutlined, SettingOutlined, UploadOutlined } from '@ant-design/icons';
+import { Navigate, useParams } from 'react-router';
 import { useMemo, useState } from 'react';
 import { Ability } from '@/models/ability';
 import { Ancestry } from '@/models/ancestry';
@@ -31,7 +32,6 @@ import { Title } from '@/models/title';
 import { useHeroes } from '@/contexts/data-context';
 import { useIsSmall } from '@/hooks/use-is-small';
 import { useNavigation } from '@/hooks/use-navigation';
-import { useParams } from 'react-router';
 import { useTitle } from '@/hooks/use-title';
 
 import './hero-view-page.scss';
@@ -72,10 +72,18 @@ export const HeroViewPage = (props: Props) => {
 	const { heroID } = useParams<{ heroID: string }>();
 	const heroes = useHeroes();
 	const hero = useMemo(
-		() => heroes.find(h => h.id === heroID)!,
+		() => heroes.find(h => h.id === heroID),
 		[ heroID, heroes ]
 	);
-	useTitle(hero.name || 'Unnamed Hero');
+	useTitle(hero?.name || 'Unnamed Hero');
+
+	// The hero may be gone - deleting one and then pressing back returns to its
+	// URL. This used to assert the hero existed and throw mid-render, which
+	// React recovered from by re-rendering the root synchronously and reported
+	// as error #520, so the only thing the user saw was an error notification.
+	if (!hero) {
+		return <Navigate to='/hero' replace={true} />;
+	}
 
 	const getContent = () => (
 		<HeroPanel
