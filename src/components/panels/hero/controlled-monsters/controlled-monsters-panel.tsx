@@ -29,7 +29,13 @@ export const ControlledMonstersPanel = (props: Props) => {
 	const retainers = HeroLogic.getRetainers(props.hero);
 	const summons = HeroLogic.getSummons(props.hero);
 
-	if (companions.length + retainers.length + summons.length === 0) {
+	const canAdd = (companions.length + retainers.length + summons.length) > 0;
+
+	// Squads already being tracked keep the panel on screen even when the hero
+	// has nothing left to summon. The guard used to ask only what could be
+	// added, so changing class - or clearing a summon choice - hid squads that
+	// were still in the hero's saved state: invisible, and impossible to delete.
+	if (!canAdd && (props.hero.state.controlledSlots.length === 0)) {
 		return null;
 	}
 
@@ -178,7 +184,7 @@ export const ControlledMonstersPanel = (props: Props) => {
 	return (
 		<ErrorBoundary>
 			<div className='controlled-monsters-panel'>
-				{getAddBtn()}
+				{canAdd ? getAddBtn() : null}
 				{props.hero.state.controlledSlots.map(getSlot)}
 			</div>
 		</ErrorBoundary>
