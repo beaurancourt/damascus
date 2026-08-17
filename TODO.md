@@ -1,0 +1,4 @@
+- condense the options at the top here under the settings (cog) icon? There's 3 icons that all indicate as "settings/more" which is pretty confusing, but also takes up too much space on mobile
+- i see `contentscript.js:14083 ObjectMultiplex - orphaned data for stream "background-liveness"`
+- i see `contentscript.js:14083 ObjectMultiplex - orphaned data for stream "app-init-liveness"`
+- i see `MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 end listeners added. Use emitter.setMaxListeners() to increase limit`

@@ -1,5 +1,6 @@
 import { Ability, AbilitySectionField, AbilitySectionPackage, AbilitySectionRoll, AbilitySectionText } from '@/models/ability';
-import { Alert, Space } from 'antd';
+import { Alert, Button, Space } from 'antd';
+import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import { Pill, ResourcePill } from '@/components/controls/pill/pill';
 import { AbilityData } from '@/data/ability-data';
 import { AbilityInfoPanel } from '@/components/panels/ability-info/ability-info-panel';
@@ -20,6 +21,7 @@ import { MonsterLogic } from '@/logic/monster-logic';
 import { PanelMode } from '@/enums/panel-mode';
 import { PowerRollPanel } from '@/components/panels/power-roll/power-roll-panel';
 import { useOptions } from '@/contexts/data-context';
+import { useState } from 'react';
 
 import './ability-panel.scss';
 
@@ -37,6 +39,11 @@ interface Props {
 
 export const AbilityPanel = (props: Props) => {
 	const options = useOptions();
+	// A hero with a dozen abilities is a long scroll, and most of the time
+	// you're looking for one of them. Collapsing leaves the name and its ribbon
+	// on screen so the list stays scannable. Expanded by default: nothing is
+	// hidden until you choose to hide it.
+	const [ collapsed, setCollapsed ] = useState<boolean>(false);
 
 	// Auto-calculating damage and potency needs a hero to calculate against.
 	// This was a per-card button in the header; it's now a single setting, so
@@ -291,27 +298,45 @@ export const AbilityPanel = (props: Props) => {
 						))
 					}
 				</Space>
-				<HeaderText ribbon={getRibbon()}>
+				<HeaderText
+					ribbon={getRibbon()}
+					extra={
+						<Button
+							type='text'
+							icon={collapsed ? <DownOutlined /> : <UpOutlined />}
+							title={collapsed ? 'Expand' : 'Collapse'}
+							aria-expanded={!collapsed}
+							onClick={() => setCollapsed(!collapsed)}
+						/>
+					}
+				>
 					{props.ability.name || 'Unnamed Ability'}
 				</HeaderText>
-				<Markdown text={props.ability.description} className='ability-description-text' />
-				<AbilityInfoPanel ability={props.ability} hero={props.hero} />
-				{(props.ability.sections || []).map(getSection)}
 				{
-					allTags.length > 0 ?
-						<div className='ability-tags'>
-							<Field label='Tags' value={allTags.join(', ')} />
-						</div>
-						: null
-				}
-				{
-					keywords.includes(AbilityKeyword.Charge) && (props.ability.id !== AbilityData.freeStrikeMelee.id) ?
-						<Alert
-							type='info'
-							showIcon={true}
-							title='This ability can be used in place of a melee free strike when you take the Charge action.'
-						/>
-						: null
+					collapsed ?
+						null
+						:
+						<>
+							<Markdown text={props.ability.description} className='ability-description-text' />
+							<AbilityInfoPanel ability={props.ability} hero={props.hero} />
+							{(props.ability.sections || []).map(getSection)}
+							{
+								allTags.length > 0 ?
+									<div className='ability-tags'>
+										<Field label='Tags' value={allTags.join(', ')} />
+									</div>
+									: null
+							}
+							{
+								keywords.includes(AbilityKeyword.Charge) && (props.ability.id !== AbilityData.freeStrikeMelee.id) ?
+									<Alert
+										type='info'
+										showIcon={true}
+										title='This ability can be used in place of a melee free strike when you take the Charge action.'
+									/>
+									: null
+							}
+						</>
 				}
 			</div>
 		</ErrorBoundary>
