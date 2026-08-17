@@ -13,6 +13,7 @@ export interface Domain extends Element {
 		trigger: string;
 		value: string;
 		frequency?: ResourceGainFrequency;
+		used?: boolean;
 	}[];
 	defaultFeatures: Feature[];
 }

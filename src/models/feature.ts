@@ -169,7 +169,7 @@ export type FeatureForController = FeatureOf<FeatureType.ForController, FeatureF
 
 export interface FeatureHeroicResourceData extends _FeatureData {
 	type: 'heroic' | 'epic';
-	gains: { tag: string, trigger: string, value: string, frequency?: ResourceGainFrequency }[];
+	gains: { tag: string, trigger: string, value: string, frequency?: ResourceGainFrequency, used?: boolean }[];
 	details: string;
 	canBeNegative: boolean;
 	value: number;
@@ -183,6 +183,9 @@ export interface FeatureHeroicResourceGainData extends _FeatureData {
 	// Absent means at will; anything else is a limit the trigger no longer has
 	// to spell out in prose.
 	frequency?: ResourceGainFrequency;
+	// Whether that limit has been spent. Reset when the hero's turn comes round
+	// again, or when an encounter starts or ends.
+	used?: boolean;
 	replacesTags: string[];
 };
 export type FeatureHeroicResourceGain = FeatureOf<FeatureType.HeroicResourceGain, FeatureHeroicResourceGainData>;

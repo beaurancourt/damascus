@@ -42,3 +42,9 @@
 	letter-spacing: 1px;
 	opacity: 0.6;
 }
+
+// A spent once-per-round gain: still legible, plainly out of reach until the
+// round turns over.
+.hero-resources-modal .gain.used {
+	opacity: 0.45;
+}

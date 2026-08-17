@@ -26,6 +26,8 @@ import './hero-resources-modal.scss';
 interface Expression {
 	resourceID: string;
 	resourceName: string;
+	// which gain the roll came from, so taking it can spend that gain's limit
+	tag: string;
 	throws: number;
 	sides: number;
 	constant: number;
@@ -58,7 +60,19 @@ export const HeroResourcesModal = (props: Props) => {
 			props.onChange(copy);
 		};
 
-		const gainResource = (featureID: string, value: number) => {
+		// Clearing the per-round flags for one resource. The gains a hero sees are
+		// merged from the resource itself, from standalone gain features and from
+		// domains, but every one of those objects belongs to the hero, so setting
+		// the flag on them and saving the hero is enough.
+		const clearUsed = (h: Hero, featureID: string, onlyPerRound: boolean) => {
+			HeroLogic.getHeroicResources(h)
+				.filter(hr => hr.id === featureID)
+				.flatMap(hr => hr.gains)
+				.filter(g => !onlyPerRound || (g.frequency === ResourceGainFrequency.OncePerRound))
+				.forEach(g => g.used = false);
+		};
+
+		const gainResource = (featureID: string, tag: string, value: number) => {
 			const copy = Utils.copy(hero);
 			HeroLogic.getFeatures(copy, false)
 				.map(f => f.feature)
@@ -67,6 +81,20 @@ export const HeroResourcesModal = (props: Props) => {
 				.forEach(f => {
 					f.data.value += value;
 				});
+
+			// Taking the start-of-turn gain is the only "the round moved on" signal
+			// a hero has, so it doubles as the reset for once-per-round gains.
+			if (tag.toLowerCase().startsWith('start')) {
+				clearUsed(copy, featureID, true);
+			} else {
+				HeroLogic.getHeroicResources(copy)
+					.filter(hr => hr.id === featureID)
+					.flatMap(hr => hr.gains)
+					.filter(g => g.tag === tag)
+					.filter(g => g.frequency && (g.frequency !== ResourceGainFrequency.AtWill))
+					.forEach(g => g.used = true);
+			}
+
 			setHero(copy);
 			props.onChange(copy);
 		};
@@ -80,6 +108,8 @@ export const HeroResourcesModal = (props: Props) => {
 				.filter(f => f.id === featureID)
 				.forEach(f => f.data.value = copy.state.victories);
 
+			clearUsed(copy, featureID, false);
+
 			setHero(copy);
 			props.onChange(copy);
 		};
@@ -92,6 +122,8 @@ export const HeroResourcesModal = (props: Props) => {
 				.filter(f => f.type === FeatureType.HeroicResource)
 				.filter(f => f.id === featureID)
 				.forEach(f => f.data.value = 0);
+
+			clearUsed(copy, featureID, false);
 
 			copy.state.victories += 1;
 			copy.state.surges = 0;
@@ -123,7 +155,7 @@ export const HeroResourcesModal = (props: Props) => {
 													if (digits.test(g.value)) {
 														const v = parseInt(g.value);
 														btn = (
-															<Button className='gain-btn' onClick={() => gainResource(hr.id, v)}>
+															<Button className='gain-btn' disabled={g.used} onClick={() => gainResource(hr.id, g.tag, v)}>
 																+{g.value}
 															</Button>
 														);
@@ -134,20 +166,21 @@ export const HeroResourcesModal = (props: Props) => {
 														const exp: Expression = {
 															resourceID: hr.id,
 															resourceName: hr.name,
+															tag: g.tag,
 															throws: parseInt(match.groups?.throws || '1'),
 															sides: parseInt(match.groups?.sides || '3'),
 															constant: parseInt(match.groups?.constant || '0'),
 															result: null
 														};
 														btn = (
-															<Button className='gain-btn' onClick={() => setExpression(exp)}>
+															<Button className='gain-btn' disabled={g.used} onClick={() => setExpression(exp)}>
 																+{g.value}
 															</Button>
 														);
 													}
 
 													return (
-														<Flex key={n} align='center' justify='space-between' gap={10}>
+														<Flex key={n} className={g.used ? 'gain used' : 'gain'} align='center' justify='space-between' gap={10}>
 															<div className='ds-text compact-text'>
 																{g.trigger}
 																{
@@ -237,7 +270,7 @@ export const HeroResourcesModal = (props: Props) => {
 										disabled={expression.result === null}
 										onClick={() => {
 											if (expression.result !== null) {
-												gainResource(expression.resourceID, expression.result);
+												gainResource(expression.resourceID, expression.tag, expression.result);
 												setExpression(null);
 											}
 										}}
