@@ -9,6 +9,29 @@
 		padding: unset;
 	}
 
+	.monster-stats-line {
+		margin: 8px 0;
+		font-size: 14px;
+		line-height: 1.6;
+
+		.stat {
+			// keep a label and its value on the same line when the run wraps
+			white-space: nowrap;
+		}
+
+		.stat-label {
+			font-weight: 600;
+		}
+
+		.stat-value {
+			opacity: 0.88;
+		}
+
+		.stat-separator {
+			opacity: 0.5;
+		}
+	}
+
 	.features {
 		margin: 10px 0;
 	}

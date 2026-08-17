@@ -1,5 +1,5 @@
 import { Alert, Divider, Drawer } from 'antd';
-import { CSSProperties, ReactNode, useState } from 'react';
+import { CSSProperties, Fragment, ReactNode, useState } from 'react';
 import { Ability } from '@/models/ability';
 import { AbilityModal } from '@/components/modals/ability/ability-modal';
 import { AbilityPanel } from '@/components/panels/elements/ability-panel/ability-panel';
@@ -27,7 +27,6 @@ import { SelectablePanel } from '@/components/controls/selectable-panel/selectab
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
-import { StatsRow } from '@/components/panels/stats-row/stats-row';
 import { SummoningInfo } from '@/models/summon';
 
 import './monster-panel.scss';
@@ -57,6 +56,18 @@ export const MonsterPanel = (props: Props) => {
 	const damageModifiers = MonsterLogic.getDamageModifiers(props.monster);
 	const immunities = damageModifiers.filter(dm => dm.modifierType === DamageModifierType.Immunity);
 	const weaknesses = damageModifiers.filter(dm => dm.modifierType === DamageModifierType.Weakness);
+
+	// The numbers a GM reads off constantly, as one line of running text - a
+	// boxed grid for ten values costs a third of the stat block's header.
+	const stats: { label: string, value: ReactNode }[] = [
+		{ label: 'Size', value: FormatLogic.getSize(props.monster.size) },
+		{ label: 'Speed', value: speedStr },
+		{ label: 'Stamina', value: MonsterLogic.getStaminaDescription(props.monster) },
+		{ label: 'Stability', value: MonsterLogic.getStability(props.monster) },
+		{ label: 'Free Strike', value: MonsterLogic.getFreeStrikeDamage(props.monster) },
+		...[ Characteristic.Might, Characteristic.Agility, Characteristic.Reason, Characteristic.Intuition, Characteristic.Presence ]
+			.map(ch => ({ label: ch as string, value: MonsterLogic.getCharacteristic(props.monster, ch) }))
+	];
 
 	const allFeatures = MonsterLogic.getFeatures(props.monster);
 	const features = allFeatures.filter(f => (f.type === FeatureType.Text) || (f.type === FeatureType.AddOn));
@@ -132,13 +143,20 @@ export const MonsterPanel = (props: Props) => {
 				{
 					props.mode === PanelMode.Full ?
 						<>
-							<StatsRow>
-								<Field orientation='vertical' label='Size' value={FormatLogic.getSize(props.monster.size)} />
-								<Field orientation='vertical' label='Speed' value={speedStr} />
-								<Field orientation='vertical' label='Stamina' value={MonsterLogic.getStaminaDescription(props.monster)} />
-								<Field orientation='vertical' label='Stability' value={MonsterLogic.getStability(props.monster)} />
-								<Field orientation='vertical' label='Free Strike' value={MonsterLogic.getFreeStrikeDamage(props.monster)} />
-							</StatsRow>
+							<div className='monster-stats-line'>
+								{
+									stats.map((stat, n) => (
+										<Fragment key={stat.label}>
+											{n > 0 ? <span className='stat-separator'>, </span> : null}
+											<span className='stat'>
+												<span className='stat-label'>{stat.label}</span>
+												{' '}
+												<span className='stat-value'>{stat.value}</span>
+											</span>
+										</Fragment>
+									))
+								}
+							</div>
 							{
 								![ 'healthy', 'injured' ].includes(MonsterLogic.getCombatState(props.monster)) ?
 									<Alert
@@ -148,12 +166,6 @@ export const MonsterPanel = (props: Props) => {
 									/>
 									: null
 							}
-							<StatsRow>
-								{
-									[ Characteristic.Might, Characteristic.Agility, Characteristic.Reason, Characteristic.Intuition, Characteristic.Presence ]
-										.map(ch => <Field key={ch} orientation='vertical' label={ch} value={MonsterLogic.getCharacteristic(props.monster, ch)} />)
-								}
-							</StatsRow>
 							{
 								signatureBonus || props.monster.withCaptain || (conditions.length > 0) || (immunities.length > 0) || (weaknesses.length > 0) || (features.length > 0) ?
 									<div className='features'>
