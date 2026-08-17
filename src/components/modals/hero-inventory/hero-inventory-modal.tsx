@@ -3,7 +3,6 @@ import { CaretDownOutlined, CaretUpOutlined, PlusOutlined } from '@ant-design/ic
 import { Collections } from '@/utils/collections';
 import { DangerButton } from '@/components/controls/danger-button/danger-button';
 import { Empty } from '@/components/controls/empty/empty';
-import { Expander } from '@/components/controls/expander/expander';
 import { FeatureType } from '@/enums/feature-type';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
@@ -100,17 +99,16 @@ export const HeroInventoryModal = (props: Props) => {
 							items.map(i => {
 								switch (i.source) {
 									case 'inventory':
+										// No expander: it repeated the name and type that
+										// the panel below already leads with, and put the
+										// item you were looking at one click away.
 										return (
-											<Expander
-												key={i.item.id}
-												title={i.item.count === 1 ? i.item.name : `${i.item.name} (x${i.item.count})`}
-												tags={[ i.item.type ]}
-												extra={[
-													<Button key='up' type='text' title='Move Up' icon={<CaretUpOutlined />} onClick={e => { e.stopPropagation(); moveItem(i.item, 'up'); }} />,
-													<Button key='down' type='text' title='Move Down' icon={<CaretDownOutlined />} onClick={e => { e.stopPropagation(); moveItem(i.item, 'down'); }} />,
-													<DangerButton key='delete' mode='clear' onConfirm={e => { e.stopPropagation(); deleteItem(i.item); }} />
-												]}
-											>
+											<div key={i.item.id} className='inventory-item'>
+												<div className='inventory-item-actions'>
+													<Button type='text' title='Move Up' icon={<CaretUpOutlined />} onClick={() => moveItem(i.item, 'up')} />
+													<Button type='text' title='Move Down' icon={<CaretDownOutlined />} onClick={() => moveItem(i.item, 'down')} />
+													<DangerButton mode='clear' onConfirm={() => deleteItem(i.item)} />
+												</div>
 												<ItemPanel
 													item={i.item}
 													wielder={hero}
@@ -118,22 +116,18 @@ export const HeroInventoryModal = (props: Props) => {
 													mode={PanelMode.Full}
 													onChange={changeItem}
 												/>
-											</Expander>
+											</div>
 										);
 									case 'feature':
 										return (
-											<Expander
-												key={i.item.id}
-												title={i.item.count === 1 ? i.item.name : `${i.item.name} (x${i.item.count})`}
-												tags={[ i.item.type ]}
-											>
+											<div key={i.item.id} className='inventory-item'>
 												<ItemPanel
 													item={i.item}
 													wielder={hero}
 													sourcebooks={props.sourcebooks}
 													mode={PanelMode.Full}
 												/>
-											</Expander>
+											</div>
 										);
 								}
 							})

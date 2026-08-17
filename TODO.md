@@ -1,8 +1,9 @@
-- in the hero selection screen, we can get rid of the thing that says "heroes" and the little separator below it
 - de-nest preparation for items. /tmp/damascus-ss/item-denest.jpg
 - drop the filter dropdown for items. we can lean on just searching for names
 - in the inventory screen, add a `+` button to the right of the search bar that
   lets people add custom items. my players just picked up 5oz of costmary
   leaves and that item doesn't exist in the list
 - in the inventory screen, make items uncollapsed by default
-- in the invnetory screen, remove nesting. i don't need ot 
+- drop the "customize" option from the wrench dropdown
+- pick a better icon for the wrench, it's a list of additional features like inventory and titles, but wrench implies adjustment
+- error ~/Downloads/Screenshot_2026-08-17-10-42-33-60_cbf47468f7ecfbd8ebcc46bf9cc626da.jpg, "Got this error notification after deleting a character"

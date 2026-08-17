@@ -3,4 +3,21 @@
 	height: 100%;
 	display: flex;
 	flex-direction: column;
+
+	// Each item is its own card now. The reorder and delete controls sit over
+	// the panel's own heading rather than in a bar of their own, so the item
+	// still starts with its name.
+	.inventory-item {
+		position: relative;
+		margin-bottom: 15px;
+
+		.inventory-item-actions {
+			position: absolute;
+			top: 4px;
+			right: 4px;
+			z-index: 1;
+			display: flex;
+			gap: 2px;
+		}
+	}
 }
