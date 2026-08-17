@@ -34,7 +34,6 @@ export const HeroToolsPanel = (props: Props) => {
 						<Button block={true} type='text' onClick={() => choose(HeroModalType.Titles)}>Titles</Button>
 						<Button block={true} type='text' onClick={() => choose(HeroModalType.Respite)}>Respite</Button>
 						<Divider />
-						<Button block={true} type='text' icon={<ToolOutlined />} onClick={() => choose(HeroModalType.Customize)}>Customize</Button>
 						<Button block={true} type='text' icon={<ControlOutlined />} onClick={() => choose(HeroModalType.Conditional)}>Conditional Features</Button>
 					</Space>
 				}
@@ -59,8 +58,7 @@ export const HeroToolsPanel = (props: Props) => {
 						<Popover
 							trigger='click'
 							content={
-								<Space orientation='vertical' style={{ width: '150px' }}>
-									<Button type='text' block={true} icon={<ToolOutlined />} onClick={() => choose(HeroModalType.Customize)}>Customize</Button>
+								<Space orientation='vertical' style={{ width: '190px' }}>
 									<Button type='text' block={true} icon={<ControlOutlined />} onClick={() => choose(HeroModalType.Conditional)}>Conditional Features</Button>
 								</Space>
 							}
