@@ -1,6 +1,5 @@
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
-import { Button, Divider } from 'antd';
-import { CloseOutlined, CopyOutlined, DeleteOutlined, EditOutlined, MoreOutlined, UploadOutlined } from '@ant-design/icons';
+import { CloseOutlined, CopyOutlined, DeleteOutlined, EditOutlined, UploadOutlined } from '@ant-design/icons';
 import { Ability } from '@/models/ability';
 import { Ancestry } from '@/models/ancestry';
 import { AppHeader } from '@/components/panels/app-header/app-header';
@@ -115,26 +114,28 @@ export const HeroViewPage = (props: Props) => {
 						</>
 					}
 					params={props.params}
+					settingsMenu={
+						isSmall ?
+							// One menu on a phone: tools, sheet actions and app
+							// settings, instead of three icons that all look
+							// like "more".
+							<HeroToolsPanel
+								onShowState={page => props.showHeroState(hero, page)}
+								onCopy={() => props.copyHero(hero)}
+								onExport={() => props.exportHeroData(hero)}
+								onDelete={() => props.deleteHero(hero)}
+								onShowSettings={props.params.showSettings}
+							/>
+							: undefined
+					}
 				>
 					<SectionMenuPanel />
-					<HeroToolsPanel onShowState={page => props.showHeroState(hero, page)} />
+					{isSmall ? null : <HeroToolsPanel onShowState={page => props.showHeroState(hero, page)} />}
 					<ButtonGroup
 						buttons={
 							isSmall
 								? [
 									{ type: 'button', icon: <EditOutlined />, onClick: () => navigation.goToHeroEdit(heroID!, 'details') },
-									{
-										type: 'dropdown',
-										icon: <MoreOutlined />,
-										popover: (
-											<div style={{ width: '260px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-												<Button icon={<CopyOutlined />} onClick={() => props.copyHero(hero)}>Copy hero</Button>
-												<Button icon={<UploadOutlined />} onClick={() => props.exportHeroData(hero)}>Export as Data</Button>
-												<Divider style={{ margin: '4px 0' }} />
-												<Button danger={true} icon={<DeleteOutlined />} onClick={() => props.deleteHero(hero)}>Delete hero</Button>
-											</div>
-										)
-									},
 									{ type: 'button', icon: <CloseOutlined />, onClick: () => navigation.goToHeroList(hero.folder) }
 								]
 								: [

@@ -22,6 +22,9 @@ interface Props {
 	// with the page's own actions. The GM site still has a footer and doesn't
 	// render these.
 	params?: FooterParams;
+	// A page can replace the plain settings cog with its own menu, so a screen
+	// that already has two menus of its own doesn't end up wearing three.
+	settingsMenu?: ReactNode;
 	children?: ReactNode;
 }
 
@@ -46,7 +49,10 @@ export const AppHeader = (props: Props) => {
 										<Button type='text' icon={<WarningFilled className='danger' />} title='Errors' onClick={props.params.showErrors} />
 										: null
 								}
-								<Button type='text' icon={<SettingOutlined />} title='Settings' onClick={props.params.showSettings} />
+								{
+									props.settingsMenu ??
+									<Button type='text' icon={<SettingOutlined />} title='Settings' onClick={props.params.showSettings} />
+								}
 							</>
 							: null
 					}
