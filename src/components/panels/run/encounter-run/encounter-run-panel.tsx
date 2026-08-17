@@ -21,6 +21,7 @@ import { Terrain } from '@/models/terrain';
 import { TerrainPanel } from '@/components/panels/elements/terrain-panel/terrain-panel';
 import { Utils } from '@/utils/utils';
 import { VttExportLogic } from '@/logic/vtt-export-logic';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 import './encounter-run-panel.scss';
 
@@ -52,6 +53,10 @@ export const EncounterRunPanel = (props: Props) => {
 	const [ vttExportCopied, setVttExportCopied ] = useState<boolean>(false);
 
 	const blockRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+	// Below this the three columns would each be narrower than a stat block
+	// wants to be, so the stat blocks stay in one column.
+	const threeColumn = useMediaQuery('(min-width: 1300px)');
 
 	// Shift+A starts a fresh group and points additions at it, so building an
 	// encounter is: search, click a few, shift+A, click a few more - without
@@ -263,6 +268,39 @@ export const EncounterRunPanel = (props: Props) => {
 	});
 	const statBlocks: StatBlock[] = Array.from(statBlockMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 
+	// Wide enough for three columns: the tracker keeps the left one and the
+	// stat blocks take the other two, so twice as many are on screen at once.
+	// They deal round-robin rather than first-half/second-half - the columns
+	// scroll independently, so even heights matter more than reading order.
+	const statBlockColumns: StatBlock[][] = (threeColumn && (statBlocks.length > 1)) ?
+		[ statBlocks.filter((_, n) => n % 2 === 0), statBlocks.filter((_, n) => n % 2 === 1) ]
+		: [ statBlocks ];
+
+	const renderStatBlock = (c: StatBlock) => (
+		<div
+			key={c.key}
+			ref={el => { blockRefs.current[c.key] = el; }}
+			className={`stat-block ${focusedBlock === c.key ? 'focused' : ''}`}
+		>
+			{
+				c.kind === 'monster' ?
+					<MonsterPanel
+						monster={c.monster}
+						monsterGroup={SourcebookLogic.getMonsterGroup(props.sourcebooks, c.monster.id) || undefined}
+						sourcebooks={props.sourcebooks}
+						mode={PanelMode.Full}
+					/>
+					:
+					<TerrainPanel
+						terrain={c.terrain}
+						sourcebooks={props.sourcebooks}
+						mode={PanelMode.Full}
+						updateTerrain={updateTerrain}
+					/>
+			}
+		</div>
+	);
+
 	const renderHpControl = (row: Row) => {
 		if (row.kind === 'terrain') {
 			return null;
@@ -430,37 +468,18 @@ export const EncounterRunPanel = (props: Props) => {
 						/>
 					</div>
 
-					<div className='encounter-run-column encounter-run-stats'>
-						{
-							statBlocks.length === 0 ?
+					{
+						statBlocks.length === 0 ?
+							<div className='encounter-run-column encounter-run-stats'>
 								<div className='ds-text dimmed-text centered-text'>Stat blocks will appear here as combatants are added.</div>
-								:
-								statBlocks.map(c => (
-									<div
-										key={c.key}
-										ref={el => { blockRefs.current[c.key] = el; }}
-										className={`stat-block ${focusedBlock === c.key ? 'focused' : ''}`}
-									>
-										{
-											c.kind === 'monster' ?
-												<MonsterPanel
-													monster={c.monster}
-													monsterGroup={SourcebookLogic.getMonsterGroup(props.sourcebooks, c.monster.id) || undefined}
-													sourcebooks={props.sourcebooks}
-													mode={PanelMode.Full}
-												/>
-												:
-												<TerrainPanel
-													terrain={c.terrain}
-													sourcebooks={props.sourcebooks}
-													mode={PanelMode.Full}
-													updateTerrain={updateTerrain}
-												/>
-										}
-									</div>
-								))
-						}
-					</div>
+							</div>
+							:
+							statBlockColumns.map((column, n) => (
+								<div key={n} className='encounter-run-column encounter-run-stats'>
+									{column.map(renderStatBlock)}
+								</div>
+							))
+					}
 				</Flex>
 
 				<Drawer open={addingMonsters} onClose={() => setAddingMonsters(false)} closeIcon={null} size={500}>
