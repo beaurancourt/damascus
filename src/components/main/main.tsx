@@ -277,6 +277,22 @@ export const Main = () => {
 		persistHero(copy);
 	};
 
+	// One creature at a time, so a summoner can drop a skeleton as it dies
+	// without losing the rest of the squad. The slot stays even when it empties
+	// - the squad is still a thing you're tracking, and its own delete is right
+	// there if you want it gone.
+	const removeMonsterFromSquad = (hero: Hero, slotID: string, monsterID: string) => {
+		const copy = Utils.copy(hero);
+
+		copy.state.controlledSlots
+			.filter(s => s.id === slotID)
+			.forEach(slot => {
+				slot.monsters = slot.monsters.filter(m => m.id !== monsterID);
+			});
+
+		persistHero(copy);
+	};
+
 	const selectControlledMonster = (hero: Hero, monster: Monster) => {
 		setDrawer(
 			<MonsterModal
@@ -1591,6 +1607,7 @@ export const Main = () => {
 											showHeroState={onShowHeroState}
 											onAddSquad={addSquad}
 											onRemoveSquad={removeSquad}
+											onRemoveMonsterFromSquad={removeMonsterFromSquad}
 											onAddMonsterToSquad={addMonsterToSquad}
 											onSelectControlledMonster={selectControlledMonster}
 											onSelectControlledSquad={selectControlledSquad}

@@ -25,6 +25,7 @@ interface Props {
 	onShowState: (type: HeroModalType) => void;
 	onAddSquad: (hero: Hero, monster: Monster, count: number) => void;
 	onRemoveSquad: (hero: Hero, slotID: string) => void;
+	onRemoveMonsterFromSquad: (hero: Hero, slotID: string, monsterID: string) => void;
 	onAddMonsterToSquad: (hero: Hero, slotID: string) => void;
 	onSelectControlledMonster: (hero: Hero, monster: Monster) => void;
 	onSelectControlledSquad: (hero: Hero, slot: EncounterSlot) => void;
@@ -145,6 +146,7 @@ export const SidebarPanel = (props: Props) => {
 					hero={props.hero}
 					onAddSquad={props.onAddSquad!}
 					onRemoveSquad={props.onRemoveSquad!}
+					onRemoveMonsterFromSquad={props.onRemoveMonsterFromSquad!}
 					onAddMonsterToSquad={props.onAddMonsterToSquad!}
 					onSelectControlledMonster={props.onSelectControlledMonster!}
 					onSelectControlledSquad={props.onSelectControlledSquad!}

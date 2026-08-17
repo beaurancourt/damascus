@@ -59,6 +59,7 @@ interface Props {
 	showHeroState: (hero: Hero, type: HeroModalType) => void;
 	onAddSquad: (hero: Hero, monster: Monster, count: number) => void;
 	onRemoveSquad: (hero: Hero, slotID: string) => void;
+	onRemoveMonsterFromSquad: (hero: Hero, slotID: string, monsterID: string) => void;
 	onAddMonsterToSquad: (hero: Hero, slotID: string) => void;
 	onSelectControlledMonster: (hero: Hero, monster: Monster) => void;
 	onSelectControlledSquad: (hero: Hero, slot: EncounterSlot) => void;
@@ -106,6 +107,7 @@ export const HeroViewPage = (props: Props) => {
 			onShowState={page => props.showHeroState(hero, page)}
 			onAddSquad={props.onAddSquad}
 			onRemoveSquad={props.onRemoveSquad}
+			onRemoveMonsterFromSquad={props.onRemoveMonsterFromSquad}
 			onAddMonsterToSquad={props.onAddMonsterToSquad}
 			onSelectControlledMonster={props.onSelectControlledMonster}
 			onSelectControlledSquad={props.onSelectControlledSquad}

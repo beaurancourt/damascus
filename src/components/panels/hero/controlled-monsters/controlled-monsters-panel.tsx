@@ -18,6 +18,7 @@ interface Props {
 	hero: Hero;
 	onAddSquad: (hero: Hero, monster: Monster, count: number) => void;
 	onRemoveSquad: (hero: Hero, slotID: string) => void;
+	onRemoveMonsterFromSquad: (hero: Hero, slotID: string, monsterID: string) => void;
 	onAddMonsterToSquad: (hero: Hero, slotID: string) => void;
 	onSelectControlledMonster: (hero: Hero, monster: Monster) => void;
 	onSelectControlledSquad: (hero: Hero, slot: EncounterSlot) => void;
@@ -111,7 +112,7 @@ export const ControlledMonstersPanel = (props: Props) => {
 
 			return (
 				<div key={m.id} className='controlled-monster' onClick={() => props.onSelectControlledMonster(props.hero, m)}>
-					<Space orientation='vertical' style={{ flex: '1 1 0' }}>
+					<Space orientation='vertical' style={{ flex: '1 1 0', minWidth: 0 }}>
 						<Flex align='center' justify='space-between' gap={5}>
 							<MonsterInfo monster={m} />
 							{
@@ -131,6 +132,15 @@ export const ControlledMonstersPanel = (props: Props) => {
 								: null
 						}
 					</Space>
+					{/* This one creature, not its squad - a summoner loses skeletons
+					    one at a time. stopPropagation so it doesn't also open the
+					    creature's stat block on the way past. */}
+					<div className='controlled-monster-remove' onClick={e => e.stopPropagation()}>
+						<DangerButton
+							mode='clear'
+							onConfirm={() => props.onRemoveMonsterFromSquad(props.hero, slot.id, m.id)}
+						/>
+					</div>
 				</div>
 			);
 		};
