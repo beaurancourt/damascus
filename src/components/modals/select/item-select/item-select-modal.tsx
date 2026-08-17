@@ -1,8 +1,7 @@
-import { Button, Divider, Space } from 'antd';
+import { Button, Space } from 'antd';
 import { Empty } from '@/components/controls/empty/empty';
 import { Expander } from '@/components/controls/expander/expander';
 import { Hero } from '@/models/hero';
-import { HeroLogic } from '@/logic/hero-logic';
 import { ImbuedItemData } from '@/data/items/imbued-item-data';
 import { Item } from '@/models/item';
 import { ItemPanel } from '@/components/panels/elements/item-panel/item-panel';
@@ -13,7 +12,6 @@ import { PlusOutlined } from '@ant-design/icons';
 import { SearchBox } from '@/components/controls/text-input/text-input';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
-import { Toggle } from '@/components/controls/toggle/toggle';
 import { Utils } from '@/utils/utils';
 import { useState } from 'react';
 
@@ -30,27 +28,12 @@ interface Props {
 
 export const ItemSelectModal = (props: Props) => {
 	const [ searchTerm, setSearchTerm ] = useState<string>('');
-	const [ showUsableOnly, setShowUsableOnly ] = useState<boolean>(true);
-	const [ showTypes, setShowTypes ] = useState<{ [ type: string ]: boolean }>(() => {
-		const types: { [ type: string ]: boolean } = {};
-		props.types.forEach(type => {
-			types[type] = true;
-		});
-		return types;
-	});
 
-	const setShowEverything = (value: boolean) => {
-		const types = { ...showTypes };
-		props.types.forEach(type => {
-			types[type] = value;
-		});
-		setShowTypes(types);
-	};
-
+	// Searching by name covers what the filter panel did, without the panel -
+	// and without "only show items you can use", which was on by default and
+	// quietly kept items off the list. The caller still scopes the list by type.
 	const items = [ ...SourcebookLogic.getItems(props.sourcebooks), ImbuedItemData.imbuedArmor, ImbuedItemData.imbuedImplement, ImbuedItemData.imbuedWeapon ]
 		.filter(item => props.types.includes(item.type))
-		.filter(item => !showUsableOnly || HeroLogic.canUseItem(props.hero, item))
-		.filter(item => showTypes[item.type])
 		.filter(item => Utils.textMatches([
 			item.name,
 			item.description,
@@ -66,35 +49,6 @@ export const ItemSelectModal = (props: Props) => {
 			content={
 				<div className='item-select-modal'>
 					<Space orientation='vertical' style={{ width: '100%' }}>
-						<Expander title='Filter'>
-							<div className='item-type-filter-panel'>
-								{
-									props.types.length > 1 ?
-										<>
-											<Toggle label='Show everything' value={props.types.every(t => showTypes[t])} onChange={setShowEverything} />
-											<Divider />
-											{
-												props.types.map(type => (
-													<Toggle
-														key={type}
-														label={type}
-														value={showTypes[type]}
-														onChange={value => {
-															const newTypes = { ...showTypes };
-															newTypes[type] = value;
-															setShowTypes(newTypes);
-														}}
-													/>
-												))
-											}
-											<Divider />
-										</>
-										: null
-								}
-								<Toggle label='Only show items you can use' value={showUsableOnly} onChange={setShowUsableOnly} />
-							</div>
-						</Expander>
-						<Divider />
 						{
 							items.map(item => (
 								<Expander
