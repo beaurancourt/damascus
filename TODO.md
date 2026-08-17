@@ -1,3 +1,1 @@
-- i'm seeing "contentscript.js:14083 ObjectMultiplex - orphaned data for stream "background-liveness"" in the console
-- i'm seeing "contentscript.js:14083 ObjectMultiplex - orphaned data for stream "app-init-liveness"" in the console
-- i'm seeing `contentscript.js:14083 MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 end listeners added. Use emitter.setMaxListeners() to increase limit` in the console
+- the service worker never caches anything on the deployed sites, so offline mode is broken. STATIC_CACHE_URLS in src/sw.ts is [ '/', '/index.html', '/manifest.json' ], but the sites are served from /damascus/ and /damascus-gm/ — so it fetches https://beaurancourt.github.io/manifest.json, gets a 404, cache.addAll rejects, and install fails with "Error syncing for offline: TypeError: Failed to execute 'addAll' on 'Cache': Request failed". Needs the base path, e.g. derived from self.registration.scope
