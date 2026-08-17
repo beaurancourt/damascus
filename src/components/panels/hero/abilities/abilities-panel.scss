@@ -1,3 +1,5 @@
+@import '@/colors.scss';
+
 .abilities-section {
 	display: flex;
 	flex-direction: column;
@@ -14,15 +16,30 @@
 		// overflows the screen. auto-fit only drops the column count, not the
 		// track's minimum.
 		grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr));
-		gap: 10px;
+		gap: 16px;
 		// Cards are different heights; without this a short one stretches to
 		// match the tallest in its row.
 		align-items: start;
 
 		// A grid item's automatic minimum is its min-content width, so a card
 		// with a wide power-roll table would otherwise push past its column.
+		//
+		// The border is what makes two columns readable: side by side, one
+		// ability's body text ran straight into the next one's, and a 16px gap
+		// alone doesn't say where one stops. It reads as a card in a single
+		// column too, which is no worse than the bare stack it replaces.
 		> * {
 			min-width: 0;
+			border: 1px solid $bronze-faint;
+			border-radius: 3px;
+			padding: 10px 14px;
+			background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
 		}
+	}
+}
+
+html:not([data-theme="dark"]) {
+	.abilities-section .abilities-list > * {
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.45));
 	}
 }
