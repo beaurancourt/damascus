@@ -20,8 +20,43 @@ import { Utils } from '@/utils/utils';
 
 export class HeroUpdateLogic {
 	static updateHero = (hero: Hero, sourcebooks: Sourcebook[]) => {
+		HeroUpdateLogic.dropEmptySelections(hero);
 		HeroUpdateLogic.updateHeroStructure(hero, sourcebooks);
 		HeroUpdateLogic.updateHeroData(hero, sourcebooks);
+	};
+
+	// A hero could be saved with holes in a feature's selections - the random
+	// generator used to push the result of drawing from an empty list, which is
+	// undefined. Everything downstream reads selected[n].id, so one hole made
+	// the hero unopenable for good. The generator doesn't do that any more;
+	// this clears out the ones already saved.
+	static dropEmptySelections = (hero: Hero) => {
+		const clean = (value: unknown) => {
+			if (Array.isArray(value)) {
+				const kept = value.filter(entry => entry !== null && entry !== undefined);
+				kept.forEach(clean);
+				return kept;
+			}
+
+			if (value && typeof value === 'object') {
+				const record = value as Record<string, unknown>;
+				Object.keys(record).forEach(key => {
+					const cleaned = clean(record[key]);
+					if (Array.isArray(cleaned)) {
+						record[key] = cleaned;
+					}
+				});
+			}
+
+			return value;
+		};
+
+		hero.features.forEach(clean);
+		[ hero.ancestry, hero.culture, hero.career, hero.class, hero.complication ].forEach(element => {
+			if (element) {
+				clean(element);
+			}
+		});
 	};
 
 	static updateHeroStructure = (hero: Hero, sourcebooks: Sourcebook[]) => {

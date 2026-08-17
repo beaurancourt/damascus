@@ -1346,6 +1346,10 @@ export class HeroLogic {
 							const options = SourcebookLogic
 								.getDomains(sourcebooks)
 								.filter(a => !currentIDs.includes(a.id));
+							if (options.length === 0) {
+								break;
+							}
+
 							feature.data.selected.push(Collections.draw(options));
 						}
 						break;
@@ -1358,6 +1362,10 @@ export class HeroLogic {
 								.filter(lvl => lvl.level === feature.data.level)
 								.flatMap(lvl => lvl.features)
 								.filter(f => !currentIDs.includes(f.id));
+							if (options.length === 0) {
+								break;
+							}
+
 							feature.data.selected.push(Collections.draw(options));
 						}
 						break;
@@ -1369,6 +1377,10 @@ export class HeroLogic {
 								.getItems(sourcebooks)
 								.filter(i => !currentIDs.includes(i.id))
 								.filter(i => (feature.data.types.length === 0) || feature.data.types.includes(i.type));
+							if (options.length === 0) {
+								break;
+							}
+
 							feature.data.selected.push(Collections.draw(options));
 						}
 						break;
@@ -1380,6 +1392,10 @@ export class HeroLogic {
 								.getKits(sourcebooks)
 								.filter(k => !currentIDs.includes(k.id))
 								.filter(k => (feature.data.types.length === 0) || feature.data.types.includes(k.type));
+							if (options.length === 0) {
+								break;
+							}
+
 							feature.data.selected.push(Collections.draw(options));
 						}
 						break;
@@ -1390,6 +1406,10 @@ export class HeroLogic {
 							const options = SourcebookLogic
 								.getLanguages(sourcebooks)
 								.filter(l => !current.includes(l.name));
+							if (options.length === 0) {
+								break;
+							}
+
 							feature.data.selected.push(Collections.draw(options).name);
 						}
 						break;
@@ -1401,6 +1421,10 @@ export class HeroLogic {
 								.getPerks(sourcebooks)
 								.filter(p => !currentIDs.includes(p.id))
 								.filter(p => (feature.data.lists.length === 0) || feature.data.lists.includes(p.list));
+							if (options.length === 0) {
+								break;
+							}
+
 							feature.data.selected.push(Collections.draw(options));
 						}
 						break;
@@ -1418,6 +1442,10 @@ export class HeroLogic {
 							});
 							const options = allOptions
 								.filter(s => !current.includes(s));
+							if (options.length === 0) {
+								break;
+							}
+
 							feature.data.selected.push(Collections.draw(options));
 						}
 						break;
@@ -1435,6 +1463,10 @@ export class HeroLogic {
 								.map(f => f.id);
 							const options = taggedFeatures
 								.filter(t => !currentIDs.includes(t.id));
+							if (options.length === 0) {
+								break;
+							}
+
 							feature.data.selected.push(Collections.draw(options));
 						}
 						break;
@@ -1446,6 +1478,10 @@ export class HeroLogic {
 								.getTitles(sourcebooks)
 								.filter(t => !currentIDs.includes(t.id))
 								.filter(t => feature.data.echelon === t.echelon);
+							if (options.length === 0) {
+								break;
+							}
+
 							feature.data.selected.push(Collections.draw(options));
 						}
 						break;
