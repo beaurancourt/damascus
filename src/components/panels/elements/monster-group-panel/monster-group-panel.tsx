@@ -8,12 +8,10 @@ import { Monster } from '@/models/monster';
 import { MonsterGroup } from '@/models/monster-group';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
 import { PanelMode } from '@/enums/panel-mode';
-import { Segmented } from 'antd';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
-import { useState } from 'react';
 
 import './monster-group-panel.scss';
 
@@ -25,8 +23,6 @@ interface Props {
 }
 
 export const MonsterGroupPanel = (props: Props) => {
-	const [ page, setPage ] = useState<string>('overview');
-
 	const getOverview = () => {
 		return (
 			<>
@@ -120,44 +116,31 @@ export const MonsterGroupPanel = (props: Props) => {
 		);
 	};
 
+	// Sections stacked rather than tabbed: a library entry is something you read,
+	// and two thirds of it being one click away made you click to find out
+	// whether there was anything there.
 	const getContent = () => {
-		let content = null;
-		switch (page) {
-			case 'overview':
-				content = getOverview();
-				break;
-			case 'malice':
-				content = getMalice();
-				break;
-			case 'monsters':
-				content = getMonsters();
-				break;
-			case 'customization':
-				content = getCustomization();
-				break;
-		}
-
-		const options: { value: string, label: string }[] = [
-			{ value: 'overview', label: 'Overview' }
-		];
-		if (props.monsterGroup.malice.length > 0) {
-			options.push({ value: 'malice', label: 'Malice' });
-		}
-		options.push({ value: 'monsters', label: 'Monsters' });
-		if (props.monsterGroup.addOns.length > 0) {
-			options.push({ value: 'customization', label: 'Customization' });
-		}
-
 		return (
 			<>
-				<Segmented
-					style={{ marginBottom: '20px' }}
-					block={true}
-					options={options}
-					value={page}
-					onChange={setPage}
-				/>
-				{content}
+				{getOverview()}
+				{
+					props.monsterGroup.malice.length > 0 ?
+						<>
+							<HeaderText level={2}>Malice</HeaderText>
+							{getMalice()}
+						</>
+						: null
+				}
+				<HeaderText level={2}>Monsters</HeaderText>
+				{getMonsters()}
+				{
+					props.monsterGroup.addOns.length > 0 ?
+						<>
+							<HeaderText level={2}>Customization</HeaderText>
+							{getCustomization()}
+						</>
+						: null
+				}
 			</>
 		);
 	};

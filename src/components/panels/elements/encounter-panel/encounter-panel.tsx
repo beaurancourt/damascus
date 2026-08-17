@@ -1,5 +1,4 @@
 import { MonsterInfo, TerrainInfo } from '@/components/panels/token/token';
-import { Segmented, Space } from 'antd';
 import { useHeroes, useOptions } from '@/contexts/data-context';
 import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { CreatureLogic } from '@/logic/creature-logic';
@@ -23,8 +22,8 @@ import { SelectablePanel } from '@/components/controls/selectable-panel/selectab
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
+import { Space } from 'antd';
 import { TerrainPanel } from '@/components/panels/elements/terrain-panel/terrain-panel';
-import { useState } from 'react';
 
 import './encounter-panel.scss';
 
@@ -36,7 +35,6 @@ interface Props {
 }
 
 export const EncounterPanel = (props: Props) => {
-	const [ page, setPage ] = useState<string>('overview');
 	const options = useOptions();
 	const heroes = useHeroes();
 
@@ -261,38 +259,19 @@ export const EncounterPanel = (props: Props) => {
 		);
 	};
 
+	// Sections stacked rather than tabbed: a library entry is something you read,
+	// and two thirds of it being one click away made you click to find out
+	// whether there was anything there.
 	const getContent = () => {
-		let content = null;
-		switch (page) {
-			case 'overview':
-				content = getOverview();
-				break;
-			case 'groups':
-				content = getEncounterGroups();
-				break;
-			case 'statblocks':
-				content = getStatBlocks();
-				break;
-			case 'malice':
-				content = getMalice();
-				break;
-		}
-
 		return (
 			<>
-				<Segmented
-					style={{ marginBottom: '20px' }}
-					block={true}
-					options={[
-						{ value: 'overview', label: 'Overview' },
-						{ value: 'groups', label: 'Groups' },
-						{ value: 'statblocks', label: 'Stat Blocks' },
-						{ value: 'malice', label: 'Malice' }
-					]}
-					value={page}
-					onChange={setPage}
-				/>
-				{content}
+				{getOverview()}
+				<HeaderText level={2}>Groups</HeaderText>
+				{getEncounterGroups()}
+				<HeaderText level={2}>Stat Blocks</HeaderText>
+				{getStatBlocks()}
+				<HeaderText level={2}>Malice</HeaderText>
+				{getMalice()}
 			</>
 		);
 	};

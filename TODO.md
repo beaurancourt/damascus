@@ -1,4 +1,3 @@
-- reduce the nesting of the library entries, especially items
 - i'm seeing "contentscript.js:14083 ObjectMultiplex - orphaned data for stream "background-liveness"" in the console
 - i'm seeing "contentscript.js:14083 ObjectMultiplex - orphaned data for stream "app-init-liveness"" in the console
 - i'm seeing `contentscript.js:14083 MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 end listeners added. Use emitter.setMaxListeners() to increase limit` in the console

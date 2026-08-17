@@ -5,12 +5,10 @@ import { Markdown } from '@/components/controls/markdown/markdown';
 import { Negotiation } from '@/models/negotiation';
 import { NegotiationLogic } from '@/logic/negotiation-logic';
 import { PanelMode } from '@/enums/panel-mode';
-import { Segmented } from 'antd';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
 import { StatsRow } from '@/components/panels/stats-row/stats-row';
-import { useState } from 'react';
 
 import './negotiation-panel.scss';
 
@@ -21,8 +19,6 @@ interface Props {
 }
 
 export const NegotiationPanel = (props: Props) => {
-	const [ page, setPage ] = useState<string>('overview');
-
 	const getOverview = () => {
 		return (
 			<>
@@ -77,42 +73,21 @@ export const NegotiationPanel = (props: Props) => {
 		);
 	};
 
+	// Sections stacked rather than tabbed: a library entry is something you read,
+	// and two thirds of it being one click away made you click to find out
+	// whether there was anything there.
 	const getContent = () => {
-		let content = null;
-		switch (page) {
-			case 'overview':
-				content = getOverview();
-				break;
-			case 'motivations':
-				content = getMotivations();
-				break;
-			case 'pitfalls':
-				content = getPitfalls();
-				break;
-			case 'languages':
-				content = getLanguages();
-				break;
-			case 'outcomes':
-				content = getOutcomes();
-				break;
-		}
-
 		return (
 			<>
-				<Segmented
-					style={{ marginBottom: '20px' }}
-					block={true}
-					options={[
-						{ value: 'overview', label: 'Overview' },
-						{ value: 'motivations', label: 'Motivations' },
-						{ value: 'pitfalls', label: 'Pitfalls' },
-						{ value: 'languages', label: 'Languages' },
-						{ value: 'outcomes', label: 'Outcomes' }
-					]}
-					value={page}
-					onChange={setPage}
-				/>
-				{content}
+				{getOverview()}
+				<HeaderText level={2}>Motivations</HeaderText>
+				{getMotivations()}
+				<HeaderText level={2}>Pitfalls</HeaderText>
+				{getPitfalls()}
+				<HeaderText level={2}>Languages</HeaderText>
+				{getLanguages()}
+				<HeaderText level={2}>Outcomes</HeaderText>
+				{getOutcomes()}
 			</>
 		);
 	};

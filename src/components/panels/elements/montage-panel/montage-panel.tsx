@@ -1,9 +1,10 @@
-import { Flex, Segmented, Space } from 'antd';
+import { Flex, Space } from 'antd';
 import { Montage, MontageChallenge, MontageSection } from '@/models/montage';
 import { useHeroes, useOptions } from '@/contexts/data-context';
 import { CheckIcon } from '@/components/controls/check-icon/check-icon';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { Field } from '@/components/controls/field/field';
+import { Fragment } from 'react';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { MontageLogic } from '@/logic/montage-logic';
@@ -13,7 +14,6 @@ import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
 import { StatsRow } from '@/components/panels/stats-row/stats-row';
-import { useState } from 'react';
 
 import './montage-panel.scss';
 
@@ -24,7 +24,6 @@ interface Props {
 }
 
 export const MontagePanel = (props: Props) => {
-	const [ page, setPage ] = useState<string>('overview');
 	const options = useOptions();
 	const heroes = useHeroes();
 
@@ -120,34 +119,23 @@ export const MontagePanel = (props: Props) => {
 		);
 	};
 
+	// Sections stacked rather than tabbed: a library entry is something you read,
+	// and two thirds of it being one click away made you click to find out
+	// whether there was anything there.
 	const getContent = () => {
-		let content;
-		switch (page) {
-			case 'overview':
-				content = getOverview();
-				break;
-			case 'outcomes':
-				content = getOutcomes();
-				break;
-			default:
-				content = getSection(props.montage.sections.find(s => s.id === page) as MontageSection);
-				break;
-		}
-
 		return (
 			<>
-				<Segmented
-					style={{ marginBottom: '20px' }}
-					block={true}
-					options={[
-						{ value: 'overview', label: 'Overview' },
-						...props.montage.sections.map(s => ({ value: s.id, label: s.name || 'Details' })),
-						{ value: 'outcomes', label: 'Outcomes' }
-					]}
-					value={page}
-					onChange={setPage}
-				/>
-				{content}
+				{getOverview()}
+				{
+					props.montage.sections.map(s => (
+						<Fragment key={s.id}>
+							<HeaderText level={2}>{s.name || 'Details'}</HeaderText>
+							{getSection(s)}
+						</Fragment>
+					))
+				}
+				<HeaderText level={2}>Outcomes</HeaderText>
+				{getOutcomes()}
 			</>
 		);
 	};

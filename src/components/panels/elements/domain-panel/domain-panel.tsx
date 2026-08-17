@@ -1,4 +1,4 @@
-import { Alert, Flex, Segmented } from 'antd';
+import { Alert, Flex } from 'antd';
 import { Domain } from '@/models/domain';
 import { Empty } from '@/components/controls/empty/empty';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
@@ -13,7 +13,6 @@ import { Pill } from '@/components/controls/pill/pill';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SourcebookType } from '@/enums/sourcebook-type';
-import { useState } from 'react';
 
 import './domain-panel.scss';
 
@@ -25,8 +24,6 @@ interface Props {
 }
 
 export const DomainPanel = (props: Props) => {
-	const [ page, setPage ] = useState<string>('overview');
-
 	const getOverview = () => {
 		return (
 			<Markdown text={props.domain.description} />
@@ -104,37 +101,17 @@ export const DomainPanel = (props: Props) => {
 		);
 	};
 
+	// Sections stacked rather than tabbed: a library entry is something you read,
+	// and two thirds of it being one click away made you click to find out
+	// whether there was anything there.
 	const getContent = () => {
-		let content = null;
-		switch (page) {
-			case 'overview':
-				content = getOverview();
-				break;
-			case 'features':
-				content = getFeatures();
-				break;
-			case 'additional':
-				content = getAdditional();
-				break;
-		}
-
-		const pages = [
-			{ value: 'overview', label: 'Overview' },
-			{ value: 'features', label: 'Features' },
-			{ value: 'additional', label: 'Additional' }
-		];
-
 		return (
 			<>
-				<Segmented
-					style={{ marginBottom: '20px' }}
-					block={true}
-					options={pages}
-					value={page}
-					onChange={setPage}
-					onClick={e => e.stopPropagation()}
-				/>
-				{content}
+				{getOverview()}
+				<HeaderText level={2}>Features</HeaderText>
+				{getFeatures()}
+				<HeaderText level={2}>Additional</HeaderText>
+				{getAdditional()}
 			</>
 		);
 	};
