@@ -683,15 +683,20 @@ export const EncounterEditPanel = (props: Props) => {
 				<div className='encounter-edit-stream'>
 					<div className='encounter-pinned'>
 						{getDifficultySection()}
-						{
-							getEncounterWarnings().map(w => (
-								<div key={w.key} className='encounter-warning'>{w.title}</div>
-							))
-						}
 					</div>
 
 					<div className='encounter-grid'>
 						<div className='encounter-workspace'>
+							{
+								// Warnings belong beside the groups they're about, not
+								// above both columns: appearing up there grew the block
+								// that everything else is laid out under, so adding the
+								// first monster to a group shunted the whole monster
+								// list down by 35px, mid-click.
+								getEncounterWarnings().map(w => (
+									<div key={w.key} className='encounter-warning'>{w.title}</div>
+								))
+							}
 							<section className='encounter-section'>
 								<HeaderText>Encounter</HeaderText>
 								{getNameAndDescriptionSection()}
