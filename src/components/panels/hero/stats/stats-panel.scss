@@ -9,3 +9,14 @@
 		border-top: 1px solid rgba(127, 127, 127, 0.18);
 	}
 }
+
+// Five characteristic cards across a phone leave the caption about 12px once
+// its own 10px side margins are taken out - not enough for a three-letter
+// label. Give it the card's full width and tighten the tracking.
+@media (max-width: 600px) {
+	.stats-section .stats-row .stats-row-caption {
+		margin-left: 0;
+		margin-right: 0;
+		letter-spacing: 1px;
+	}
+}

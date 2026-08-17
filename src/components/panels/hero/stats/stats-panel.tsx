@@ -9,7 +9,7 @@ import { HeroLogic } from '@/logic/hero-logic';
 import { HeroModalType } from '@/enums/hero-modal-type';
 import { QuickResourcesPanel } from '@/components/panels/hero/quick-resources/quick-resources-panel';
 import { StatsRow } from '@/components/panels/stats-row/stats-row';
-import { useIsSmall } from '@/hooks/use-is-small';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { useOptions } from '@/contexts/data-context';
 
 import './stats-panel.scss';
@@ -27,8 +27,12 @@ interface Props {
 // Conditions are deliberately NOT rendered here — the hero panel renders them as a separate
 // downstream section so the page order is stats → resources → conditions.
 export const StatsPanel = (props: Props) => {
-	const isSmall = useIsSmall();
 	const options = useOptions();
+
+	// Five cards across: "Intuition" needs 65px of caption and only gets that
+	// much from about 600px of viewport up. Below that the names shorten to
+	// their first three letters - still readable, unlike a bare initial.
+	const abbreviate = useMediaQuery('(max-width: 600px)');
 
 	const useRows = options.compactView;
 
@@ -53,19 +57,19 @@ export const StatsPanel = (props: Props) => {
 		<ErrorBoundary>
 			<div className='stats-section' data-hero-section='Stats'>
 				<Flex gap={10}>
-					<StatsRow caption={isSmall ? 'M' : 'Might'} onClick={() => props.onSelectCharacteristic(Characteristic.Might)} style={{ flex: '1 1 0' }}>
+					<StatsRow caption={abbreviate ? 'Mig' : 'Might'} onClick={() => props.onSelectCharacteristic(Characteristic.Might)} style={{ flex: '1 1 0' }}>
 						<Statistic value={HeroLogic.getCharacteristic(props.hero, Characteristic.Might)} />
 					</StatsRow>
-					<StatsRow caption={isSmall ? 'A' : 'Agility'} onClick={() => props.onSelectCharacteristic(Characteristic.Agility)} style={{ flex: '1 1 0' }}>
+					<StatsRow caption={abbreviate ? 'Agi' : 'Agility'} onClick={() => props.onSelectCharacteristic(Characteristic.Agility)} style={{ flex: '1 1 0' }}>
 						<Statistic value={HeroLogic.getCharacteristic(props.hero, Characteristic.Agility)} />
 					</StatsRow>
-					<StatsRow caption={isSmall ? 'R' : 'Reason'} onClick={() => props.onSelectCharacteristic(Characteristic.Reason)} style={{ flex: '1 1 0' }}>
+					<StatsRow caption={abbreviate ? 'Rea' : 'Reason'} onClick={() => props.onSelectCharacteristic(Characteristic.Reason)} style={{ flex: '1 1 0' }}>
 						<Statistic value={HeroLogic.getCharacteristic(props.hero, Characteristic.Reason)} />
 					</StatsRow>
-					<StatsRow caption={isSmall ? 'I' : 'Intuition'} onClick={() => props.onSelectCharacteristic(Characteristic.Intuition)} style={{ flex: '1 1 0' }}>
+					<StatsRow caption={abbreviate ? 'Int' : 'Intuition'} onClick={() => props.onSelectCharacteristic(Characteristic.Intuition)} style={{ flex: '1 1 0' }}>
 						<Statistic value={HeroLogic.getCharacteristic(props.hero, Characteristic.Intuition)} />
 					</StatsRow>
-					<StatsRow caption={isSmall ? 'P' : 'Presence'} onClick={() => props.onSelectCharacteristic(Characteristic.Presence)} style={{ flex: '1 1 0' }}>
+					<StatsRow caption={abbreviate ? 'Pre' : 'Presence'} onClick={() => props.onSelectCharacteristic(Characteristic.Presence)} style={{ flex: '1 1 0' }}>
 						<Statistic value={HeroLogic.getCharacteristic(props.hero, Characteristic.Presence)} />
 					</StatsRow>
 				</Flex>
