@@ -31,8 +31,20 @@ export class HeroUpdateLogic {
 	// the hero unopenable for good. The generator doesn't do that any more;
 	// this clears out the ones already saved.
 	static dropEmptySelections = (hero: Hero) => {
+		// A feature graph can reach the same object twice - a choice whose
+		// selection is a feature that lists the choice again, say - and walking
+		// it naively recurses until the stack gives out. Remembering what has
+		// been visited makes the walk terminate and also stops it redoing work
+		// on objects shared by several paths.
+		const seen = new WeakSet<object>();
+
 		const clean = (value: unknown) => {
 			if (Array.isArray(value)) {
+				if (seen.has(value)) {
+					return value;
+				}
+				seen.add(value);
+
 				const kept = value.filter(entry => entry !== null && entry !== undefined);
 				kept.forEach(clean);
 				return kept;
@@ -40,6 +52,11 @@ export class HeroUpdateLogic {
 
 			if (value && typeof value === 'object') {
 				const record = value as Record<string, unknown>;
+				if (seen.has(record)) {
+					return value;
+				}
+				seen.add(record);
+
 				Object.keys(record).forEach(key => {
 					const cleaned = clean(record[key]);
 					if (Array.isArray(cleaned)) {

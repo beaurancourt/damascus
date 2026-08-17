@@ -1301,11 +1301,21 @@ export class HeroLogic {
 					}
 					case FeatureType.Choice: {
 						let remaining = feature.data.count === 'ancestry' ? HeroLogic.getAncestryPoints(hero) : feature.data.count;
-						while (feature.data.options.some(o => o.value <= remaining)) {
+						for (;;) {
 							const currentIDs = feature.data.selected.map(f => f.id);
 							const options = feature.data.options
 								.filter(o => !currentIDs.includes(o.feature.id))
 								.filter(o => o.value <= remaining);
+							// The guard has to be the list we actually draw from. It
+							// used to ask whether any option was affordable while the
+							// body drew from the affordable ones not already taken -
+							// so once a hero had picked every option it could pay for,
+							// draw() got an empty array, returned undefined, and the
+							// generator threw on undefined.feature.
+							if (options.length === 0) {
+								break;
+							}
+
 							const selected = Collections.draw(options);
 							feature.data.selected.push(selected.feature);
 							remaining -= selected.value;

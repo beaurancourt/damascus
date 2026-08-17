@@ -51,11 +51,23 @@ const watch = async (label, url, drive) => {
 };
 
 await watch('player  ', PLAYER, async page => {
-	// make a hero, open its sheet, open a tool, go back to the list
-	for (let i = 0; i < 3; i++) {
-		if (/\/hero\/view\//.test(await page.evaluate(() => location.hash))) break;
-		await page.locator('.hero-section-empty button', { hasText: 'Generate a Random Hero' }).first().click().catch(() => {});
-		await page.waitForURL(/\/hero\/view\//, { timeout: 9000 }).catch(() => {});
+	// Roll a batch, not one. The generator's failures are per-hero and depend on
+	// which class and choices come up - one hero missed a crash that showed up
+	// 18 times in 40. The empty-state buttons only exist before the first hero;
+	// after that the same three live behind the list page's add button.
+	for (let i = 0; i < 12; i++) {
+		await page.evaluate(() => { location.hash = '#/hero'; });
+		await page.waitForTimeout(400);
+		const empty = page.locator('.hero-section-empty button', { hasText: 'Generate a Random Hero' });
+		if (await empty.count()) {
+			await empty.first().click().catch(() => {});
+		} else {
+			await page.locator('.hero-list-page button, .app-header button').first().click().catch(() => {});
+			await page.waitForTimeout(300);
+			await page.locator('.ant-popover button', { hasText: 'Generate a Random Hero' }).first().click().catch(() => {});
+		}
+		await page.waitForURL(/\/hero\/view\//, { timeout: 12000 }).catch(() => {});
+		await page.waitForTimeout(500);
 	}
 	await page.waitForTimeout(1500);
 	await page.locator('.app-header button', { hasText: /^Inventory$/ }).first().click().catch(() => {});
