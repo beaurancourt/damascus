@@ -135,7 +135,7 @@ You gain a bane on the test for each subsequent rumor you collect either on the 
 								name: 'Sprite Dandeknight',
 								description: 'Dandeknights are sprite warriors whose dragonfly wingbeats emit a tonal drone. They’re usually clad in tassels that shift color as they swing their weapons.',
 								level: 0,
-								role: FactoryLogic.createMonsterRole(MonsterOrganizationType.Minion, MonsterRoleType.Ambusher),
+								role: FactoryLogic.createMonsterRole(MonsterOrganizationType.Minion, MonsterRoleType.Harrier),
 								keywords: [ 'Fey' ],
 								encounterValue: 0,
 								size: FactoryLogic.createSize(1, 'T'),
