@@ -43,6 +43,12 @@ SMOKE_BASE=http://localhost:4173/damascus-gm/ node scripts/smoke-wide-encounter-
 
 ## Other
 
+- `smoke-console.mjs` — Loads both sites in a clean Chromium (no profile, no
+  extensions), walks the main flows, and fails on any console warning, console
+  error, page error or 4xx/5xx response that comes from the app. Vite chatter,
+  React's DevTools notice and browser-extension logging are ignored by name.
+  Point it at production with `SMOKE_BASE` and `SMOKE_BASE_GM`. Asserts — exits
+  non-zero. Needs both dev servers when run locally.
 - `smoke-encounter-builder-workflow.mjs` — Drives the builder the way a
   director uses it: focus lands in the search box, a sloppy query finds the
   monster, clicking adds it to the active group, Shift+A starts the next group,
