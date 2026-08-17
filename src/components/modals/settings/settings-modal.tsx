@@ -4,8 +4,8 @@ import { useDataManager, useHeroes, useOptions } from '@/contexts/data-context';
 import { AbilityData } from '@/data/ability-data';
 import { AppMode } from '@/utils/app-mode';
 import { Collections } from '@/utils/collections';
-import { Expander } from '@/components/controls/expander/expander';
 import { Field } from '@/components/controls/field/field';
+import { HeaderText } from '@/components/controls/header-text/header-text';
 import { LabelControl } from '@/components/controls/label-control/label-control';
 import { Modal } from '@/components/modals/modal/modal';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
@@ -47,8 +47,12 @@ export const SettingsModal = (props: Props) => {
 		saveOptions(copy);
 	};
 
+	// Sections are headings with their contents under them, not collapsibles.
+	// There are few enough settings that hiding them behind a click only made
+	// people hunt for the one they wanted.
 	const getAppearance = () => (
-		<Expander title='Appearance'>
+		<div className='settings-section'>
+			<HeaderText level={2}>Appearance</HeaderText>
 			<Segmented
 				block={true}
 				value={themeMode}
@@ -59,7 +63,7 @@ export const SettingsModal = (props: Props) => {
 					{ label: 'Dark', value: 'dark', icon: <MoonOutlined /> }
 				]}
 			/>
-		</Expander>
+		</div>
 	);
 
 	const getHeroesSection = () => {
@@ -84,7 +88,8 @@ export const SettingsModal = (props: Props) => {
 		};
 
 		return (
-			<Expander title='Heroes'>
+			<div className='settings-section'>
+				<HeaderText level={2}>Heroes</HeaderText>
 				<Space orientation='vertical' style={{ width: '100%' }}>
 					<NumberSpin
 						label='XP per level'
@@ -147,14 +152,15 @@ export const SettingsModal = (props: Props) => {
 						onClose={closeStandardAbilitiesModal}
 					/>
 				</Drawer>
-			</Expander>
+			</div>
 		);
 	};
 
 	const getEncountersSection = () => {
 		const parties = Collections.distinct(heroes.map(h => h.folder), f => f).sort().filter(f => !!f);
 		return (
-			<Expander title='Encounters'>
+			<div className='settings-section'>
+				<HeaderText level={2}>Encounters</HeaderText>
 				<Space orientation='vertical' style={{ width: '100%' }}>
 					<Toggle
 						label='Show defeated combatants'
@@ -181,14 +187,15 @@ export const SettingsModal = (props: Props) => {
 							: null
 					}
 				</Space>
-			</Expander>
+			</div>
 		);
 	};
 
 	const getDifficultySection = () => {
 		const parties = Collections.distinct(heroes.map(h => h.folder), f => f).sort().filter(f => !!f);
 		return (
-			<Expander title='Encounter / Montage Difficulty'>
+			<div className='settings-section'>
+				<HeaderText level={2}>Encounter / Montage Difficulty</HeaderText>
 				<Space orientation='vertical' style={{ width: '100%' }}>
 					<LabelControl
 						label='Calculate difficulty based on these heroes'
@@ -231,7 +238,7 @@ export const SettingsModal = (props: Props) => {
 							: null
 					}
 				</Space>
-			</Expander>
+			</div>
 		);
 	};
 

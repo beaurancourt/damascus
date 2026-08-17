@@ -1,6 +1,12 @@
 .settings-modal {
 	padding: 20px;
 
+	.settings-section {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
 	.settings-notices {
 		display: flex;
 		flex-direction: column;
@@ -38,7 +44,13 @@
 
 html[data-theme="dark"] {
 	.settings-modal {
-		.settings-notices {
+		.settings-section {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.settings-notices {
 			border-top-color: rgba(250, 250, 250, 0.15);
 
 			.notice-logo>img {
