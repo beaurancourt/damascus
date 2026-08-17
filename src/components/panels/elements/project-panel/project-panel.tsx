@@ -30,6 +30,10 @@ interface Props {
 	sourcebooks: Sourcebook[]
 	hero?: Hero;
 	mode?: PanelMode;
+	// Rendered inside something that has already named it - an item's Crafting
+	// section, say. The project's own name, description and "Preparation"
+	// heading only restate their surroundings there.
+	embedded?: boolean;
 	onChange?: (project: Project) => void;
 	addItemAndDeleteProject?: (item: Item, project: Project) => void;
 }
@@ -310,19 +314,26 @@ export const ProjectPanel = (props: Props) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='project-panel'>
-				<HeaderText
-					level={1}
-					tags={tags}
-					extra={
-						project.isCustom ?
-							<Button type='text' icon={editing ? <CheckCircleOutlined /> : <EditOutlined />} onClick={() => setEditing(!editing)} />
-							: null
-					}
-				>
-					{props.project.name || 'Unnamed Project'}
-				</HeaderText>
-				<Markdown text={props.project.description} />
+			<div className={props.embedded ? 'project-panel embedded' : 'project-panel'}>
+				{
+					props.embedded ?
+						null
+						:
+						<>
+							<HeaderText
+								level={1}
+								tags={tags}
+								extra={
+									project.isCustom ?
+										<Button type='text' icon={editing ? <CheckCircleOutlined /> : <EditOutlined />} onClick={() => setEditing(!editing)} />
+										: null
+								}
+							>
+								{props.project.name || 'Unnamed Project'}
+							</HeaderText>
+							<Markdown text={props.project.description} />
+						</>
+				}
 				<Space orientation='vertical' style={{ width: '100%' }}>
 					{
 						// Preparation is what you have to gather before the project
@@ -331,7 +342,7 @@ export const ProjectPanel = (props: Props) => {
 						// click to find out which.
 						preparation ?
 							<>
-								<HeaderText level={2}>Preparation</HeaderText>
+								{props.embedded ? null : <HeaderText level={2}>Preparation</HeaderText>}
 								{preparation}
 							</>
 							: null

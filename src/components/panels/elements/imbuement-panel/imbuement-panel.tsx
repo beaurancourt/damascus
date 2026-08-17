@@ -52,7 +52,7 @@ export const ImbuementPanel = (props: Props) => {
 				{
 					props.imbuement.crafting ?
 						<Expander title='Crafting'>
-							<ProjectPanel project={props.imbuement.crafting} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
+							<ProjectPanel project={props.imbuement.crafting} sourcebooks={props.sourcebooks} mode={PanelMode.Full} embedded={true} />
 						</Expander>
 						: null
 				}

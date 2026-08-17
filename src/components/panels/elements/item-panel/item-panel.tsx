@@ -247,7 +247,7 @@ export const ItemPanel = (props: Props) => {
 		}
 
 		return (
-			<ProjectPanel project={item.crafting} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
+			<ProjectPanel project={item.crafting} sourcebooks={props.sourcebooks} mode={PanelMode.Full} embedded={true} />
 		);
 	};
 
