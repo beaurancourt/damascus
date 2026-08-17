@@ -305,10 +305,19 @@ export const ItemPanel = (props: Props) => {
 	return (
 		<ErrorBoundary>
 			<div className='item-panel' style={props.style}>
-				<HeaderText level={1} tags={tags}>
+				<HeaderText level={1}>
 					{item.name || 'Unnamed Item'}
 				</HeaderText>
 				{getContent()}
+				{
+					// Type and keywords read as a footnote, the same as a monster's
+					// do - they qualify the item rather than introduce it.
+					tags.length > 0 ?
+						<div className='item-footer'>
+							{tags.join(', ')}
+						</div>
+						: null
+				}
 			</div>
 		</ErrorBoundary>
 	);

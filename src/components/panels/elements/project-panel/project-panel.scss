@@ -12,4 +12,18 @@
 	.project-progress-gauge {
 		text-align: center;
 	}
+
+	// Inside an item, the section heading above already sets the left edge, and
+	// these are four short fields rather than a page of them.
+	&.embedded {
+		padding: 0;
+
+		.field {
+			margin: 2px 0;
+		}
+
+		.ant-space-gap-row-small {
+			row-gap: 2px;
+		}
+	}
 }
