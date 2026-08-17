@@ -300,7 +300,7 @@ export const EncounterRunPanel = (props: Props) => {
 						monsterGroup={SourcebookLogic.getMonsterGroup(props.sourcebooks, c.monster.id) || undefined}
 						sourcebooks={props.sourcebooks}
 						mode={PanelMode.Full}
-						terse={true}
+						reference={true}
 					/>
 					:
 					<TerrainPanel

@@ -38,7 +38,11 @@ interface Props {
 	mode?: PanelMode;
 	style?: CSSProperties;
 	extra?: ReactNode;
-	terse?: boolean;
+	// The encounter runner's play-reference rendering: banners in their short
+	// form, and abilities that don't drill in - the panel already shows the
+	// whole ability, so the drawer only ever covered the tracker with a bigger
+	// copy of what was on screen.
+	reference?: boolean;
 }
 
 export const MonsterPanel = (props: Props) => {
@@ -254,8 +258,10 @@ export const MonsterPanel = (props: Props) => {
 									<div className='abilities'>
 										{
 											abilities.map(a => (
-												<SelectablePanel key={a.id} onSelect={() => setSelectedAbility(a)}>
-													<AbilityPanel ability={a} monster={props.monster} mode={PanelMode.Full} terse={props.terse} />
+												// No onSelect in reference mode: the card keeps its
+												// border but stops being a link into a drawer.
+												<SelectablePanel key={a.id} onSelect={props.reference ? undefined : () => setSelectedAbility(a)}>
+													<AbilityPanel ability={a} monster={props.monster} mode={PanelMode.Full} terse={props.reference} />
 												</SelectablePanel>
 											))
 										}
