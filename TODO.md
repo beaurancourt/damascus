@@ -1,4 +1,3 @@
-- de-nest preparation for items. /tmp/damascus-ss/item-denest.jpg
 - drop the filter dropdown for items. we can lean on just searching for names
 - in the inventory screen, add a `+` button to the right of the search bar that
   lets people add custom items. my players just picked up 5oz of costmary

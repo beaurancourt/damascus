@@ -325,10 +325,15 @@ export const ProjectPanel = (props: Props) => {
 				<Markdown text={props.project.description} />
 				<Space orientation='vertical' style={{ width: '100%' }}>
 					{
+						// Preparation is what you have to gather before the project
+						// can start, so it was hidden exactly when it mattered least
+						// and shown when it mattered most - but either way it was a
+						// click to find out which.
 						preparation ?
-							<Expander title='Preparation' expandedByDefault={!getPrerequisitesMet()}>
+							<>
+								<HeaderText level={2}>Preparation</HeaderText>
 								{preparation}
-							</Expander>
+							</>
 							: null
 					}
 					<div>
