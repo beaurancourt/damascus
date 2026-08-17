@@ -13,6 +13,10 @@ import './ability-info-panel.scss';
 interface Props {
 	ability: Ability;
 	hero?: Hero;
+	// The encounter runner reads these banners at a glance during play, so it
+	// asks for the short form: no field labels, and the action type without its
+	// redundant "Action" suffix - "Main · Melee 1 · One creature or object".
+	terse?: boolean;
 }
 
 const getUsageKind = (ability: Ability, hero?: Hero) => {
@@ -42,17 +46,21 @@ export const AbilityInfoPanel = (props: Props) => {
 	const distance = props.ability.distance.map(d => AbilityLogic.getDistance(d, props.ability, props.hero)).join(' or ');
 	const kind = getUsageKind(props.ability, props.hero);
 
+	const abilityType = FormatLogic.getAbilityType(props.ability.type);
+	const typeText = props.terse ? abilityType.replace(/ Action\b/, '') : abilityType;
+	const label = (text: string) => props.terse ? '' : text;
+
 	return (
 		<ErrorBoundary>
 			<div className={`ability-info-panel${kind ? ` kind-${kind}` : ''}`}>
 				<div className='ds-text compact-text bold-text' style={{ position: 'relative', zIndex: '10' }}>
-					{FormatLogic.getAbilityType(props.ability.type)}
+					{typeText}
 				</div>
 				{
 					distance ?
 						<Field
 							compact={true}
-							label={props.ability.target !== distance ? 'Distance' : 'Distance / Target'}
+							label={label(props.ability.target !== distance ? 'Distance' : 'Distance / Target')}
 							value={<Markdown useSpan={true} text={distance} />}
 						/>
 						: null
@@ -61,7 +69,7 @@ export const AbilityInfoPanel = (props: Props) => {
 					props.ability.target && (props.ability.target !== distance) ?
 						<Field
 							compact={true}
-							label='Target'
+							label={label('Target')}
 							value={<Markdown useSpan={true} text={props.ability.target} />}
 						/>
 						: null

@@ -9,6 +9,12 @@
 	background-color: rgb(240, 240, 240);
 	overflow: hidden;
 
+	// Terse form (the encounter runner): the labels are emptied in the markup,
+	// so drop the boxes they leave behind too.
+	&.terse .field-label {
+		display: none;
+	}
+
 	// Color-coded by action usage. Border-left + faint tinted bg signal the action type
 	// without the diagonal sash banner. Colors roughly match the old sash hues.
 	&.kind-main {

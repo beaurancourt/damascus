@@ -35,6 +35,7 @@ interface Props {
 	highlightTier?: number;
 	odds?: number[];
 	mode?: PanelMode;
+	terse?: boolean;
 }
 
 export const AbilityPanel = (props: Props) => {
@@ -318,7 +319,7 @@ export const AbilityPanel = (props: Props) => {
 						:
 						<>
 							<Markdown text={props.ability.description} className='ability-description-text' />
-							<AbilityInfoPanel ability={props.ability} hero={props.hero} />
+							<AbilityInfoPanel ability={props.ability} hero={props.hero} terse={props.terse} />
 							{(props.ability.sections || []).map(getSection)}
 							{
 								allTags.length > 0 ?
