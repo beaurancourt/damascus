@@ -19,7 +19,6 @@ import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { Monster } from '@/models/monster';
 import { MonsterGroup } from '@/models/monster-group';
-import { MonsterLabel } from '@/components/panels/monster-label/monster-label';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { PanelMode } from '@/enums/panel-mode';
@@ -84,25 +83,25 @@ export const MonsterPanel = (props: Props) => {
 		}
 	}
 
-	let rightOfTags = null;
+	let cost = null;
 	if (props.summon) {
 		if (props.summon.cost > 0) {
-			rightOfTags = `${props.summon.cost} essence ${props.summon.count === 1 ? 'per minion summoned' : `for ${props.summon.count} minions`}`;
+			cost = `${props.summon.cost} essence ${props.summon.count === 1 ? 'per minion summoned' : `for ${props.summon.count} minions`}`;
 		}
 	} else if (props.monster.encounterValue > 0) {
-		switch (props.monster.role.organization) {
-			case MonsterOrganizationType.Minion:
-				rightOfTags = (
-					<Field orientation='vertical' label='EV' value={`${props.monster.encounterValue} for 4 minions`} />
-				);
-				break;
-			default:
-				rightOfTags = (
-					<Field orientation='vertical' label='EV' value={props.monster.encounterValue} />
-				);
-				break;
-		}
+		cost = props.monster.role.organization === MonsterOrganizationType.Minion ?
+			`EV ${props.monster.encounterValue} for 4 minions`
+			: `EV ${props.monster.encounterValue}`;
 	}
+
+	// Everything the coloured label banner used to hold - role and level,
+	// keywords, encounter value - as one line of plain text at the foot of the
+	// stat block, where it no longer pushes the numbers down the card.
+	const footer = [
+		MonsterLogic.getMonsterDescription(props.monster),
+		props.monster.keywords.filter(k => !!k).join(', '),
+		cost
+	].filter(part => !!part);
 
 	const higherLevels: { level: number, feature: Feature }[] = [];
 	if (props.monster.retainer) {
@@ -138,7 +137,6 @@ export const MonsterPanel = (props: Props) => {
 				>
 					{MonsterLogic.getMonsterName(props.monster, props.monsterGroup)}
 				</HeaderText>
-				<MonsterLabel monster={props.monster} extra={rightOfTags} />
 				<Markdown text={props.monster.description} />
 				{
 					props.mode === PanelMode.Full ?
@@ -292,6 +290,13 @@ export const MonsterPanel = (props: Props) => {
 									: null
 							}
 						</>
+						: null
+				}
+				{
+					footer.length > 0 ?
+						<div className='monster-footer'>
+							{footer.join(' · ')}
+						</div>
 						: null
 				}
 				<Drawer open={selectedAbility !== null} onClose={() => setSelectedAbility(null)} closeIcon={null} size={500}>

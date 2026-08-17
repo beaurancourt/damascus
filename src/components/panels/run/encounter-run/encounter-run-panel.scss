@@ -415,24 +415,9 @@
 				}
 			}
 
-			// Compact the MonsterLabel (role/keywords/EV banner).
-			.monster-label {
-				padding: 6px 10px !important;
-				margin: 0 0 6px !important;
-
-				.field-label {
-					font-size: 9px !important;
-					letter-spacing: 1.5px;
-				}
-
-				.field-value {
-					font-size: 11px !important;
-				}
-			}
-
-			// Two adjacent stat rows (size/speed/etc. + characteristics) collapse
-			// into one visual box — drop the gap between them and merge their
-			// borders so they read as a single tactical readout.
+			// Terrain's stat rows: adjacent rows collapse into one visual box —
+			// drop the gap between them and merge their borders so they read as
+			// a single tactical readout.
 			.stats-row {
 				padding: 6px 8px;
 				margin: 4px 0;

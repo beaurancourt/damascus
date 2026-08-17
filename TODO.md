@@ -5,4 +5,4 @@
 - right now the encounter runner is 2-column
   /tmp/damascus-ss/encounter-runner.jpg. i want it to be 3-column. have the
   center and right columns both be stat blocks so i can fit more monsters on screen at once
-- in the encounter runner we can move the tags like "bugbear", "goblin" "humanoid" to plain text at the bottom of the card
+- update the readme to show how to run the GM page locally
