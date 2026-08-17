@@ -43,6 +43,11 @@ SMOKE_BASE=http://localhost:4173/damascus-gm/ node scripts/smoke-wide-encounter-
 
 ## Other
 
+- `smoke-encounter-builder-workflow.mjs` — Drives the builder the way a
+  director uses it: focus lands in the search box, a sloppy query finds the
+  monster, clicking adds it to the active group, Shift+A starts the next group,
+  and clearing the query returns to browsing by echelon. Asserts — exits
+  non-zero if any step is wrong. Needs the GM site (port 5174).
 - `smoke-encounter-import.mjs` — Drives the YAML import modal end to end:
   paste bad YAML and expect the error, paste a shipped example and expect an
   EV preview, then save and expect to land on the encounter edit page. Unlike

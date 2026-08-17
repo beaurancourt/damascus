@@ -2,7 +2,7 @@ import { Alert, Button, Flex, Select, Space } from 'antd';
 import { CaretDownOutlined, CaretUpOutlined, CheckCircleOutlined, CloseCircleOutlined, CopyOutlined, EditFilled, EditOutlined, EllipsisOutlined, FilterFilled, FilterOutlined, InfoCircleOutlined, PlusOutlined, ToolFilled, ToolOutlined } from '@ant-design/icons';
 import { Encounter, EncounterGroup, TerrainSlot } from '@/models/encounter';
 import { EncounterSlot, EncounterSlotCustomization } from '@/models/encounter-slot';
-import { Fragment, ReactNode, useState } from 'react';
+import { Fragment, ReactNode, useEffect, useState } from 'react';
 import { MonsterFilter, TerrainFilter } from '@/models/filter';
 import { MonsterInfo, TerrainInfo } from '@/components/panels/token/token';
 import { useHeroes, useOptions } from '@/contexts/data-context';
@@ -41,6 +41,40 @@ import { Utils } from '@/utils/utils';
 
 import './encounter-edit-panel.scss';
 
+// Subsequence matching: every letter of the query has to appear in the name, in
+// order, but not necessarily together - so "drgthn" finds "Dragon, Thorn". The
+// score rewards matches that are contiguous and near the start, which puts the
+// obvious answer first without pulling in a search library.
+const fuzzyScore = (name: string, query: string) => {
+	const haystack = name.toLowerCase();
+	const needle = query.toLowerCase().trim();
+	if (!needle) {
+		return 0;
+	}
+
+	let score = 0;
+	let from = 0;
+	let previous = -2;
+	for (const char of needle) {
+		if (char === ' ') {
+			continue;
+		}
+		const at = haystack.indexOf(char, from);
+		if (at < 0) {
+			return -1;
+		}
+		score += at === previous + 1 ? 3 : 1;
+		if (at === 0) {
+			score += 3;
+		}
+		previous = at;
+		from = at + 1;
+	}
+
+	// shorter names matching the same letters are the better answer
+	return score - haystack.length / 100;
+};
+
 interface Props {
 	encounter: Encounter;
 	sourcebooks: Sourcebook[];
@@ -52,6 +86,10 @@ interface Props {
 export const EncounterEditPanel = (props: Props) => {
 	const [ encounter, setEncounter ] = useState<Encounter>(props.encounter);
 	const [ filterVisible, setFilterVisible ] = useState<boolean>(false);
+	// The group a clicked monster lands in. Defaults to the first one, which on
+	// a new encounter is Red.
+	const [ activeGroupID, setActiveGroupID ] = useState<string | null>(props.encounter.groups[0]?.id ?? null);
+	const [ monsterSearch, setMonsterSearch ] = useState<string>('');
 	const [ monsterFilter, setMonsterFilter ] = useState<MonsterFilter>(FactoryLogic.createMonsterFilter());
 	const [ terrainFilter, setTerrainFilter ] = useState<TerrainFilter>(FactoryLogic.createTerrainFilter());
 	const options = useOptions();
@@ -59,30 +97,48 @@ export const EncounterEditPanel = (props: Props) => {
 
 	const addMonster = (monster: Monster, encounterGroupID: string | null) => {
 		const copy = Utils.copy(encounter);
+		const targetID = encounterGroupID ?? activeGroupID;
 
-		if (encounterGroupID) {
-			const group = copy.groups.find(g => g.id === encounterGroupID);
-			if (group) {
-				group.slots.push(FactoryLogic.createEncounterSlot(monster.id));
-			};
-		} else {
-			const group = FactoryLogic.createEncounterGroup();
+		const group = targetID ? copy.groups.find(g => g.id === targetID) : undefined;
+		if (group) {
 			group.slots.push(FactoryLogic.createEncounterSlot(monster.id));
-			copy.groups.push(group);
+		} else {
+			const created = FactoryLogic.createEncounterGroup();
+			created.slots.push(FactoryLogic.createEncounterSlot(monster.id));
+			copy.groups.push(created);
+			setActiveGroupID(created.id);
 		}
 
-		copy.groups = copy.groups.filter(g => g.slots.length > 0);
-
 		setEncounter(copy);
 		props.onChange(copy);
 	};
 
+	// Shift+A starts the next group and points new monsters at it.
 	const addGroup = () => {
 		const copy = Utils.copy(encounter);
-		copy.groups.push(FactoryLogic.createEncounterGroup());
+		const created = FactoryLogic.createEncounterGroup();
+		copy.groups.push(created);
 		setEncounter(copy);
+		setActiveGroupID(created.id);
 		props.onChange(copy);
 	};
+
+	useEffect(() => {
+		const handler = (e: KeyboardEvent) => {
+			if (!e.shiftKey || e.key.toLowerCase() !== 'a' || e.metaKey || e.ctrlKey || e.altKey) {
+				return;
+			}
+
+			// Deliberately fires while the search box has focus, since that's
+			// where the cursor starts; searching is case-insensitive, so nothing
+			// needs a capital A typed into it.
+			e.preventDefault();
+			addGroup();
+		};
+
+		window.addEventListener('keydown', handler);
+		return () => window.removeEventListener('keydown', handler);
+	});
 
 	const getEncounterWarnings = () => {
 		const warnings: { key: string; title: string }[] = [];
@@ -270,6 +326,8 @@ export const EncounterEditPanel = (props: Props) => {
 							<GroupPanel
 								group={group}
 								index={n}
+								active={group.id === activeGroupID}
+								setActive={() => setActiveGroupID(group.id)}
 								sourcebooks={props.sourcebooks}
 								setName={setName}
 								setMinHeroCount={setMinHeroCount}
@@ -445,8 +503,27 @@ export const EncounterEditPanel = (props: Props) => {
 
 		const anyMatches = echelonBuckets.some(b => b.groups.length > 0);
 
+		// With a query, the echelon/monster-group drill-down gets in the way -
+		// show one ranked list of monsters instead.
+		const searchHits = monsterSearch.trim() ?
+			allGroups
+				.flatMap(g => g.monsters.filter(passes).map(m => ({ monster: m, group: g, score: fuzzyScore(m.name, monsterSearch) })))
+				.filter(hit => hit.score >= 0)
+				.sort((a, b) => b.score - a.score)
+				.slice(0, 40)
+			: [];
+
 		return (
 			<Space orientation='vertical' style={{ width: '100%', padding: '5px' }}>
+				<div className='monster-picker-search'>
+					<TextInput
+						autoFocus={true}
+						allowClear={true}
+						placeholder='Search monsters by name'
+						value={monsterSearch}
+						onChange={setMonsterSearch}
+					/>
+				</div>
 				{
 					filterVisible ?
 						<MonsterFilterPanel
@@ -460,43 +537,64 @@ export const EncounterEditPanel = (props: Props) => {
 						: null
 				}
 				{
-					echelonBuckets.map(bucket =>
-						bucket.groups.length > 0
-							? (
-								<div key={bucket.echelon.key} className='echelon-section' data-echelon={bucket.echelon.key}>
-									<div className='echelon-header'>
-										<span className='echelon-tier'>{bucket.echelon.tier}</span>
-										<span className='echelon-divider' aria-hidden='true' />
-										<span className='echelon-range'>{bucket.echelon.range}</span>
-									</div>
-									<Space orientation='vertical' style={{ width: '100%' }}>
-										{
-											bucket.groups.map(({ group, monsters }) => (
-												<Expander key={`${bucket.echelon.key}-${group.id}`} title={group.name}>
-													<Space orientation='vertical' style={{ width: '100%' }}>
-														{
-															monsters.map(m => (
-																<MonsterListItem
-																	key={m.id}
-																	monster={m}
-																	monsterGroup={group}
-																	encounter={encounter}
-																	addMonster={addMonster}
-																	showMonster={props.showMonster}
-																/>
-															))
-														}
-													</Space>
-												</Expander>
-											))
-										}
-									</Space>
-								</div>
-							)
-							: null
-					)
+					monsterSearch.trim() ?
+						<div className='monster-search-results'>
+							{
+								searchHits.map(hit => (
+									<MonsterListItem
+										key={hit.monster.id}
+										monster={hit.monster}
+										monsterGroup={hit.group}
+										encounter={encounter}
+										addMonster={addMonster}
+										showMonster={props.showMonster}
+									/>
+								))
+							}
+							{searchHits.length === 0 ? <Empty /> : null}
+						</div>
+						:
+						<>
+							{
+								echelonBuckets.map(bucket =>
+									bucket.groups.length > 0
+										? (
+											<div key={bucket.echelon.key} className='echelon-section' data-echelon={bucket.echelon.key}>
+												<div className='echelon-header'>
+													<span className='echelon-tier'>{bucket.echelon.tier}</span>
+													<span className='echelon-divider' aria-hidden='true' />
+													<span className='echelon-range'>{bucket.echelon.range}</span>
+												</div>
+												<Space orientation='vertical' style={{ width: '100%' }}>
+													{
+														bucket.groups.map(({ group, monsters }) => (
+															<Expander key={`${bucket.echelon.key}-${group.id}`} title={group.name}>
+																<Space orientation='vertical' style={{ width: '100%' }}>
+																	{
+																		monsters.map(m => (
+																			<MonsterListItem
+																				key={m.id}
+																				monster={m}
+																				monsterGroup={group}
+																				encounter={encounter}
+																				addMonster={addMonster}
+																				showMonster={props.showMonster}
+																			/>
+																		))
+																	}
+																</Space>
+															</Expander>
+														))
+													}
+												</Space>
+											</div>
+										)
+										: null
+								)
+							}
+							{!anyMatches ? <Empty /> : null}
+						</>
 				}
-				{!anyMatches ? <Empty /> : null}
 			</Space>
 		);
 	};
@@ -662,6 +760,8 @@ export const EncounterEditPanel = (props: Props) => {
 interface GroupPanelProps {
 	group: EncounterGroup;
 	index: number;
+	active: boolean;
+	setActive: () => void;
 	sourcebooks: Sourcebook[];
 	setName: (group: EncounterGroup, value: string) => void;
 	setMinHeroCount: (group: EncounterGroup, value: number | undefined) => void;
@@ -676,7 +776,10 @@ const GroupPanel = (props: GroupPanelProps) => {
 
 	return (
 		<ErrorBoundary>
-			<div className='encounter-group-panel'>
+			<div
+				className={props.active ? 'encounter-group-panel active-group' : 'encounter-group-panel'}
+				onClick={props.setActive}
+			>
 				<HeaderText
 					level={3}
 					extra={
@@ -1049,38 +1152,49 @@ interface MonsterListItemProps {
 }
 
 const MonsterListItem = (props: MonsterListItemProps) => {
+	// One click puts the monster in the active group; the dropdown is still
+	// there for the times you want a different one.
+	const quickAdd = props.encounter && props.addMonster ?
+		() => props.addMonster!(props.monster, null)
+		: undefined;
+
 	return (
-		<div className='monster-list-item'>
+		<div
+			className={quickAdd ? 'monster-list-item clickable' : 'monster-list-item'}
+			onClick={quickAdd}
+		>
 			<div className='info-container'>
 				<MonsterInfo monster={props.monster} showEV={true} />
 			</div>
-			<ButtonGroup
-				buttons={[
-					props.monsterGroup && props.showMonster ?
-						{ type: 'button', icon: <InfoCircleOutlined />, tooltip: 'Stat Block', onClick: () => props.showMonster!(props.monster, props.monsterGroup!) }
-						: null,
-					props.encounter && props.addMonster && (props.encounter.groups.length === 0) ?
-						{ type: 'button', icon: <PlusOutlined />, tooltip: 'Add', onClick: () => props.addMonster!(props.monster, null) }
-						: null,
-					props.encounter && props.addMonster && (props.encounter.groups.length !== 0) ?
-						{
-							type: 'dropdown',
-							icon: <PlusOutlined />,
-							tooltip: 'Add',
-							popover: (
-								<Space orientation='vertical'>
-									{
-										props.encounter!.groups.map((group, n) => (
-											<Button key={group.id} type='text' block={true} onClick={() => props.addMonster!(props.monster, group.id)}>{group.name || EncounterLogic.getDefaultGroupName(n)}</Button>
-										))
-									}
-									<Button key='' type='text' block={true} onClick={() => props.addMonster!(props.monster, null)}>New Group</Button>
-								</Space>
-							)
-						}
-						: null
-				]}
-			/>
+			<div onClick={e => e.stopPropagation()}>
+				<ButtonGroup
+					buttons={[
+						props.monsterGroup && props.showMonster ?
+							{ type: 'button', icon: <InfoCircleOutlined />, tooltip: 'Stat Block', onClick: () => props.showMonster!(props.monster, props.monsterGroup!) }
+							: null,
+						props.encounter && props.addMonster && (props.encounter.groups.length === 0) ?
+							{ type: 'button', icon: <PlusOutlined />, tooltip: 'Add', onClick: () => props.addMonster!(props.monster, null) }
+							: null,
+						props.encounter && props.addMonster && (props.encounter.groups.length !== 0) ?
+							{
+								type: 'dropdown',
+								icon: <PlusOutlined />,
+								tooltip: 'Add',
+								popover: (
+									<Space orientation='vertical'>
+										{
+											props.encounter!.groups.map((group, n) => (
+												<Button key={group.id} type='text' block={true} onClick={() => props.addMonster!(props.monster, group.id)}>{group.name || EncounterLogic.getDefaultGroupName(n)}</Button>
+											))
+										}
+										<Button key='' type='text' block={true} onClick={() => props.addMonster!(props.monster, null)}>New Group</Button>
+									</Space>
+								)
+							}
+							: null
+					]}
+				/>
+			</div>
 		</div>
 	);
 };

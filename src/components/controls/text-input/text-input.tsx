@@ -10,6 +10,7 @@ interface Props {
 	placeholder?: string;
 	status?: '' | 'error' | 'warning' | 'success' | 'validating'
 	allowClear?: boolean;
+	autoFocus?: boolean;
 	suffix?: ReactNode;
 	style?: CSSProperties;
 	onChange: (value: string) => void;
@@ -37,6 +38,7 @@ export const TextInput = (props: Props) => {
 				placeholder={props.placeholder}
 				status={props.status}
 				allowClear={props.allowClear}
+				autoFocus={props.autoFocus}
 				suffix={props.suffix}
 				style={props.style}
 				onChange={e => setValue(e.target.value)}

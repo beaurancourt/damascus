@@ -64,7 +64,6 @@ import { MonsterGroup } from '@/models/monster-group';
 import { MonsterModal } from '@/components/modals/monster/monster-modal';
 import { Montage } from '@/models/montage';
 import { Negotiation } from '@/models/negotiation';
-import { OptionsLogic } from '@/logic/options-logic';
 import { Perk } from '@/models/perk';
 import { Plot } from '@/models/plot';
 import { Project } from '@/models/project';
@@ -463,10 +462,10 @@ export const Main = () => {
 				encounter.groups.flatMap(g => g.slots).forEach(s => s.id = Utils.guid());
 			} else {
 				encounter = FactoryLogic.createEncounter();
-				const groupCount = OptionsLogic.getHeroCount(options, heroes);
-				for (let n = 0; n < groupCount; ++n) {
-					encounter.groups.push(FactoryLogic.createEncounterGroup());
-				}
+				// One group to start - Red. The builder adds the next one on
+				// Shift+A, when you've finished filling this one, rather than
+				// opening with a column of empty groups to scroll past.
+				encounter.groups.push(FactoryLogic.createEncounterGroup());
 			}
 
 			sourcebook.encounters.push(encounter);
