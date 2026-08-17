@@ -1,9 +1,10 @@
 // =============================================================================
 // Encounter Runner — GM Combat Tracker
 // =============================================================================
-// Two-column layout (50/50): left is the tracker (combatants with acted
-// checkboxes), right is the alphabetized stat-block stack. Clicking a tracker
-// row scrolls and highlights the matching stat block.
+// Equal-width columns: the first is the tracker (combatants with acted
+// checkboxes, malice, difficulty), the rest are the alphabetized stat-block
+// stack - one column, or two above 1300px. Clicking a tracker row scrolls and
+// highlights the matching stat block.
 
 @import '@/colors.scss';
 
@@ -373,6 +374,29 @@
 
 		&.terrain {
 			.row-name { font-style: italic; }
+		}
+	}
+
+	// --- Malice (tracker column) ---------------------------------------------
+	// Sits between the combatants and the difficulty readout: it is consulted
+	// on the villain's turn, which the difficulty number never is.
+	.encounter-run-malice {
+		.malice-group {
+			margin-bottom: 12px;
+		}
+
+		.malice-group-name {
+			margin: 4px 0 6px;
+			font-family: 'Merriweather', serif;
+			font-weight: 700;
+			font-size: 11px;
+			letter-spacing: 2px;
+			text-transform: uppercase;
+			color: $bronze;
+		}
+
+		.malice-panel {
+			margin-bottom: 8px;
 		}
 	}
 

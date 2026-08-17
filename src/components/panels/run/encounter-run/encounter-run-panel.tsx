@@ -9,6 +9,7 @@ import { ErrorBoundary } from '@/components/controls/error-boundary/error-bounda
 import { FactoryLogic } from '@/logic/factory-logic';
 import { Field } from '@/components/controls/field/field';
 import { HeaderText } from '@/components/controls/header-text/header-text';
+import { MalicePanel } from '@/components/panels/malice/malice-panel';
 import { Monster } from '@/models/monster';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
@@ -268,6 +269,16 @@ export const EncounterRunPanel = (props: Props) => {
 	});
 	const statBlocks: StatBlock[] = Array.from(statBlockMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 
+	// What the malice counter beside it is for. The builder curates this list
+	// per encounter via hiddenMaliceFeatures; until now nothing read that back,
+	// so the abilities a director had picked were invisible during play.
+	const maliceFeatures = EncounterLogic.getAllMaliceFeatures(encounter, props.sourcebooks)
+		.map(group => ({
+			group: group.group,
+			features: group.features.filter(f => !encounter.hiddenMaliceFeatures.includes(f.id))
+		}))
+		.filter(group => group.features.length > 0);
+
 	// Wide enough for three columns: the tracker keeps the left one and the
 	// stat blocks take the other two, so twice as many are on screen at once.
 	// They deal round-robin rather than first-half/second-half - the columns
@@ -458,6 +469,31 @@ export const EncounterRunPanel = (props: Props) => {
 											: null
 									}
 								</div>
+						}
+
+						{
+							maliceFeatures.length > 0 ?
+								<div className='encounter-run-malice'>
+									<HeaderText level={2}>Malice</HeaderText>
+									{
+										maliceFeatures.map(group => (
+											<div key={group.group} className='malice-group'>
+												<div className='malice-group-name'>{group.group}</div>
+												{
+													group.features.map(f => (
+														<MalicePanel
+															key={f.id}
+															malice={f}
+															currentMalice={encounter.malice}
+															updateCurrentMalice={setMalice}
+														/>
+													))
+												}
+											</div>
+										))
+									}
+								</div>
+								: null
 						}
 
 						<HeaderText level={2}>Difficulty</HeaderText>
