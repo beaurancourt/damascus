@@ -22,7 +22,7 @@ export const FeaturesPanel = (props: Props) => {
 	// Features worth surfacing on the hero sheet — Text/HeroicResource/Package and explicit
 	// per-feature opt-ins. Skip Ability features (those have their own Abilities tab) and
 	// Companion/Follower/Retainer (those render via the Retinue section).
-	const interestingTypes = [ FeatureType.Text, FeatureType.HeroicResource, FeatureType.Package ];
+	const interestingTypes = [ FeatureType.Text, FeatureType.HeroicResource, FeatureType.Package, FeatureType.SummonFormation ];
 	const features = HeroLogic.getFeatures(props.hero)
 		.filter(f => interestingTypes.includes(f.feature.type))
 		.sort((a, b) => a.feature.name.localeCompare(b.feature.name));

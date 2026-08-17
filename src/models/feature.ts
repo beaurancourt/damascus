@@ -297,6 +297,12 @@ export interface FeatureSummonChoiceData extends _FeatureData {
 };
 export type FeatureSummonChoice = FeatureOf<FeatureType.SummonChoice, FeatureSummonChoiceData>;
 
+// A marker: it carries nothing of its own, and exists so a class can say "this
+// text is about how my summons line up" rather than filing it under Text.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface FeatureSummonFormationData extends _FeatureData {};
+export type FeatureSummonFormation = FeatureOf<FeatureType.SummonFormation, FeatureSummonFormationData>;
+
 export interface FeatureSwitchOptionsData extends _FeatureData {
 	switch: string;
 	options: { value: string, feature: Feature }[];
@@ -382,6 +388,7 @@ export type Feature =
 	| FeatureSpeed
 	| FeatureSummon
 	| FeatureSummonChoice
+	| FeatureSummonFormation
 	| FeatureSwitchOptions
 	| FeatureSwitchValue
 	| FeatureText
