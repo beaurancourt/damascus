@@ -8,6 +8,7 @@ import { HeroClass } from '@/models/class';
 import { KitArmor } from '@/enums/kit-armor';
 import { KitWeapon } from '@/enums/kit-weapon';
 import { PerkList } from '@/enums/perk-list';
+import { ResourceGainFrequency } from '@/enums/resource-gain-frequency';
 import { SkillList } from '@/enums/skill-list';
 import { circleOfBlight } from '@/data/classes/summoner/blight';
 import { circleOfGraves } from '@/data/classes/summoner/graves';
@@ -61,8 +62,9 @@ You can also take advantage of powerful magic to buff your allies, whittle down 
 						},
 						{
 							tag: 'minion-death',
-							trigger: 'The first time each round that any minion (either yours or an enemy) dies unwillingly within your Summoner’s Range',
-							value: '1'
+							trigger: 'Any minion (either yours or an enemy) dies unwillingly within your Summoner’s Range',
+							value: '1',
+							frequency: ResourceGainFrequency.OncePerRound
 						}
 					],
 					details: 'Whenever you use a heroic ability or call forth a minion that costs essence, you can willingly sacrifice one or more of your minions within your Summoner’s Range to reduce the cost by 1. You can’t kill minions this way if they used a main action or maneuver during the turn. You can sacrifice more minions than you would reduce the cost by.'

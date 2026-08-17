@@ -32,3 +32,13 @@
 		padding: 20px;
 	}
 }
+
+// The limit on a gain, said once next to the trigger rather than spelled out
+// inside it.
+.hero-resources-modal .gain-frequency {
+	margin-left: 6px;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	opacity: 0.6;
+}

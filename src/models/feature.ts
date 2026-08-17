@@ -21,6 +21,7 @@ import { Monster } from '@/models/monster';
 import { Perk } from '@/models/perk';
 import { PerkList } from '@/enums/perk-list';
 import { PowerRoll } from '@/models/power-roll';
+import { ResourceGainFrequency } from '@/enums/resource-gain-frequency';
 import { Size } from '@/models/size';
 import { SkillList } from '@/enums/skill-list';
 import { StatBlockIcon } from '@/enums/stat-block-icon';
@@ -168,7 +169,7 @@ export type FeatureForController = FeatureOf<FeatureType.ForController, FeatureF
 
 export interface FeatureHeroicResourceData extends _FeatureData {
 	type: 'heroic' | 'epic';
-	gains: { tag: string, trigger: string, value: string }[];
+	gains: { tag: string, trigger: string, value: string, frequency?: ResourceGainFrequency }[];
 	details: string;
 	canBeNegative: boolean;
 	value: number;
@@ -179,6 +180,9 @@ export interface FeatureHeroicResourceGainData extends _FeatureData {
 	tag: string;
 	trigger: string;
 	value: string;
+	// Absent means at will; anything else is a limit the trigger no longer has
+	// to spell out in prose.
+	frequency?: ResourceGainFrequency;
 	replacesTags: string[];
 };
 export type FeatureHeroicResourceGain = FeatureOf<FeatureType.HeroicResourceGain, FeatureHeroicResourceGainData>;

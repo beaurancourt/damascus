@@ -3,6 +3,7 @@ import { Flex, Select, Space } from 'antd';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { Pill } from '@/components/controls/pill/pill';
+import { ResourceGainFrequency } from '@/enums/resource-gain-frequency';
 import { Sourcebook } from '@/models/sourcebook';
 import { TextInput } from '@/components/controls/text-input/text-input';
 import { Utils } from '@/utils/utils';
@@ -21,7 +22,7 @@ export const InfoHeroicResourceGain = (props: InfoProps) => {
 			<div className='ds-text'></div>
 			<Flex align='center' justify='space-between' gap={10}>
 				<div className='ds-text compact-text'>{props.data.trigger}</div>
-				<Pill>+{props.data.value}</Pill>
+				<Pill>+{props.data.value}{props.data.frequency && props.data.frequency !== ResourceGainFrequency.AtWill ? ` ${props.data.frequency}` : ''}</Pill>
 			</Flex>
 		</>
 	);

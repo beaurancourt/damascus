@@ -13,6 +13,7 @@ import { Modal } from '@/components/modals/modal/modal';
 import { Monster } from '@/models/monster';
 import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { Random } from '@/utils/random';
+import { ResourceGainFrequency } from '@/enums/resource-gain-frequency';
 import { RetainerSelectModal } from '@/components/modals/select/retainer-select/retainer-select-modal';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
@@ -147,7 +148,14 @@ export const HeroResourcesModal = (props: Props) => {
 
 													return (
 														<Flex key={n} align='center' justify='space-between' gap={10}>
-															<div className='ds-text compact-text'>{g.trigger}</div>
+															<div className='ds-text compact-text'>
+																{g.trigger}
+																{
+																	g.frequency && (g.frequency !== ResourceGainFrequency.AtWill) ?
+																		<span className='gain-frequency'>{g.frequency}</span>
+																		: null
+																}
+															</div>
 															{btn}
 														</Flex>
 													);

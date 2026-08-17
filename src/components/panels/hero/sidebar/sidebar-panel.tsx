@@ -12,6 +12,7 @@ import { HeroModalType } from '@/enums/hero-modal-type';
 import { Markdown } from '@/components/controls/markdown/markdown';
 import { Monster } from '@/models/monster';
 import { Pill } from '@/components/controls/pill/pill';
+import { ResourceGainFrequency } from '@/enums/resource-gain-frequency';
 import { Skill } from '@/models/skill';
 import { SkillList } from '@/enums/skill-list';
 import { Sourcebook } from '@/models/sourcebook';
@@ -132,7 +133,7 @@ export const SidebarPanel = (props: Props) => {
 												hr.gains.map((g, n) => (
 													<Flex key={n} align='center' justify='space-between' gap={10}>
 														<div className='ds-text compact-text'>{g.trigger}</div>
-														<Pill>+{g.value}</Pill>
+														<Pill>+{g.value}{g.frequency && g.frequency !== ResourceGainFrequency.AtWill ? ` ${g.frequency}` : ''}</Pill>
 													</Flex>
 												))
 											}

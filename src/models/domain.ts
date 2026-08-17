@@ -1,5 +1,6 @@
 import { Element } from '@/models/element';
 import { Feature } from '@/models/feature';
+import { ResourceGainFrequency } from '@/enums/resource-gain-frequency';
 
 export interface Domain extends Element {
 	featuresByLevel: {
@@ -11,6 +12,7 @@ export interface Domain extends Element {
 		tag: string;
 		trigger: string;
 		value: string;
+		frequency?: ResourceGainFrequency;
 	}[];
 	defaultFeatures: Feature[];
 }
