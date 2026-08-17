@@ -169,19 +169,27 @@ export const HeroListPage = (props: Props) => {
 				</AppHeader>
 				<ErrorBoundary>
 					<div className='hero-list-page-content'>
-						<Tabs
-							activeKey={currentTab}
-							items={folders.map(f => ({
-								key: f,
-								label: (
-									<div className='section-header'>
-										<div className='section-title'>{f || 'Heroes'}</div>
-									</div>
-								),
-								children: getHeroesSection(getHeroes(f), f)
-							}))}
-							onChange={navigation.goToHeroList}
-						/>
+						{
+							// One folder means one tab labelled "Heroes", sitting on
+							// the Heroes screen, under a header that says Heroes -
+							// a strip of chrome you can't do anything with. It comes
+							// back the moment there's a second folder to switch to.
+							folders.length > 1 ?
+								<Tabs
+									activeKey={currentTab}
+									items={folders.map(f => ({
+										key: f,
+										label: (
+											<div className='section-header'>
+												<div className='section-title'>{f || 'Heroes'}</div>
+											</div>
+										),
+										children: getHeroesSection(getHeroes(f), f)
+									}))}
+									onChange={navigation.goToHeroList}
+								/>
+								: getHeroesSection(getHeroes(folders[0]), folders[0])
+						}
 					</div>
 				</ErrorBoundary>
 				<AppFooter
