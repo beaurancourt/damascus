@@ -37,7 +37,6 @@ import { FooterParams } from '@/components/panels/app-footer/app-footer';
 import { Format } from '@/utils/format';
 import { Hero } from '@/models/hero';
 import { HeroClass } from '@/models/class';
-import { HeroConditionalModal } from '@/components/modals/hero-conditional/hero-conditional-modal';
 import { HeroCustomizeModal } from '@/components/modals/hero-customize/hero-customize-modal';
 import { HeroEditPage } from '@/components/pages/heroes/hero-edit/hero-edit-page';
 import { HeroInventoryModal } from '@/components/modals/hero-inventory/hero-inventory-modal';
@@ -1488,17 +1487,6 @@ export const Main = () => {
 					<HeroCustomizeModal
 						hero={hero}
 						sourcebooks={sourcebooks}
-						onClose={() => setDrawer(null)}
-						onChange={persistHero}
-					/>
-				);
-				break;
-			case HeroModalType.Conditional:
-				setDrawer(
-					<HeroConditionalModal
-						hero={hero}
-						sourcebooks={sourcebooks}
-						options={options}
 						onClose={() => setDrawer(null)}
 						onChange={persistHero}
 					/>

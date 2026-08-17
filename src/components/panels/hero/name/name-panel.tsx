@@ -1,5 +1,5 @@
-import { AppstoreOutlined, ControlOutlined, EllipsisOutlined } from '@ant-design/icons';
-import { Button, Divider, Popover, Space } from 'antd';
+import { Button, Popover, Space } from 'antd';
+import { AppstoreOutlined } from '@ant-design/icons';
 import { ButtonGroup } from '@/components/controls/button-group/button-group';
 import { HeroModalType } from '@/enums/hero-modal-type';
 import { useIsSmall } from '@/hooks/use-is-small';
@@ -9,12 +9,12 @@ interface Props {
 	onShowState: (type: HeroModalType) => void;
 }
 
-// The hero's tools - inventory, projects, titles, respite and the customization
-// menus. These used to sit in a name plate below the app header; they're a
-// header control now so the sheet only pays for one bar. The collapsed button
-// carries a grid rather than a wrench: it opens a set of the sheet's other
-// screens, and nothing behind it adjusts anything. It also has to read apart
-// from the section menu's list glyph sitting next to it.
+// The hero's tools - inventory, projects, titles and respite. These used to sit
+// in a name plate below the app header; they're a header control now so the
+// sheet only pays for one bar. The collapsed button carries a grid rather than
+// a wrench: it opens a set of the sheet's other screens, and nothing behind it
+// adjusts anything. It also has to read apart from the section menu's list
+// glyph sitting next to it.
 export const HeroToolsPanel = (props: Props) => {
 	const isSmall = useIsSmall();
 	const [ open, setOpen ] = useState(false);
@@ -36,8 +36,6 @@ export const HeroToolsPanel = (props: Props) => {
 						<Button block={true} type='text' onClick={() => choose(HeroModalType.Projects)}>Projects</Button>
 						<Button block={true} type='text' onClick={() => choose(HeroModalType.Titles)}>Titles</Button>
 						<Button block={true} type='text' onClick={() => choose(HeroModalType.Respite)}>Respite</Button>
-						<Divider />
-						<Button block={true} type='text' icon={<ControlOutlined />} onClick={() => choose(HeroModalType.Conditional)}>Conditional Features</Button>
 					</Space>
 				}
 				open={open}
@@ -54,24 +52,7 @@ export const HeroToolsPanel = (props: Props) => {
 				{ type: 'button', label: 'Inventory', onClick: () => props.onShowState(HeroModalType.Inventory) },
 				{ type: 'button', label: 'Projects', onClick: () => props.onShowState(HeroModalType.Projects) },
 				{ type: 'button', label: 'Titles', onClick: () => props.onShowState(HeroModalType.Titles) },
-				{ type: 'button', label: 'Respite', onClick: () => props.onShowState(HeroModalType.Respite) },
-				{
-					type: 'control',
-					control: (
-						<Popover
-							trigger='click'
-							content={
-								<Space orientation='vertical' style={{ width: '190px' }}>
-									<Button type='text' block={true} icon={<ControlOutlined />} onClick={() => choose(HeroModalType.Conditional)}>Conditional Features</Button>
-								</Space>
-							}
-							open={open}
-							onOpenChange={setOpen}
-						>
-							<Button type='text' icon={<EllipsisOutlined />} />
-						</Popover>
-					)
-				}
+				{ type: 'button', label: 'Respite', onClick: () => props.onShowState(HeroModalType.Respite) }
 			]}
 		/>
 	);

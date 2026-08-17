@@ -5,6 +5,5 @@ export enum HeroModalType {
 	Projects = 'Projects',
 	Titles = 'Titles',
 	Respite = 'Respite',
-	Customize = 'Customize',
-	Conditional = 'Conditional'
+	Customize = 'Customize'
 }
