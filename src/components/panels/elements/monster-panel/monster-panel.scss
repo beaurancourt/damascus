@@ -14,6 +14,12 @@
 		font-size: 14px;
 		line-height: 1.6;
 
+		// the characteristics line sits directly under the body stats, as one
+		// two-line readout rather than two separate blocks
+		& + .monster-stats-line {
+			margin-top: 0;
+		}
+
 		.stat {
 			// keep a label and its value on the same line when the run wraps
 			white-space: nowrap;

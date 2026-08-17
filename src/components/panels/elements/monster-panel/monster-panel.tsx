@@ -61,17 +61,38 @@ export const MonsterPanel = (props: Props) => {
 	const immunities = damageModifiers.filter(dm => dm.modifierType === DamageModifierType.Immunity);
 	const weaknesses = damageModifiers.filter(dm => dm.modifierType === DamageModifierType.Weakness);
 
-	// The numbers a GM reads off constantly, as one line of running text - a
-	// boxed grid for ten values costs a third of the stat block's header.
-	const stats: { label: string, value: ReactNode }[] = [
+	// The numbers a GM reads off constantly, as running text - a boxed grid for
+	// ten values costs a third of the stat block's header. Two lines, not one:
+	// the body stats and the characteristics are looked up for different
+	// reasons, and a single run wraps in the middle of the second group.
+	const bodyStats: { label: string, value: ReactNode }[] = [
 		{ label: 'Size', value: FormatLogic.getSize(props.monster.size) },
 		{ label: 'Speed', value: speedStr },
 		{ label: 'Stamina', value: MonsterLogic.getStaminaDescription(props.monster) },
 		{ label: 'Stability', value: MonsterLogic.getStability(props.monster) },
-		{ label: 'Free Strike', value: MonsterLogic.getFreeStrikeDamage(props.monster) },
-		...[ Characteristic.Might, Characteristic.Agility, Characteristic.Reason, Characteristic.Intuition, Characteristic.Presence ]
-			.map(ch => ({ label: ch as string, value: MonsterLogic.getCharacteristic(props.monster, ch) }))
+		{ label: 'Free Strike', value: MonsterLogic.getFreeStrikeDamage(props.monster) }
 	];
+
+	const characteristics: { label: string, value: ReactNode }[] =
+		[ Characteristic.Might, Characteristic.Agility, Characteristic.Reason, Characteristic.Intuition, Characteristic.Presence ]
+			.map(ch => ({ label: ch as string, value: MonsterLogic.getCharacteristic(props.monster, ch) }));
+
+	const renderStatLine = (line: { label: string, value: ReactNode }[], className: string) => (
+		<div className={className}>
+			{
+				line.map((stat, n) => (
+					<Fragment key={stat.label}>
+						{n > 0 ? <span className='stat-separator'>, </span> : null}
+						<span className='stat'>
+							<span className='stat-label'>{stat.label}</span>
+							{' '}
+							<span className='stat-value'>{stat.value}</span>
+						</span>
+					</Fragment>
+				))
+			}
+		</div>
+	);
 
 	const allFeatures = MonsterLogic.getFeatures(props.monster);
 	const features = allFeatures.filter(f => (f.type === FeatureType.Text) || (f.type === FeatureType.AddOn));
@@ -146,20 +167,8 @@ export const MonsterPanel = (props: Props) => {
 				{
 					props.mode === PanelMode.Full ?
 						<>
-							<div className='monster-stats-line'>
-								{
-									stats.map((stat, n) => (
-										<Fragment key={stat.label}>
-											{n > 0 ? <span className='stat-separator'>, </span> : null}
-											<span className='stat'>
-												<span className='stat-label'>{stat.label}</span>
-												{' '}
-												<span className='stat-value'>{stat.value}</span>
-											</span>
-										</Fragment>
-									))
-								}
-							</div>
+							{renderStatLine(bodyStats, 'monster-stats-line')}
+							{renderStatLine(characteristics, 'monster-stats-line characteristics')}
 							{
 								![ 'healthy', 'injured' ].includes(MonsterLogic.getCombatState(props.monster)) ?
 									<Alert
