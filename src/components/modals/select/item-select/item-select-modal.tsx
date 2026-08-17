@@ -1,6 +1,5 @@
 import { Button, Flex, Space } from 'antd';
 import { Empty } from '@/components/controls/empty/empty';
-import { Expander } from '@/components/controls/expander/expander';
 import { Hero } from '@/models/hero';
 import { ImbuedItemData } from '@/data/items/imbued-item-data';
 import { Item } from '@/models/item';
@@ -68,23 +67,23 @@ export const ItemSelectModal = (props: Props) => {
 				<div className='item-select-modal'>
 					<Space orientation='vertical' style={{ width: '100%' }}>
 						{
+							// Flat, not behind an expander: the expander's title only
+							// repeated the name and type the panel leads with, and put
+							// what the item actually does one click away. The add
+							// button sits over the panel's own heading, as it does in
+							// the inventory.
 							items.map(item => (
-								<Expander
-									key={item.id}
-									title={item.name}
-									tags={[ item.type ]}
-									extra={[
+								<div key={item.id} className='item-option'>
+									<div className='item-option-actions'>
 										<Button
-											key='select'
 											type='text'
 											title='Select'
 											icon={<PlusOutlined />}
 											onClick={() => props.onSelect(item)}
 										/>
-									]}
-								>
+									</div>
 									<ItemPanel item={item} sourcebooks={props.sourcebooks} wielder={props.hero} mode={PanelMode.Full} />
-								</Expander>
+								</div>
 							))
 						}
 						{

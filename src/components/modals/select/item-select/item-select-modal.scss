@@ -1,3 +1,20 @@
 .item-select-modal {
 	padding: 20px;
+
+	// Each option is its own card, matching the inventory it adds into. The add
+	// button sits over the panel's heading rather than in a bar of its own, so
+	// the option still starts with the item's name.
+	.item-option {
+		position: relative;
+		margin-bottom: 15px;
+
+		.item-option-actions {
+			position: absolute;
+			top: 4px;
+			right: 4px;
+			z-index: 1;
+			display: flex;
+			gap: 2px;
+		}
+	}
 }

@@ -3,4 +3,3 @@
   than the whole group
 - in the encounter runner, put the creature attributes on their own line
 - in the hero screen, remove 'conditional features'
-- in the add item model, un-nest the items /tmp/damascus-ss/nested-item.jpg
