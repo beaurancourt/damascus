@@ -3,6 +3,7 @@ import { CaretDownOutlined, CaretUpOutlined, PlusOutlined } from '@ant-design/ic
 import { Collections } from '@/utils/collections';
 import { DangerButton } from '@/components/controls/danger-button/danger-button';
 import { Empty } from '@/components/controls/empty/empty';
+import { FactoryLogic } from '@/logic/factory-logic';
 import { FeatureType } from '@/enums/feature-type';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
@@ -37,6 +38,17 @@ export const HeroInventoryModal = (props: Props) => {
 		setHero(copy);
 		setShopVisible(false);
 		props.onChange(copy);
+	};
+
+	// The list only has what the books have; a hero can pick up anything. The
+	// name is whatever was typed into the search that found nothing.
+	const addCustomItem = (name: string) => {
+		addItem(FactoryLogic.createItem({
+			id: Utils.guid(),
+			name: name,
+			description: '',
+			type: ItemType.Trinket1st
+		}));
 	};
 
 	const changeItem = (item: Item) => {
@@ -144,6 +156,7 @@ export const HeroInventoryModal = (props: Props) => {
 							sourcebooks={props.sourcebooks}
 							hero={hero}
 							onSelect={addItem}
+							onAddCustom={addCustomItem}
 							onCustomize={props.onCustomize}
 							onClose={() => setShopVisible(false)}
 						/>

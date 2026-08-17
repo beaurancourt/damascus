@@ -1,4 +1,4 @@
-import { Button, Space } from 'antd';
+import { Button, Flex, Space } from 'antd';
 import { Empty } from '@/components/controls/empty/empty';
 import { Expander } from '@/components/controls/expander/expander';
 import { Hero } from '@/models/hero';
@@ -24,6 +24,9 @@ interface Props {
 	onClose: () => void;
 	onSelect: (item: Item) => void;
 	onCustomize?: () => void;
+	// Offered only where an item off the list isn't the only sensible answer:
+	// a hero's own inventory, not a feature's list of choices.
+	onAddCustom?: (name: string) => void;
 }
 
 export const ItemSelectModal = (props: Props) => {
@@ -44,7 +47,22 @@ export const ItemSelectModal = (props: Props) => {
 	return (
 		<Modal
 			toolbar={
-				<SearchBox searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+				<Flex align='center' gap={8} style={{ width: '100%' }}>
+					<div style={{ flex: '1 1 0', minWidth: 0 }}>
+						<SearchBox searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+					</div>
+					{
+						props.onAddCustom ?
+							<Button
+								type='primary'
+								icon={<PlusOutlined />}
+								title={searchTerm.trim() ? `Add "${searchTerm.trim()}" as a custom item` : 'Type a name to add a custom item'}
+								disabled={!searchTerm.trim()}
+								onClick={() => props.onAddCustom!(searchTerm.trim())}
+							/>
+							: null
+					}
+				</Flex>
 			}
 			content={
 				<div className='item-select-modal'>
