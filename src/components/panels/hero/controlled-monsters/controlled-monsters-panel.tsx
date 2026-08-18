@@ -1,5 +1,6 @@
 import { Button, Flex, Popover, Space, Tag } from 'antd';
 import { HeartFilled, PlusOutlined } from '@ant-design/icons';
+import { Collections } from '@/utils/collections';
 import { ConditionLogic } from '@/logic/condition-logic';
 import { DangerButton } from '@/components/controls/danger-button/danger-button';
 import { EncounterSlot } from '@/models/encounter-slot';
@@ -11,6 +12,7 @@ import { Monster } from '@/models/monster';
 import { MonsterInfo } from '@/components/panels/token/token';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterOrganizationType } from '@/enums/monster-organization-type';
+import { Utils } from '@/utils/utils';
 
 import './controlled-monsters-panel.scss';
 
@@ -22,6 +24,7 @@ interface Props {
 	onAddMonsterToSquad: (hero: Hero, slotID: string) => void;
 	onSelectControlledMonster: (hero: Hero, monster: Monster) => void;
 	onSelectControlledSquad: (hero: Hero, slot: EncounterSlot) => void;
+	onUpdateSquad: (hero: Hero, slot: EncounterSlot) => void;
 }
 
 export const ControlledMonstersPanel = (props: Props) => {
@@ -101,6 +104,28 @@ export const ControlledMonstersPanel = (props: Props) => {
 		);
 	};
 
+	// Minions share one stamina pool, so a hit on any of their rows comes off the
+	// squad. 1 and 5 are the amounts you reach for mid-turn, and they're right on
+	// the row - no drawer in the way.
+	const adjustSquad = (slot: EncounterSlot, delta: number) => {
+		const copy = Utils.copy(slot);
+
+		if (delta < 0) {
+			const damage = -delta;
+			const damageToTemp = Math.min(damage, copy.state.staminaTemp);
+			copy.state.staminaTemp -= damageToTemp;
+
+			// Clamped at the squad's total: these are tap-happy buttons, and damage
+			// banked past dead would have to be healed back before the pool moved.
+			const max = Collections.sum(copy.monsters, m => MonsterLogic.getStamina(m));
+			copy.state.staminaDamage = Math.min(copy.state.staminaDamage + (damage - damageToTemp), max);
+		} else {
+			copy.state.staminaDamage = Math.max(copy.state.staminaDamage - delta, 0);
+		}
+
+		props.onUpdateSquad(props.hero, copy);
+	};
+
 	const getSlot = (slot: EncounterSlot) => {
 		const isMinionSlot = slot.monsters.every(m => m.role.organization === MonsterOrganizationType.Minion);
 		const isRetainerSlot = slot.monsters.every(m => m.role.organization === MonsterOrganizationType.Retainer);
@@ -118,7 +143,10 @@ export const ControlledMonstersPanel = (props: Props) => {
 
 			return (
 				<div key={m.id} className='controlled-monster' onClick={() => props.onSelectControlledMonster(props.hero, m)}>
-					<Space orientation='vertical' style={{ flex: '1 1 0', minWidth: 0 }}>
+					{/* A basis rather than 0, so a phone too narrow for name and
+					    controls side by side wraps the controls onto their own line
+					    instead of crushing the name to nothing. */}
+					<Space orientation='vertical' style={{ flex: '1 1 120px', minWidth: 0 }}>
 						<Flex align='center' justify='space-between' gap={5}>
 							<MonsterInfo monster={m} />
 							{
@@ -138,6 +166,20 @@ export const ControlledMonstersPanel = (props: Props) => {
 								: null
 						}
 					</Space>
+					{/* The squad's stamina, moved from the row of whichever minion
+					    took the hit. stopPropagation so a tap doesn't also open the
+					    creature's stat block. */}
+					{
+						isMinionSlot ?
+							<div className='controlled-monster-health' onClick={e => e.stopPropagation()}>
+								<Button size='small' title='Take 5 damage' onClick={() => adjustSquad(slot, -5)}>-5</Button>
+								<Button size='small' title='Take 1 damage' onClick={() => adjustSquad(slot, -1)}>-1</Button>
+								<div className='controlled-monster-stamina'>{MonsterLogic.getMinionStaminaDescription(slot)}</div>
+								<Button size='small' title='Regain 1 Stamina' onClick={() => adjustSquad(slot, 1)}>+1</Button>
+								<Button size='small' title='Regain 5 Stamina' onClick={() => adjustSquad(slot, 5)}>+5</Button>
+							</div>
+							: null
+					}
 					{/* This one creature, not its squad - a summoner loses skeletons
 					    one at a time. stopPropagation so it doesn't also open the
 					    creature's stat block on the way past. */}

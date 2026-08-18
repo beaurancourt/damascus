@@ -314,17 +314,19 @@ export const Main = () => {
 		);
 	};
 
+	const updateControlledSquad = (hero: Hero, slot: EncounterSlot) => {
+		const copy = Utils.copy(hero);
+
+		copy.state.controlledSlots = copy.state.controlledSlots.map(s => s.id === slot.id ? slot : s);
+
+		persistHero(copy);
+	};
+
 	const selectControlledSquad = (hero: Hero, slot: EncounterSlot) => {
 		setDrawer(
 			<MinionSlotModal
 				slot={slot}
-				updateSlot={slot => {
-					const copy = Utils.copy(hero);
-
-					copy.state.controlledSlots = copy.state.controlledSlots.map(s => s.id === slot.id ? slot : s);
-
-					persistHero(copy);
-				}}
+				updateSlot={slot => updateControlledSquad(hero, slot)}
 				onClose={() => setDrawer(null)}
 			/>
 		);
@@ -1611,6 +1613,7 @@ export const Main = () => {
 											onAddMonsterToSquad={addMonsterToSquad}
 											onSelectControlledMonster={selectControlledMonster}
 											onSelectControlledSquad={selectControlledSquad}
+											onUpdateSquad={updateControlledSquad}
 											updateHero={persistHero}
 										/>
 									}

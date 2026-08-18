@@ -1,3 +1,5 @@
+@import '@/colors.scss';
+
 .controlled-monsters-panel {
 	display: flex;
 	flex-direction: column;
@@ -18,6 +20,7 @@
 			padding: 10px;
 			display: flex;
 			flex-direction: row;
+			flex-wrap: wrap;
 			align-items: center;
 			gap: 5px;
 			cursor: pointer;
@@ -25,6 +28,39 @@
 			&:hover {
 				border-color: rgb(22, 119, 255);
 				background: rgb(230, 244, 255);
+			}
+
+			// Damage and healing for the squad, on the row of the minion that
+			// took it. Never shrinks, so a long creature name gives way first.
+			.controlled-monster-health {
+				flex: 0 0 auto;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				gap: 4px;
+
+				// Bronze on the surface, like the rest of the app's accents - four
+				// filled buttons on every minion row would shout over the sheet.
+				.ant-btn {
+					min-width: 32px;
+					padding: 0 4px;
+					font-variant-numeric: tabular-nums;
+					background: transparent;
+					border-color: $bronze-dim;
+					color: $bronze-deep;
+
+					&:not(:disabled):hover {
+						border-color: $bronze;
+						color: $bronze-deep;
+					}
+				}
+
+				.controlled-monster-stamina {
+					min-width: 40px;
+					text-align: center;
+					font-weight: 600;
+					font-variant-numeric: tabular-nums;
+				}
 			}
 
 			// Removing one creature, next to the creature it removes. It sits
@@ -46,6 +82,15 @@ html[data-theme="dark"] {
 
 				&:hover {
 					background: rgba(22, 119, 255, 0.2);
+				}
+
+				// Bronze reads as an accent on dark; the deep version is for light.
+				.controlled-monster-health .ant-btn {
+					color: $bronze;
+
+					&:not(:disabled):hover {
+						color: $bronze;
+					}
 				}
 			}
 		}

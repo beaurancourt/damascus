@@ -57,6 +57,7 @@ interface Props {
 	onAddMonsterToSquad: (hero: Hero, slotID: string) => void;
 	onSelectControlledMonster: (hero: Hero, monster: Monster) => void;
 	onSelectControlledSquad: (hero: Hero, slot: EncounterSlot) => void;
+	onUpdateSquad: (hero: Hero, slot: EncounterSlot) => void;
 	updateHero?: (hero: Hero) => void;
 }
 
@@ -117,6 +118,7 @@ export const HeroPanel = (props: Props) => {
 								onAddMonsterToSquad={props.onAddMonsterToSquad}
 								onSelectControlledMonster={props.onSelectControlledMonster}
 								onSelectControlledSquad={props.onSelectControlledSquad}
+								onUpdateSquad={props.onUpdateSquad}
 							/>
 
 							{/* 4-8. Abilities by usage */}
