@@ -153,12 +153,18 @@ export const ControlledMonstersPanel = (props: Props) => {
 
 			return (
 				<div key={m.id} className='controlled-monster' onClick={() => props.onSelectControlledMonster(props.hero, m)}>
-					{/* A basis rather than 0, so a phone too narrow for name and
-					    controls side by side wraps the controls onto their own line
-					    instead of crushing the name to nothing. */}
-					<Space orientation='vertical' style={{ flex: '1 1 120px', minWidth: 0 }}>
+					{/* A small basis, so name, controls and delete stay on one line
+					    even on a narrow phone - the name gets whatever slack is
+					    left, and truncates rather than pushing anything off. */}
+					<Space orientation='vertical' style={{ flex: isMinionSlot ? '1 1 50px' : '1 1 120px', minWidth: 0 }}>
 						<Flex align='center' justify='space-between' gap={5}>
-							<MonsterInfo monster={m} />
+							{
+								isMinionSlot ?
+									// Its level and role are on the stat block a tap away, and
+									// they're the same for every minion in the squad.
+									<div className='controlled-monster-name'>{m.name}</div>
+									: <MonsterInfo monster={m} />
+							}
 							{
 								!isMinionSlot ?
 									<Flex gap={5}>

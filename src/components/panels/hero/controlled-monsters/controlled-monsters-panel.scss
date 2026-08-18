@@ -30,6 +30,14 @@
 				background: rgb(230, 244, 255);
 			}
 
+			// A minion's name, alone on its row - no room for a role subtitle
+			// beside the controls, and it truncates before they give way.
+			.controlled-monster-name {
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
 			// Damage and healing for the squad, on the row of the minion that
 			// took it. Never shrinks, so a long creature name gives way first.
 			.controlled-monster-health {
@@ -42,7 +50,7 @@
 				// Bronze on the surface, like the rest of the app's accents - four
 				// filled buttons on every minion row would shout over the sheet.
 				.ant-btn {
-					min-width: 32px;
+					min-width: 30px;
 					padding: 0 4px;
 					font-variant-numeric: tabular-nums;
 					background: transparent;
@@ -56,7 +64,7 @@
 				}
 
 				.controlled-monster-stamina {
-					min-width: 40px;
+					min-width: 34px;
 					text-align: center;
 					font-weight: 600;
 					font-variant-numeric: tabular-nums;
