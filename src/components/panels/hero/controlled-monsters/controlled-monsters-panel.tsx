@@ -104,24 +104,34 @@ export const ControlledMonstersPanel = (props: Props) => {
 		);
 	};
 
-	// Minions share one stamina pool, so a hit on any of their rows comes off the
-	// squad. 1 and 5 are the amounts you reach for mid-turn, and they're right on
-	// the row - no drawer in the way.
-	const adjustSquad = (slot: EncounterSlot, delta: number) => {
+	// One creature's Stamina, not its squad's: a skeleton that takes a hit is the
+	// only one hurt by it. 1 and 5 are the amounts you reach for mid-turn, and
+	// they're right on the row - no drawer in the way.
+	const adjustMinion = (slot: EncounterSlot, monsterID: string, delta: number) => {
 		const copy = Utils.copy(slot);
+
+		const monster = copy.monsters.find(m => m.id === monsterID);
+		if (!monster) {
+			return;
+		}
 
 		if (delta < 0) {
 			const damage = -delta;
-			const damageToTemp = Math.min(damage, copy.state.staminaTemp);
-			copy.state.staminaTemp -= damageToTemp;
+			const damageToTemp = Math.min(damage, monster.state.staminaTemp);
+			monster.state.staminaTemp -= damageToTemp;
 
-			// Clamped at the squad's total: these are tap-happy buttons, and damage
-			// banked past dead would have to be healed back before the pool moved.
-			const max = Collections.sum(copy.monsters, m => MonsterLogic.getStamina(m));
-			copy.state.staminaDamage = Math.min(copy.state.staminaDamage + (damage - damageToTemp), max);
+			// Clamped at this creature's Stamina: these are tap-happy buttons, and
+			// damage banked past dead would have to be healed back before the
+			// number moved again.
+			const max = MonsterLogic.getStamina(monster);
+			monster.state.staminaDamage = Math.min(monster.state.staminaDamage + (damage - damageToTemp), max);
 		} else {
-			copy.state.staminaDamage = Math.max(copy.state.staminaDamage - delta, 0);
+			monster.state.staminaDamage = Math.max(monster.state.staminaDamage - delta, 0);
 		}
+
+		// The squad's pool is what its minions have taken between them, so the
+		// Squad Stamina row and its drawer keep agreeing with the rows.
+		copy.state.staminaDamage = Collections.sum(copy.monsters, m => m.state.staminaDamage);
 
 		props.onUpdateSquad(props.hero, copy);
 	};
@@ -166,17 +176,16 @@ export const ControlledMonstersPanel = (props: Props) => {
 								: null
 						}
 					</Space>
-					{/* The squad's stamina, moved from the row of whichever minion
-					    took the hit. stopPropagation so a tap doesn't also open the
-					    creature's stat block. */}
+					{/* This creature's own Stamina. stopPropagation so a tap doesn't
+					    also open its stat block. */}
 					{
 						isMinionSlot ?
 							<div className='controlled-monster-health' onClick={e => e.stopPropagation()}>
-								<Button size='small' title='Take 5 damage' onClick={() => adjustSquad(slot, -5)}>-5</Button>
-								<Button size='small' title='Take 1 damage' onClick={() => adjustSquad(slot, -1)}>-1</Button>
-								<div className='controlled-monster-stamina'>{MonsterLogic.getMinionStaminaDescription(slot)}</div>
-								<Button size='small' title='Regain 1 Stamina' onClick={() => adjustSquad(slot, 1)}>+1</Button>
-								<Button size='small' title='Regain 5 Stamina' onClick={() => adjustSquad(slot, 5)}>+5</Button>
+								<Button size='small' title='Take 5 damage' onClick={() => adjustMinion(slot, m.id, -5)}>-5</Button>
+								<Button size='small' title='Take 1 damage' onClick={() => adjustMinion(slot, m.id, -1)}>-1</Button>
+								<div className='controlled-monster-stamina'>{MonsterLogic.getStaminaDescription(m)}</div>
+								<Button size='small' title='Regain 1 Stamina' onClick={() => adjustMinion(slot, m.id, 1)}>+1</Button>
+								<Button size='small' title='Regain 5 Stamina' onClick={() => adjustMinion(slot, m.id, 5)}>+5</Button>
 							</div>
 							: null
 					}
