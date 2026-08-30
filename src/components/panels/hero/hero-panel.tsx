@@ -1,3 +1,4 @@
+import { Markdown, MarkdownEditor } from '@/components/controls/markdown/markdown';
 import { AbilitiesPanel } from '@/components/panels/hero/abilities/abilities-panel';
 import { Ability } from '@/models/ability';
 import { AbilityData } from '@/data/ability-data';
@@ -30,6 +31,7 @@ import { StatsPanel } from '@/components/panels/hero/stats/stats-panel';
 import { SummoningInfo } from '@/models/summon';
 import { Tag } from 'antd';
 import { Title } from '@/models/title';
+import { Utils } from '@/utils/utils';
 import { useOptions } from '@/contexts/data-context';
 
 import './hero-panel.scss';
@@ -79,6 +81,14 @@ export const HeroPanel = (props: Props) => {
 
 	const skills = HeroLogic.getSkills(props.hero, props.sourcebooks);
 	const languages = HeroLogic.getLanguages(props.hero, props.sourcebooks);
+
+	const setNotes = (value: string) => {
+		const copy = Utils.copy(props.hero);
+		copy.state.notes = value;
+		if (props.updateHero) {
+			props.updateHero(copy);
+		}
+	};
 
 	return (
 		<ErrorBoundary>
@@ -193,6 +203,21 @@ export const HeroPanel = (props: Props) => {
 									<div className='hero-languages-section' data-hero-section='Languages'>
 										<HeaderText>Languages</HeaderText>
 										{languages.map(l => <div key={l.name} className='ds-text'>{l.name}</div>)}
+									</div>
+									: null
+							}
+
+							{/* 13. Notes */}
+							{
+								props.updateHero || props.hero.state.notes ?
+									<div className='hero-notes-section' data-hero-section='Notes'>
+										<HeaderText>Notes</HeaderText>
+										{
+											props.updateHero ?
+												<MarkdownEditor value={props.hero.state.notes} onChange={setNotes} />
+												:
+												<Markdown text={props.hero.state.notes} />
+										}
 									</div>
 									: null
 							}
