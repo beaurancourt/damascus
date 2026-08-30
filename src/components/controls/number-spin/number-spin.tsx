@@ -1,6 +1,5 @@
+import { Button, Statistic } from 'antd';
 import { CSSProperties, ReactNode } from 'react';
-import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { Popover, Statistic } from 'antd';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 
 import './number-spin.scss';
@@ -51,12 +50,14 @@ export const NumberSpin = (props: Props) => {
 				<div className='spin-buttons'>
 					{
 						descending.map((step, n) => (
-							<Popover key={n} trigger='hover' content={`-${step}`}>
-								<MinusCircleOutlined
-									className={canDown ? 'spin-button' : 'spin-button disabled'}
-									onClick={() => onChange(step, -1)}
-								/>
-							</Popover>
+							<Button
+								key={n}
+								type='text'
+								className={canDown ? 'spin-button' : 'spin-button disabled'}
+								onClick={() => onChange(step, -1)}
+							>
+								-{step}
+							</Button>
 						))
 					}
 				</div>
@@ -74,12 +75,14 @@ export const NumberSpin = (props: Props) => {
 				<div className='spin-buttons'>
 					{
 						ascending.map((step, n) => (
-							<Popover key={n} trigger='hover' content={`+${step}`}>
-								<PlusCircleOutlined
-									className={canUp ? 'spin-button' : 'spin-button disabled'}
-									onClick={() => onChange(step, +1)}
-								/>
-							</Popover>
+							<Button
+								key={n}
+								type='text'
+								className={canUp ? 'spin-button' : 'spin-button disabled'}
+								onClick={() => onChange(step, +1)}
+							>
+								+{step}
+							</Button>
 						))
 					}
 				</div>

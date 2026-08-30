@@ -656,7 +656,7 @@ const HealthPanel = (props: Props) => {
 								value={damageValue}
 								onChange={setDamageValue}
 							>
-								<InputNumber min={0} value={damageValue} onChange={value => setDamageValue(Math.round(value || 0))} />
+								<InputNumber min={0} controls={false} value={damageValue} onChange={value => setDamageValue(Math.round(value || 0))} />
 							</NumberSpin>
 							<Button block={true} disabled={damageValue === 0} onClick={takeDamage}>Take Damage</Button>
 							<Button block={true} disabled={damageValue === 0} onClick={heal}>Regain Stamina</Button>

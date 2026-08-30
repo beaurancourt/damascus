@@ -22,8 +22,11 @@
 
 		.spin-button {
 			border-radius: 6px;
-			padding: 5px;
-			font-size: 20px;
+			padding: 0 6px;
+			height: 24px;
+			min-width: 28px;
+			font-size: 14px;
+			font-weight: 600;
 
 			&.disabled {
 				pointer-events: none;
