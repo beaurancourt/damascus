@@ -1,6 +1,7 @@
 import { FactoryLogic } from '@/logic/factory-logic';
 import { Hero } from '@/models/hero';
 import { Options } from '@/models/options';
+import { RemoteService } from '@/services/storage/remote-service';
 import { Session } from '@/models/session';
 import { Sourcebook } from '@/models/sourcebook';
 import { StorageService } from '@/services/storage/storage-service';
@@ -8,9 +9,11 @@ import localforage from 'localforage';
 
 export class DataService {
 	private readonly storageService: StorageService;
+	private readonly remote: RemoteService | null;
 
-	constructor(storage: StorageService) {
+	constructor(storage: StorageService, remote?: RemoteService) {
 		this.storageService = storage;
+		this.remote = remote || null;
 	};
 
 	async initialize(): Promise<boolean> {
@@ -34,7 +37,24 @@ export class DataService {
 	// #region Heroes
 
 	async getHeroes(): Promise<Hero[]> {
-		return this.storageService.getHeroes();
+		const heroes = await this.storageService.getHeroes();
+
+		// A configured remote holds heroes saved from other devices. Add any the
+		// local store doesn't have; local copies stay authoritative here, so an
+		// offline edit is never silently overwritten by a stale server copy.
+		if (!this.remote) {
+			return heroes;
+		}
+
+		try {
+			const remoteHeroes = await this.remote.getHeroes();
+			const localIDs = new Set(heroes.map(h => h.id));
+			const missing = remoteHeroes.filter(h => !localIDs.has(h.id));
+			return [ ...heroes, ...missing ];
+		} catch (err) {
+			console.warn('Failed to load remote heroes; continuing with local only', err);
+			return heroes;
+		}
 	};
 
 	async getHero(id: string): Promise<Hero | null> {
@@ -42,11 +62,23 @@ export class DataService {
 	}
 
 	async saveHero(hero: Hero): Promise<Hero> {
-		return this.storageService.putHero(hero);
+		const saved = await this.storageService.putHero(hero);
+
+		// Back up to the server without blocking the save or failing on a down
+		// server - the app is offline-first.
+		if (this.remote) {
+			this.remote.putHero(hero).catch(err => console.warn('Failed to sync hero to remote', err));
+		}
+
+		return saved;
 	}
 
 	async deleteHero(id: string): Promise<void> {
-		return this.storageService.deleteHero(id);
+		await this.storageService.deleteHero(id);
+
+		if (this.remote) {
+			this.remote.deleteHero(id).catch(err => console.warn('Failed to delete hero from remote', err));
+		}
 	}
 
 	// #endregion

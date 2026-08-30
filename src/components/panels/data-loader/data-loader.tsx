@@ -9,6 +9,7 @@ import { HeroUpdateLogic } from '@/logic/update/hero-update-logic';
 import { LocalService } from '@/services/storage/local-service';
 import { Options } from '@/models/options';
 import { OptionsUpdateLogic } from '@/logic/update/options-update-logic';
+import { RemoteService } from '@/services/storage/remote-service';
 import { Session } from '@/models/session';
 import { SessionUpdateLogic } from '@/logic/update/session-update-logic';
 import { Sourcebook } from '@/models/sourcebook';
@@ -63,7 +64,9 @@ export const DataLoader = (props: Props) => {
 		setSessionState('pending');
 		setOptionsState('pending');
 
-		const dataService = new DataService(new LocalService());
+		const remoteURL = import.meta.env.VITE_REMOTE_API_URL as string | undefined;
+		const remote = remoteURL ? new RemoteService(remoteURL) : undefined;
+		const dataService = new DataService(new LocalService(), remote);
 
 		dataService.initialize().then(() => {
 			const promises = [

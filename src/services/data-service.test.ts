@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import { DataService } from '@/services/data-service';
 import { Hero } from '@/models/hero';
 import { Options } from '@/models/options';
+import { RemoteService } from '@/services/storage/remote-service';
 import { Session } from '@/models/session';
 import { Sourcebook } from '@/models/sourcebook';
 import { StorageService } from '@/services/storage/storage-service';
@@ -72,6 +73,65 @@ describe('DataService', () => {
 			expect(mockStorage.getHeroes).toHaveBeenCalled();
 			expect(thenFn).toHaveBeenCalledWith(mockHeroes);
 			expect(catchFn).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('remote sync', () => {
+		const mockRemote = {
+			getHeroes: vi.fn(),
+			putHero: vi.fn(),
+			deleteHero: vi.fn()
+		} as unknown as RemoteService;
+
+		const heroA = { id: 'a', name: 'A' } as Hero;
+		const heroAStale = { id: 'a', name: 'A-stale' } as Hero;
+		const heroB = { id: 'b', name: 'B' } as Hero;
+
+		test('getHeroes keeps the local copy of a hero and adds remote-only heroes', async () => {
+			const ds = new DataService(mockStorage, mockRemote);
+
+			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
+			mockRemote.getHeroes = vi.fn().mockResolvedValue([ heroAStale, heroB ]);
+
+			const result = await ds.getHeroes();
+
+			expect(result).toHaveLength(2);
+			expect(result.find(h => h.id === 'a')).toBe(heroA);
+			expect(result.find(h => h.id === 'b')).toBe(heroB);
+		});
+
+		test('getHeroes falls back to local only when the remote fails', async () => {
+			const ds = new DataService(mockStorage, mockRemote);
+
+			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
+			mockRemote.getHeroes = vi.fn().mockRejectedValue(new Error('down'));
+
+			const result = await ds.getHeroes();
+
+			expect(result).toEqual([ heroA ]);
+		});
+
+		test('saveHero persists locally and backs up to the remote', async () => {
+			const ds = new DataService(mockStorage, mockRemote);
+
+			mockStorage.putHero = vi.fn().mockResolvedValue(heroA);
+			mockRemote.putHero = vi.fn().mockResolvedValue(undefined);
+
+			const result = await ds.saveHero(heroA);
+
+			expect(result).toBe(heroA);
+			expect(mockRemote.putHero).toHaveBeenCalledWith(heroA);
+		});
+
+		test('deleteHero removes locally and remotely', async () => {
+			const ds = new DataService(mockStorage, mockRemote);
+
+			mockStorage.deleteHero = vi.fn().mockResolvedValue(undefined);
+			mockRemote.deleteHero = vi.fn().mockResolvedValue(undefined);
+
+			await ds.deleteHero('a');
+
+			expect(mockRemote.deleteHero).toHaveBeenCalledWith('a');
 		});
 	});
 	// #endregion Heroes

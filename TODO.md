@@ -1,1 +1,0 @@
-- add back-end storage so that saved player-facing heroes persist on a server. can pick some free option or use my home server (pop.local), which we have access to via `ssh pop`

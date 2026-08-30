@@ -1,0 +1,15 @@
+{
+	"name": "damascus-server",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Remote hero storage API for Damascus",
+	"main": "index.js",
+	"scripts": {
+		"start": "node index.js"
+	},
+	"dependencies": {
+		"cors": "^2.8.5",
+		"express": "^4.19.2",
+		"pg": "^8.11.5"
+	}
+}
