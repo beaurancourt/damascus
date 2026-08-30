@@ -38,6 +38,11 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
+          # Remote hero sync. Unset = the deployed site stays local-only.
+          # Set VITE_REMOTE_API_URL as a repo variable and VITE_REMOTE_API_KEY
+          # as a repo secret (see server/README.md).
+          VITE_REMOTE_API_URL: ${{ vars.VITE_REMOTE_API_URL }}
+          VITE_REMOTE_API_KEY: ${{ secrets.VITE_REMOTE_API_KEY }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
