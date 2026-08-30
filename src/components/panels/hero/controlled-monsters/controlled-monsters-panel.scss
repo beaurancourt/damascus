@@ -30,8 +30,8 @@
 				background: rgb(230, 244, 255);
 			}
 
-			// A minion's name, alone on its row - no room for a role subtitle
-			// beside the controls, and it truncates before they give way.
+			// A minion's name after the first row - the first carries the squad's
+			// level and role inline, the rest truncate before they give way.
 			.controlled-monster-name {
 				overflow: hidden;
 				text-overflow: ellipsis;

@@ -141,7 +141,7 @@ export const ControlledMonstersPanel = (props: Props) => {
 		const isRetainerSlot = slot.monsters.every(m => m.role.organization === MonsterOrganizationType.Retainer);
 		const isCompanionSlot = !isMinionSlot && !isRetainerSlot;
 
-		const getMonster = (m: Monster) => {
+		const getMonster = (m: Monster, index: number) => {
 			const tags: string[] = [];
 			if (![ 'healthy', 'injured' ].includes(MonsterLogic.getCombatState(m))) {
 				tags.push(Format.capitalize(MonsterLogic.getCombatState(m)));
@@ -160,9 +160,13 @@ export const ControlledMonstersPanel = (props: Props) => {
 						<Flex align='center' justify='space-between' gap={5}>
 							{
 								isMinionSlot ?
-									// Its level and role are on the stat block a tap away, and
-									// they're the same for every minion in the squad.
-									<div className='controlled-monster-name'>{m.name}</div>
+									// Every minion in a squad is the same stat block,
+									// so put the level and role inline on the first row
+									// only; the rest just show the name.
+									(index === 0 ?
+										<MonsterInfo monster={m} />
+										:
+										<div className='controlled-monster-name'>{m.name}</div>)
 									: <MonsterInfo monster={m} />
 							}
 							{
@@ -232,7 +236,7 @@ export const ControlledMonstersPanel = (props: Props) => {
 						</div>
 						: null
 				}
-				{slot.monsters.map(getMonster)}
+				{slot.monsters.map((m, index) => getMonster(m, index))}
 				{slot.monsters.length === 0 ? <div>Empty</div> : null}
 			</Space>
 		);
