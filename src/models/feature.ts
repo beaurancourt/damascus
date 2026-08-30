@@ -304,10 +304,13 @@ export interface FeatureSummonChoiceData extends _FeatureData {
 };
 export type FeatureSummonChoice = FeatureOf<FeatureType.SummonChoice, FeatureSummonChoiceData>;
 
-// A marker: it carries nothing of its own, and exists so a class can say "this
-// text is about how my summons line up" rather than filing it under Text.
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface FeatureSummonFormationData extends _FeatureData {};
+// How a summoner's minions line up. The trait bonuses are applied to each
+// summoned minion's stat block; the description carries anything the numbers
+// can't express (max-minion counts, damage, damage redirection).
+export interface FeatureSummonFormationData extends _FeatureData {
+	staminaBonus?: number;
+	stabilityBonus?: number;
+};
 export type FeatureSummonFormation = FeatureOf<FeatureType.SummonFormation, FeatureSummonFormationData>;
 
 export interface FeatureSwitchOptionsData extends _FeatureData {

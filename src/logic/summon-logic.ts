@@ -11,7 +11,7 @@ import { Utils } from '@/utils/utils';
 import { beastheart } from '@/data/classes/beastheart/beastheart';
 
 export class SummonLogic {
-	static getSummonedMonster = (summon: Summon, controller: Hero) => {
+	static getSummonedMonster = (summon: Summon, controller: Hero, formation?: { staminaBonus: number, stabilityBonus: number }) => {
 		const copy = Utils.copy(summon.monster);
 
 		const handleModifier = (mod: Modifier) => {
@@ -94,6 +94,13 @@ export class SummonLogic {
 					.filter(ch => [ Characteristic.Might, Characteristic.Intuition ].includes(ch.characteristic))
 					.forEach(ch => ch.value += 1);
 			}
+		}
+
+		// A summoner's formation adds to each minion's stats, not to companions
+		// or retainers.
+		if (formation && (copy.role.organization === MonsterOrganizationType.Minion)) {
+			copy.stamina += formation.staminaBonus;
+			copy.stability += formation.stabilityBonus;
 		}
 
 		return copy;

@@ -253,7 +253,9 @@ You can shift into squares that contain one of your minions, even if they occupy
 							feature: FactoryLogic.feature.createSummonFormation({
 								id: 'summoner-1-7c',
 								name: 'Elite Formation',
-								description: 'Each of your minions have their Stamina increased by 3 and their stability increased by 1.'
+								description: 'Each of your minions have their Stamina increased by 3 and their stability increased by 1.',
+								staminaBonus: 3,
+								stabilityBonus: 1
 							}),
 							value: 1
 						},

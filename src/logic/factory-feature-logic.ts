@@ -641,13 +641,16 @@ export class FactoryFeatureLogic {
 		};
 	};
 
-	createSummonFormation = (data: { id: string, name?: string, description?: string }): FeatureSummonFormation => {
+	createSummonFormation = (data: { id: string, name?: string, description?: string, staminaBonus?: number, stabilityBonus?: number }): FeatureSummonFormation => {
 		return {
 			id: data.id,
 			name: data.name || 'Summon Formation',
 			description: data.description || '',
 			type: FeatureType.SummonFormation,
-			data: {}
+			data: {
+				staminaBonus: data.staminaBonus,
+				stabilityBonus: data.stabilityBonus
+			}
 		};
 	};
 

@@ -1,6 +1,7 @@
 import { Collections } from '@/utils/collections';
 import { Empty } from '@/components/controls/empty/empty';
 import { Hero } from '@/models/hero';
+import { HeroLogic } from '@/logic/hero-logic';
 import { Modal } from '@/components/modals/modal/modal';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
@@ -50,7 +51,7 @@ export const SummonSelectModal = (props: Props) => {
 									key={s.id}
 									onSelect={() => props.onSelect(s)}
 								>
-									<MonsterPanel monster={SummonLogic.getSummonedMonster(s, props.hero)} summon={s.info} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
+									<MonsterPanel monster={SummonLogic.getSummonedMonster(s, props.hero, HeroLogic.getMinionFormationBonuses(props.hero))} summon={s.info} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
 								</SelectablePanel>
 							))
 						}

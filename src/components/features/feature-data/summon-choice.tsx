@@ -9,6 +9,7 @@ import { Expander } from '@/components/controls/expander/expander';
 import { FactoryLogic } from '@/logic/factory-logic';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
+import { HeroLogic } from '@/logic/hero-logic';
 import { Monster } from '@/models/monster';
 import { MonsterEditPanel } from '@/components/panels/edit/monster-edit/monster-edit-panel';
 import { MonsterInfo } from '@/components/panels/token/token';
@@ -284,7 +285,7 @@ export const ConfigSummonChoice = (props: ConfigProps) => {
 				{
 					selectedSummon ?
 						<MonsterModal
-							monster={SummonLogic.getSummonedMonster(selectedSummon, props.hero)}
+							monster={SummonLogic.getSummonedMonster(selectedSummon, props.hero, HeroLogic.getMinionFormationBonuses(props.hero))}
 							summon={selectedSummon.info}
 							sourcebooks={props.sourcebooks}
 							onClose={() => setSelectedSummon(null)}

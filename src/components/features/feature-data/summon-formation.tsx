@@ -1,10 +1,11 @@
 import { Feature, FeatureSummonFormationData } from '@/models/feature';
+import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
+import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { Sourcebook } from '@/models/sourcebook';
-
-// The feature carries no data of its own - its name and description are the
-// whole of it, and the panels around this render those. Both halves exist so
-// the feature type has the same shape as every other one.
+import { Space } from 'antd';
+import { Utils } from '@/utils/utils';
+import { useState } from 'react';
 
 interface InfoProps {
 	data: FeatureSummonFormationData;
@@ -15,6 +16,8 @@ interface InfoProps {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const InfoSummonFormation = (_props: InfoProps) => {
+	// The trait bonuses are reflected in the description the FeaturePanel
+	// already renders, so there's nothing extra to show here.
 	return null;
 };
 
@@ -24,7 +27,29 @@ interface EditProps {
 	setData: (data: FeatureSummonFormationData) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const EditSummonFormation = (_props: EditProps) => {
-	return null;
+export const EditSummonFormation = (props: EditProps) => {
+	const [ data, setData ] = useState<FeatureSummonFormationData>(Utils.copy(props.data));
+
+	const setStaminaBonus = (value: number) => {
+		const copy = Utils.copy(data);
+		copy.staminaBonus = value;
+		setData(copy);
+		props.setData(copy);
+	};
+
+	const setStabilityBonus = (value: number) => {
+		const copy = Utils.copy(data);
+		copy.stabilityBonus = value;
+		setData(copy);
+		props.setData(copy);
+	};
+
+	return (
+		<Space orientation='vertical' style={{ width: '100%' }}>
+			<HeaderText>Minion Stamina Bonus</HeaderText>
+			<NumberSpin value={data.staminaBonus || 0} onChange={setStaminaBonus} />
+			<HeaderText>Minion Stability Bonus</HeaderText>
+			<NumberSpin value={data.stabilityBonus || 0} onChange={setStabilityBonus} />
+		</Space>
+	);
 };

@@ -433,6 +433,8 @@ export class HeroLogic {
 	};
 
 	static getSummons = (hero: Hero) => {
+		const formation = HeroLogic.getMinionFormationBonuses(hero);
+
 		return HeroLogic.getFeatures(hero)
 			.flatMap(f => {
 				switch (f.feature.type) {
@@ -447,7 +449,7 @@ export class HeroLogic {
 			.map(s => {
 				const copy = Utils.copy(s);
 				copy.info.level = hero.class?.level || 1;
-				copy.monster = SummonLogic.getSummonedMonster(copy, hero);
+				copy.monster = SummonLogic.getSummonedMonster(copy, hero, formation);
 				return copy;
 			})
 			.sort((a, b) => {
@@ -457,6 +459,24 @@ export class HeroLogic {
 				}
 				return result;
 			});
+	};
+
+	// The trait bonuses a summoner's chosen formation adds to every minion.
+	static getMinionFormationBonuses = (hero: Hero) => {
+		const bonuses = { staminaBonus: 0, stabilityBonus: 0 };
+
+		HeroLogic.getFeatures(hero)
+			.map(f => f.feature)
+			.forEach(f => {
+				switch (f.type) {
+					case FeatureType.SummonFormation:
+						bonuses.staminaBonus += f.data.staminaBonus || 0;
+						bonuses.stabilityBonus += f.data.stabilityBonus || 0;
+						break;
+				}
+			});
+
+		return bonuses;
 	};
 
 	static getFixtures = (hero: Hero) => {
