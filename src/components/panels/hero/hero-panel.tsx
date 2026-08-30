@@ -21,6 +21,7 @@ import { HeroClass } from '@/models/class';
 import { HeroHealthPanel } from '@/components/panels/health/health-panel';
 import { HeroLogic } from '@/logic/hero-logic';
 import { HeroModalType } from '@/enums/hero-modal-type';
+import { InventoryPanel } from '@/components/panels/hero/inventory/inventory-panel';
 import { Kit } from '@/models/kit';
 import { Monster } from '@/models/monster';
 import { RetinuePanel } from '@/components/panels/hero/retinue/retinue-panel';
@@ -164,7 +165,13 @@ export const HeroPanel = (props: Props) => {
 								onSelectFeature={props.onSelectFeature}
 							/>
 
-							{/* 10. Skills */}
+							{/* 10. Inventory */}
+							<InventoryPanel
+								hero={props.hero}
+								sourcebooks={props.sourcebooks}
+							/>
+
+							{/* 11. Skills */}
 							{
 								skills.length > 0 ?
 									<div className='hero-skills-section' data-hero-section='Skills'>
@@ -180,7 +187,7 @@ export const HeroPanel = (props: Props) => {
 									: null
 							}
 
-							{/* 11. Languages */}
+							{/* 12. Languages */}
 							{
 								languages.length > 0 ?
 									<div className='hero-languages-section' data-hero-section='Languages'>

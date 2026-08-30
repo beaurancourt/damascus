@@ -365,6 +365,15 @@ export class HeroLogic {
 			.flatMap(f => f.data.selected);
 	};
 
+	// Everything the hero carries: what the player stashed in their inventory
+	// plus the items granted by features (kits, titles, etc).
+	static getInventoryItems = (hero: Hero) => {
+		return [
+			...hero.state.inventory,
+			...HeroLogic.getItems(hero)
+		];
+	};
+
 	static getFormerAncestries = (hero: Hero) => {
 		return HeroLogic.getFeatures(hero)
 			.map(f => f.feature)

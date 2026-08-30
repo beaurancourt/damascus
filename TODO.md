@@ -1,0 +1,5 @@
+- no way to add temp skills you gain from abilities
+- minion formation choice doesnt modify summons traits currently for summoner
+- make sections for rp vs combat details. Example refugee benefits and draw back would be in the rp section but the others would combat
+- getting the minion stats inline would be preferable to me i think, ideally only the first instance of the minion if possible
+- add back-end storage so that saved player-facing heroes persist on a server. can pick some free option or use my home server (pop.local), which we have access to via `ssh pop`
