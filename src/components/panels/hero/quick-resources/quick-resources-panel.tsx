@@ -48,6 +48,12 @@ export const QuickResourcesPanel = (props: Props) => {
 		props.onChange(copy);
 	};
 
+	const setWealth = (value: number) => {
+		const copy = Utils.copy(props.hero);
+		copy.state.wealth = value;
+		props.onChange(copy);
+	};
+
 	return (
 		<ErrorBoundary>
 			<div className='quick-resources-panel'>
@@ -65,14 +71,11 @@ export const QuickResourcesPanel = (props: Props) => {
 				<NumberSpin label='Surges' value={props.hero.state.surges} min={0} onChange={setSurges} />
 				<NumberSpin label='Victories' value={props.hero.state.victories} min={0} onChange={setVictories} />
 				<NumberSpin label='XP' value={props.hero.state.xp} min={0} onChange={setXP} />
+				<NumberSpin label='Wealth' value={props.hero.state.wealth} format={() => HeroLogic.getWealth(props.hero).toString()} onChange={setWealth} />
 				<div className='quick-resources-display'>
 					<div className='quick-resources-stat'>
 						<div className='label'>Renown</div>
 						<div className='value'>{HeroLogic.getRenown(props.hero)}</div>
-					</div>
-					<div className='quick-resources-stat'>
-						<div className='label'>Wealth</div>
-						<div className='value'>{HeroLogic.getWealth(props.hero)}</div>
 					</div>
 				</div>
 				<button
