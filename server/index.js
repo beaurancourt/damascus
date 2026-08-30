@@ -10,6 +10,10 @@ const pool = new Pool({
 	connectionString: process.env.DATABASE_URL
 });
 
+// Shared-secret auth for the public tunnel. If unset the API stays open (local
+// dev); once set, every /heroes route requires `Authorization: Bearer <token>`.
+const apiToken = process.env.API_TOKEN || '';
+
 const app = express();
 app.use(cors());
 // Hero JSON is large (nested features, abilities, etc), so raise the body cap.
@@ -20,13 +24,25 @@ const handleError = (res, err) => {
 	res.status(500).json({ error: err.message });
 };
 
+const requireAuth = (req, res, next) => {
+	if (!apiToken) {
+		return next();
+	}
+	const header = req.headers.authorization || '';
+	const token = header.startsWith('Bearer ') ? header.slice('Bearer '.length) : '';
+	if (token !== apiToken) {
+		return res.status(401).json({ error: 'unauthorized' });
+	}
+	next();
+};
+
 // Health check for the systemd unit and the tunnel.
 app.get('/health', (_req, res) => {
 	res.json({ ok: true });
 });
 
 // Everything a fresh device needs to discover the heroes stored on the server.
-app.get('/heroes', async (_req, res) => {
+app.get('/heroes', requireAuth, async (_req, res) => {
 	try {
 		const result = await pool.query('SELECT id, data, updated_at FROM heroes ORDER BY updated_at DESC');
 		res.json(result.rows.map(row => ({
@@ -40,7 +56,7 @@ app.get('/heroes', async (_req, res) => {
 });
 
 // One hero by GUID. 404 when it isn't stored yet.
-app.get('/heroes/:id', async (req, res) => {
+app.get('/heroes/:id', requireAuth, async (req, res) => {
 	try {
 		const result = await pool.query('SELECT data FROM heroes WHERE id = $1', [ req.params.id ]);
 		if (result.rows.length === 0) {
@@ -53,7 +69,7 @@ app.get('/heroes/:id', async (req, res) => {
 });
 
 // Upsert a hero's full JSON under its GUID.
-app.put('/heroes/:id', async (req, res) => {
+app.put('/heroes/:id', requireAuth, async (req, res) => {
 	try {
 		const data = JSON.stringify(req.body);
 		await pool.query(
@@ -68,7 +84,7 @@ app.put('/heroes/:id', async (req, res) => {
 	}
 });
 
-app.delete('/heroes/:id', async (req, res) => {
+app.delete('/heroes/:id', requireAuth, async (req, res) => {
 	try {
 		await pool.query('DELETE FROM heroes WHERE id = $1', [ req.params.id ]);
 		res.json({ ok: true });

@@ -65,7 +65,8 @@ export const DataLoader = (props: Props) => {
 		setOptionsState('pending');
 
 		const remoteURL = import.meta.env.VITE_REMOTE_API_URL as string | undefined;
-		const remote = remoteURL ? new RemoteService(remoteURL) : undefined;
+		const remoteToken = import.meta.env.VITE_REMOTE_API_KEY as string | undefined;
+		const remote = remoteURL ? new RemoteService(remoteURL, remoteToken) : undefined;
 		const dataService = new DataService(new LocalService(), remote);
 
 		dataService.initialize().then(() => {
