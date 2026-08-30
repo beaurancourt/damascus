@@ -11,6 +11,7 @@ import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
 import { HeroLogic } from '@/logic/hero-logic';
 import { Pill } from '@/components/controls/pill/pill';
+import { ResourceGainFrequency } from '@/enums/resource-gain-frequency';
 import { Sourcebook } from '@/models/sourcebook';
 import { TextInput } from '@/components/controls/text-input/text-input';
 import { Toggle } from '@/components/controls/toggle/toggle';
@@ -36,7 +37,7 @@ export const InfoHeroicResource = (props: InfoProps) => {
 								<li key={n}>
 									<Flex align='center' justify='space-between' gap={10}>
 										<div className='ds-text compact-text'>{g.trigger}</div>
-										<Pill>+{g.value}</Pill>
+										<Pill>+{g.value}{g.frequency && g.frequency !== ResourceGainFrequency.AtWill ? ` ${g.frequency}` : ''}</Pill>
 									</Flex>
 								</li>
 							))
