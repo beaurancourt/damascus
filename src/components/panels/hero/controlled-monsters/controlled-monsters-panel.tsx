@@ -5,6 +5,7 @@ import { ConditionLogic } from '@/logic/condition-logic';
 import { DangerButton } from '@/components/controls/danger-button/danger-button';
 import { EncounterSlot } from '@/models/encounter-slot';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
+import { Expander } from '@/components/controls/expander/expander';
 import { Format } from '@/utils/format';
 import { Hero } from '@/models/hero';
 import { HeroLogic } from '@/logic/hero-logic';
@@ -12,12 +13,16 @@ import { Monster } from '@/models/monster';
 import { MonsterInfo } from '@/components/panels/token/token';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterOrganizationType } from '@/enums/monster-organization-type';
+import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
+import { PanelMode } from '@/enums/panel-mode';
+import { Sourcebook } from '@/models/sourcebook';
 import { Utils } from '@/utils/utils';
 
 import './controlled-monsters-panel.scss';
 
 interface Props {
 	hero: Hero;
+	sourcebooks: Sourcebook[];
 	onAddSquad: (hero: Hero, monster: Monster, count: number) => void;
 	onRemoveSquad: (hero: Hero, slotID: string) => void;
 	onRemoveMonsterFromSquad: (hero: Hero, slotID: string, monsterID: string) => void;
@@ -234,6 +239,15 @@ export const ControlledMonstersPanel = (props: Props) => {
 								</Flex>
 							</Flex>
 						</div>
+						: null
+				}
+				{
+					// Every minion in a squad shares one stat block, so show it once,
+					// collapsed, rather than on each HP row.
+					isMinionSlot && slot.monsters.length > 0 ?
+						<Expander title='Stat Block'>
+							<MonsterPanel monster={slot.monsters[0]} sourcebooks={props.sourcebooks} mode={PanelMode.Full} />
+						</Expander>
 						: null
 				}
 				{slot.monsters.map((m, index) => getMonster(m, index))}

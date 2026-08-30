@@ -123,6 +123,7 @@ export const HeroPanel = (props: Props) => {
 							{/* Controlled monsters / squads — appear close to combat actions */}
 							<ControlledMonstersPanel
 								hero={props.hero}
+								sourcebooks={props.sourcebooks}
 								onAddSquad={props.onAddSquad}
 								onRemoveSquad={props.onRemoveSquad}
 								onRemoveMonsterFromSquad={props.onRemoveMonsterFromSquad}
