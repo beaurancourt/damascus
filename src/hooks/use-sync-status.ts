@@ -95,20 +95,35 @@ export const useSyncStatus = () => {
 			}));
 
 			try {
-				const cache = await caches.open(SHELL_CACHE);
-
-				// The shell, plus the bundle this page is actually running.
-				// Reading the asset URLs off the document means we cache the
-				// current hashed filenames without the build having to tell us
-				// what they are - and without it, a first-load-then-offline
-				// user got a blank page, since the service worker only sees
-				// asset requests from the second load onwards.
 				const assets = [
 					...Array.from(document.querySelectorAll<HTMLScriptElement>('script[src]')).map(el => el.src),
 					...Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][href]')).map(el => el.href)
 				].filter(url => new URL(url).origin === window.location.origin);
 
-				await cache.addAll([ ...SHELL_URLS, ...assets ]);
+				const current = [ ...SHELL_URLS, ...assets ];
+				const currentSet = new Set(current.map(url => new URL(url, window.location.origin).href));
+
+				// The service worker also writes every same-origin response into this
+				// cache, so old hashed assets from prior deployments pile up until
+				// `cache.keys()` throws "Operation too large". Prune anything that
+				// isn't part of the current build to keep the cache bounded.
+				let cache = await caches.open(SHELL_CACHE);
+				let existingKeys;
+				try {
+					existingKeys = await cache.keys();
+				} catch {
+					// Already over the entry limit - drop it wholesale and rebuild.
+					await caches.delete(SHELL_CACHE);
+					cache = await caches.open(SHELL_CACHE);
+					existingKeys = [];
+				}
+				await Promise.all(
+					existingKeys
+						.filter(request => !currentSet.has(request.url))
+						.map(request => cache.delete(request))
+				);
+
+				await cache.addAll(current);
 
 				setSyncStatus(prev => {
 					const newStatus = {
@@ -163,6 +178,7 @@ export const useSyncStatus = () => {
 				};
 			});
 			checkSyncStatus();
+			syncForOffline();
 		};
 
 		const handleOffline = () => {
