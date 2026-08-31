@@ -31,26 +31,25 @@ export const QuickResourcesPanel = (props: Props) => {
 	};
 
 	const setSurges = (value: number) => {
-		const copy = Utils.copy(props.hero);
-		copy.state.surges = value;
+		// Shallow copy keeps the hero's structural fields (class, features, ...)
+		// reference-stable so derived panels can memoize; only the state value
+		// changes here.
+		const copy = { ...props.hero, state: { ...props.hero.state, surges: value } };
 		props.onChange(copy);
 	};
 
 	const setVictories = (value: number) => {
-		const copy = Utils.copy(props.hero);
-		copy.state.victories = value;
+		const copy = { ...props.hero, state: { ...props.hero.state, victories: value } };
 		props.onChange(copy);
 	};
 
 	const setXP = (value: number) => {
-		const copy = Utils.copy(props.hero);
-		copy.state.xp = value;
+		const copy = { ...props.hero, state: { ...props.hero.state, xp: value } };
 		props.onChange(copy);
 	};
 
 	const setWealth = (value: number) => {
-		const copy = Utils.copy(props.hero);
-		copy.state.wealth = value;
+		const copy = { ...props.hero, state: { ...props.hero.state, wealth: value } };
 		props.onChange(copy);
 	};
 

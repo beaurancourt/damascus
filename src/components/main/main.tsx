@@ -1,6 +1,6 @@
 import { Feature, FeatureCompanion, FeatureRetainer } from '@/models/feature';
 import { Navigate, Route, Routes } from 'react-router';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
 import { useDataManager, useHeroes, useHomebrewSourcebooks, useOptions, useSession } from '@/contexts/data-context';
 import { Ability } from '@/models/ability';
@@ -97,6 +97,11 @@ export const Main = () => {
 	const heroes = useHeroes();
 	const homebrewSourcebooks = useHomebrewSourcebooks();
 	const dataManager = useDataManager();
+
+	// getSourcebooks builds a fresh array (and re-runs sourcebook migration) on
+	// every call; memoize it so the routes' sourcebooks prop is reference-stable
+	// and derived panels can skip re-rendering.
+	const sourcebooks = useMemo(() => SourcebookLogic.getSourcebooks(homebrewSourcebooks), [ homebrewSourcebooks ]);
 
 	const [ errors, setErrors ] = useState<Event[]>([]);
 	const [ drawer, setDrawer ] = useState<ReactNode>(null);
@@ -297,7 +302,7 @@ export const Main = () => {
 		setDrawer(
 			<MonsterModal
 				monster={monster}
-				sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+				sourcebooks={sourcebooks}
 				controller={hero}
 				onClose={() => setDrawer(null)}
 				updateMonster={monster => {
@@ -1516,7 +1521,7 @@ export const Main = () => {
 	const showEncounterImport = (sourcebookID: string, setSourcebookID: (id: string) => void) => {
 		setDrawer(
 			<EncounterImportModal
-				sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+				sourcebooks={sourcebooks}
 				sourcebookID={sourcebookID}
 				setSourcebookID={setSourcebookID}
 				onSave={encounter => {
@@ -1576,7 +1581,7 @@ export const Main = () => {
 									path=':folder?'
 									element={
 										<HeroListPage
-											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											sourcebooks={sourcebooks}
 											params={footerParams}
 											addHero={newHero}
 											importHero={importHero}
@@ -1587,7 +1592,7 @@ export const Main = () => {
 									path='view/:heroID'
 									element={
 										<HeroViewPage
-											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											sourcebooks={sourcebooks}
 											params={footerParams}
 											exportHeroData={exportHeroData}
 											copyHero={copyHero}
@@ -1626,7 +1631,7 @@ export const Main = () => {
 									path='edit/:heroID/:page'
 									element={
 										<HeroEditPage
-											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											sourcebooks={sourcebooks}
 											params={footerParams}
 											draftHero={draftHero}
 											saveChanges={saveHero}
@@ -1648,7 +1653,7 @@ export const Main = () => {
 									path=':kind/:elementID?'
 									element={
 										<LibraryListPage
-											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											sourcebooks={sourcebooks}
 											params={footerParams}
 											showMonster={monster => onSelectMonster(undefined, monster, undefined, undefined)}
 											showEncounterImport={showEncounterImport}
@@ -1667,7 +1672,7 @@ export const Main = () => {
 									path='edit/:kind/:sourcebookID/:elementID/:subElementID?'
 									element={
 										<LibraryEditPage
-											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											sourcebooks={sourcebooks}
 											params={footerParams}
 											showMonster={(monster, monsterGroup) => onSelectMonster(undefined, monster, monsterGroup, undefined)}
 											showTerrain={onSelectTerrain}
@@ -1689,7 +1694,7 @@ export const Main = () => {
 									path='director'
 									element={
 										<SessionDirectorPage
-											sourcebooks={SourcebookLogic.getSourcebooks(homebrewSourcebooks)}
+											sourcebooks={sourcebooks}
 											params={footerParams}
 											startEncounter={startEncounter}
 											startMontage={startMontage}

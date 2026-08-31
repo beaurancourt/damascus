@@ -1,5 +1,5 @@
 import { Markdown, MarkdownEditor } from '@/components/controls/markdown/markdown';
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { AbilitiesPanel } from '@/components/panels/hero/abilities/abilities-panel';
 import { Ability } from '@/models/ability';
 import { AbilityData } from '@/data/ability-data';
@@ -32,7 +32,6 @@ import { StatsPanel } from '@/components/panels/hero/stats/stats-panel';
 import { SummoningInfo } from '@/models/summon';
 import { Tag } from 'antd';
 import { Title } from '@/models/title';
-import { Utils } from '@/utils/utils';
 import { useOptions } from '@/contexts/data-context';
 
 import './hero-panel.scss';
@@ -68,11 +67,33 @@ interface Props {
 export const HeroPanel = (props: Props) => {
 	const options = useOptions();
 
-	const abilities = HeroLogic.getAbilities(props.hero, props.sourcebooks, options.shownStandardAbilities);
-	const mains = abilities.filter(a => a.ability.type.usage === AbilityUsage.MainAction);
-	const maneuvers = abilities.filter(a => a.ability.type.usage === AbilityUsage.Maneuver);
-	const moves = abilities.filter(a => a.ability.type.usage === AbilityUsage.Move);
-	const triggers = abilities.filter(a => a.ability.type.usage === AbilityUsage.Trigger);
+	// getAbilities resolves the whole feature tree and is pure in the hero's
+	// structural data, so memoize it by those fields. State-value edits (surges,
+	// victories, ...) shallow-copy the hero and leave these references stable, so
+	// a resource click no longer recomputes every ability.
+	const abilityLists = useMemo(() => {
+		const abilities = HeroLogic.getAbilities(props.hero, props.sourcebooks, options.shownStandardAbilities);
+		return {
+			abilities,
+			mains: abilities.filter(a => a.ability.type.usage === AbilityUsage.MainAction),
+			maneuvers: abilities.filter(a => a.ability.type.usage === AbilityUsage.Maneuver),
+			moves: abilities.filter(a => a.ability.type.usage === AbilityUsage.Move),
+			triggers: abilities.filter(a => a.ability.type.usage === AbilityUsage.Trigger)
+		};
+	}, [
+		props.hero.class,
+		props.hero.ancestry,
+		props.hero.culture,
+		props.hero.career,
+		props.hero.complication,
+		props.hero.features,
+		props.hero.abilityCustomizations,
+		props.hero.state.titles,
+		props.hero.state.inventory,
+		props.sourcebooks,
+		options.shownStandardAbilities
+	]);
+	const { abilities, mains, maneuvers, moves, triggers } = abilityLists;
 
 	const retinueCount = HeroLogic.getCompanions(props.hero).length
 		+ HeroLogic.getFollowers(props.hero).length
@@ -92,8 +113,8 @@ export const HeroPanel = (props: Props) => {
 	updateHeroRef.current = props.updateHero;
 
 	const setNotes = useCallback((value: string) => {
-		const copy = Utils.copy(heroRef.current);
-		copy.state.notes = value;
+		const hero = heroRef.current;
+		const copy = { ...hero, state: { ...hero.state, notes: value } };
 		updateHeroRef.current?.(copy);
 	}, []);
 
