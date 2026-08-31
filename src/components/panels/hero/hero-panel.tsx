@@ -1,4 +1,5 @@
 import { Markdown, MarkdownEditor } from '@/components/controls/markdown/markdown';
+import { useCallback, useRef } from 'react';
 import { AbilitiesPanel } from '@/components/panels/hero/abilities/abilities-panel';
 import { Ability } from '@/models/ability';
 import { AbilityData } from '@/data/ability-data';
@@ -82,13 +83,19 @@ export const HeroPanel = (props: Props) => {
 	const skills = HeroLogic.getSkills(props.hero, props.sourcebooks);
 	const languages = HeroLogic.getLanguages(props.hero, props.sourcebooks);
 
-	const setNotes = (value: string) => {
-		const copy = Utils.copy(props.hero);
+	// The notes editor is memoized, so setNotes must be a stable reference or it
+	// would re-render on every unrelated hero change. Refs keep the latest hero
+	// and updateHero without changing the callback's identity.
+	const heroRef = useRef(props.hero);
+	heroRef.current = props.hero;
+	const updateHeroRef = useRef(props.updateHero);
+	updateHeroRef.current = props.updateHero;
+
+	const setNotes = useCallback((value: string) => {
+		const copy = Utils.copy(heroRef.current);
 		copy.state.notes = value;
-		if (props.updateHero) {
-			props.updateHero(copy);
-		}
-	};
+		updateHeroRef.current?.(copy);
+	}, []);
 
 	return (
 		<ErrorBoundary>

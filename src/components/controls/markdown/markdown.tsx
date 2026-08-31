@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, memo, useEffect, useState } from 'react';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { Utils } from '@/utils/utils';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -37,7 +37,7 @@ interface MarkdownEditorProps {
 	onChange: (value: string) => void;
 }
 
-export const MarkdownEditor = (props: MarkdownEditorProps) => {
+export const MarkdownEditor = memo(function MarkdownEditor(props: MarkdownEditorProps) {
 	const [ value, setValue ] = useState(props.value);
 	const debouncedValue = useDebounce(value);
 
@@ -56,4 +56,4 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 			<LazyEditor value={value} onChange={onChange} placeholder={props.placeholder} />
 		</Suspense>
 	);
-};
+});

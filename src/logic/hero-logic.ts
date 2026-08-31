@@ -32,6 +32,7 @@ import { Skill } from '@/models/skill';
 import { SkillList } from '@/enums/skill-list';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
+import { Summon } from '@/models/summon';
 import { SummonLogic } from '@/logic/summon-logic';
 import { Utils } from '@/utils/utils';
 
@@ -432,10 +433,16 @@ export class HeroLogic {
 			.sort((a, b) => a.name.localeCompare(b.name));
 	};
 
+	// Computing the summoned monsters deep-clones every summon and its monster,
+	// which is expensive. A click that only changes a resource value leaves the
+	// summons untouched, but the whole hero sheet calls getSummons many times per
+	// render (HeroPanel, Retinue, controlled monsters), so cache the result by
+	// what actually drives it.
+	private static summonsCache = new Map<string, Summon[]>();
+
 	static getSummons = (hero: Hero) => {
 		const formation = HeroLogic.getMinionFormationBonuses(hero);
-
-		return HeroLogic.getFeatures(hero)
+		const summonInputs = HeroLogic.getFeatures(hero)
 			.flatMap(f => {
 				switch (f.feature.type) {
 					case FeatureType.Summon:
@@ -445,7 +452,21 @@ export class HeroLogic {
 				}
 				return [];
 			})
-			.filter(s => !!s)
+			.filter(s => !!s);
+
+		const key = [
+			hero.id,
+			hero.class?.level || 1,
+			`${formation.staminaBonus},${formation.stabilityBonus}`,
+			summonInputs.map(s => `${s.id}:${s.monster.id}`).join(',')
+		].join('|');
+
+		const cached = HeroLogic.summonsCache.get(key);
+		if (cached) {
+			return cached;
+		}
+
+		const result = summonInputs
 			.map(s => {
 				const copy = Utils.copy(s);
 				copy.info.level = hero.class?.level || 1;
@@ -459,6 +480,16 @@ export class HeroLogic {
 				}
 				return result;
 			});
+
+		if (HeroLogic.summonsCache.size >= 50) {
+			const oldest = HeroLogic.summonsCache.keys().next();
+			if (!oldest.done) {
+				HeroLogic.summonsCache.delete(oldest.value);
+			}
+		}
+		HeroLogic.summonsCache.set(key, result);
+
+		return result;
 	};
 
 	// The trait bonuses a summoner's chosen formation adds to every minion.
