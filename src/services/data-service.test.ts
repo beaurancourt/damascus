@@ -91,6 +91,7 @@ describe('DataService', () => {
 			const ds = new DataService(mockStorage, mockRemote);
 
 			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
+			mockStorage.putHeroes = vi.fn().mockResolvedValue([ heroA, heroB ]);
 			mockRemote.getHeroes = vi.fn().mockResolvedValue([ heroAStale, heroB ]);
 
 			const result = await ds.getHeroes();
@@ -109,6 +110,19 @@ describe('DataService', () => {
 			const result = await ds.getHeroes();
 
 			expect(result).toEqual([ heroA ]);
+		});
+
+		test('getHeroes caches remote-only heroes locally', async () => {
+			const ds = new DataService(mockStorage, mockRemote);
+
+			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
+			mockStorage.putHeroes = vi.fn().mockResolvedValue([ heroA, heroB ]);
+			mockRemote.getHeroes = vi.fn().mockResolvedValue([ heroA, heroB ]);
+
+			const result = await ds.getHeroes();
+
+			expect(result).toHaveLength(2);
+			expect(mockStorage.putHeroes).toHaveBeenCalledWith([ heroB ]);
 		});
 
 		test('saveHero persists locally and backs up to the remote', async () => {

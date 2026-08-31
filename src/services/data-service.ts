@@ -50,6 +50,15 @@ export class DataService {
 			const remoteHeroes = await this.remote.getHeroes();
 			const localIDs = new Set(heroes.map(h => h.id));
 			const missing = remoteHeroes.filter(h => !localIDs.has(h.id));
+
+			// Cache the restored heroes locally too, so a device that pulled them
+			// from the server keeps them even if the server is unreachable next
+			// launch. Best-effort: a failed write shouldn't break the load.
+			if (missing.length > 0) {
+				this.storageService.putHeroes(missing)
+					.catch(err => console.warn('Failed to cache remote heroes locally', err));
+			}
+
 			return [ ...heroes, ...missing ];
 		} catch (err) {
 			console.warn('Failed to load remote heroes; continuing with local only', err);

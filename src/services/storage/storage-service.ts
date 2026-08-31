@@ -9,6 +9,7 @@ export interface StorageService {
 	getHeroes(): Promise<Hero[]>;
 	getHero(id: string): Promise<Hero | null>;
 	putHero(hero: Hero): Promise<Hero>;
+	putHeroes(heroes: Hero[]): Promise<Hero[]>;
 	deleteHero(id: string): Promise<void>;
 
 	// Homebrew storage

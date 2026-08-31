@@ -59,6 +59,17 @@ export class LocalService implements StorageService {
 			await localforage.setItem<Hero[]>(DataStorageKeys.Heroes, list);
 		}
 	}
+
+	// Batch upsert: merges heroes by id in one read + one write, so restoring a
+	// batch of remote heroes doesn't race itself with overlapping putHero calls.
+	async putHeroes(heroes: Hero[]): Promise<Hero[]> {
+		const current = await localforage.getItem<Hero[]>(DataStorageKeys.Heroes) || [];
+		const byID = new Map(current.map(h => [ h.id, h ]));
+		heroes.forEach(h => byID.set(h.id, h));
+		const list = [ ...byID.values() ];
+		await localforage.setItem<Hero[]>(DataStorageKeys.Heroes, list);
+		return list;
+	}
 	// #endregion
 
 	// #region Sourcebooks
