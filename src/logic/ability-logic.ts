@@ -13,7 +13,6 @@ import { KitWeapon } from '@/enums/kit-weapon';
 import { Monster } from '@/models/monster';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { PowerRoll } from '@/models/power-roll';
-import { Utils } from '@/utils/utils';
 
 export class AbilityLogic {
 	static getAllKeywords = () => {
@@ -141,20 +140,24 @@ export class AbilityLogic {
 
 		let bonus = 0;
 		if (hero && ability) {
-			const abilityCopy = Utils.copy(ability);
+			// getDistanceBonus only reads the ability's keywords and id, so a
+			// shallow copy with the filtered keyword list is enough - deep-cloning
+			// the whole ability here (structuredClone) ran once per ability per
+			// render and was a measurable hotspot.
+			let keywords = ability.keywords;
 			switch (distance.type) {
 				case AbilityDistanceType.Melee:
 					// The ability if being used as Melee
 					// Make sure the ability does not also have the Ranged keyword
-					abilityCopy.keywords = abilityCopy.keywords.filter(kw => kw !== AbilityKeyword.Ranged);
+					keywords = keywords.filter(kw => kw !== AbilityKeyword.Ranged);
 					break;
 				case AbilityDistanceType.Ranged:
 					// The ability if being used as Ranged
 					// Make sure the ability does not also have the Melee keyword
-					abilityCopy.keywords = abilityCopy.keywords.filter(kw => kw !== AbilityKeyword.Melee);
+					keywords = keywords.filter(kw => kw !== AbilityKeyword.Melee);
 					break;
 			}
-			bonus = HeroLogic.getDistanceBonus(hero, abilityCopy);
+			bonus = HeroLogic.getDistanceBonus(hero, { ...ability, keywords });
 		}
 
 		const sections: string[] = [];
