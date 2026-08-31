@@ -39,16 +39,14 @@ export class LocalService implements StorageService {
 	async putHero(hero: Hero): Promise<Hero> {
 		const heroes = await localforage.getItem<Hero[]>(DataStorageKeys.Heroes);
 		if (heroes) {
-			const copy = Utils.copy(heroes);
-			if (heroes.some(h => h.id === hero.id)) {
-				const list = copy.map(h => h.id === hero.id ? hero : h);
-				localforage.setItem<Hero[]>(DataStorageKeys.Heroes, list);
-			} else {
-				copy.push(hero);
-				localforage.setItem<Hero[]>(DataStorageKeys.Heroes, copy);
-			}
+			// localforage deep-serializes on setItem anyway, so just build the new
+			// array without deep-cloning every hero.
+			const list = heroes.some(h => h.id === hero.id)
+				? heroes.map(h => h.id === hero.id ? hero : h)
+				: [ ...heroes, hero ];
+			await localforage.setItem<Hero[]>(DataStorageKeys.Heroes, list);
 		} else {
-			localforage.setItem<Hero[]>(DataStorageKeys.Heroes, [ hero ]);
+			await localforage.setItem<Hero[]>(DataStorageKeys.Heroes, [ hero ]);
 		}
 
 		return hero;
@@ -57,8 +55,8 @@ export class LocalService implements StorageService {
 	async deleteHero(id: string): Promise<void> {
 		const heroes = await localforage.getItem<Hero[]>(DataStorageKeys.Heroes);
 		if (heroes) {
-			const copy = Utils.copy(heroes.filter(h => h.id !== id));
-			localforage.setItem<Hero[]>(DataStorageKeys.Heroes, copy);
+			const list = heroes.filter(h => h.id !== id);
+			await localforage.setItem<Hero[]>(DataStorageKeys.Heroes, list);
 		}
 	}
 	// #endregion

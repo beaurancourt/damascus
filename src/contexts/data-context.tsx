@@ -145,21 +145,19 @@ export function DataManagerProvider(props: PropsWithChildren<DataManagerProps>) 
 		switch (action.type) {
 			case ReducerActionKind.UPDATE: {
 				const hero = action.payload;
-				const copy = Utils.copy(currentHeroes);
 				if (currentHeroes.some(h => h.id === hero.id)) {
-					const list = copy.map(h => h.id === hero.id ? hero : h);
-					newHeroes = list;
+					// Swap the updated hero in without deep-cloning every other
+					// hero - this runs on every save, and the deep clone was a
+					// per-click hotspot.
+					newHeroes = currentHeroes.map(h => h.id === hero.id ? hero : h);
 				} else {
-					copy.push(hero);
-					Collections.sort(copy, h => h.name);
-					newHeroes = copy;
+					newHeroes = Collections.sort([ ...currentHeroes, hero ], h => h.name);
 				}
 				return newHeroes;
 			}
 			case ReducerActionKind.DELETE: {
 				const hero = action.payload;
-				const newHeroes = Utils.copy(currentHeroes.filter(h => h.id !== hero.id));
-				return newHeroes;
+				return currentHeroes.filter(h => h.id !== hero.id);
 			}
 			default: {
 				throw Error(`Unknown or unsupported action: ${action.type}`);
