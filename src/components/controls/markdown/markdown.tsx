@@ -1,11 +1,12 @@
-import { BlockTypeSelect, BoldItalicUnderlineToggles, CodeToggle, ListsToggle, MDXEditor, UndoRedo, headingsPlugin, listsPlugin, quotePlugin, thematicBreakPlugin, toolbarPlugin } from '@mdxeditor/editor';
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { Utils } from '@/utils/utils';
 import { useDebounce } from '@/hooks/use-debounce';
 
-import '@mdxeditor/editor/style.css';
-import './markdown.scss';
+// The MDXEditor library is only needed when someone edits markdown, so it's
+// code-split into its own chunk (markdown-editor.tsx) and loaded on demand,
+// keeping it out of the app's main boot bundle.
+const LazyEditor = lazy(() => import('./markdown-editor'));
 
 interface MarkdownProps {
 	text: string;
@@ -51,29 +52,8 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 	};
 
 	return (
-		<MDXEditor
-			className='markdown-editor'
-			placeholder={props.placeholder}
-			plugins={[
-				headingsPlugin(),
-				listsPlugin(),
-				quotePlugin(),
-				thematicBreakPlugin(),
-				toolbarPlugin({
-					toolbarClassName: 'markdown-editor-toolbar',
-					toolbarContents: () => (
-						<>
-							<UndoRedo />
-							<BlockTypeSelect />
-							<BoldItalicUnderlineToggles />
-							<ListsToggle />
-							<CodeToggle />
-						</>
-					)
-				})
-			]}
-			markdown={value}
-			onChange={onChange}
-		/>
+		<Suspense fallback={<div className='ds-text'>Loading editor…</div>}>
+			<LazyEditor value={value} onChange={onChange} placeholder={props.placeholder} />
+		</Suspense>
 	);
 };
