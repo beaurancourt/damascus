@@ -509,6 +509,31 @@ html[data-theme="dark"] {
 		background-color: rgba(250, 250, 250, 0.6);
 	}
 
+	// Checkable tags (the role/type pickers in the monster, terrain, fixture
+	// and ability editors) are transparent with AntD's default black text,
+	// which vanishes against the dark surface. Give them light text and a
+	// bronze selected state, matching the filter chips.
+	.ant-tag-checkable {
+		color: rgba(255, 255, 255, 0.85);
+		border-color: rgba(255, 255, 255, 0.3);
+
+		&:not(.ant-tag-checkable-checked):hover {
+			color: #c9a45a;
+			background-color: rgba(201, 164, 90, 0.12);
+		}
+
+		&.ant-tag-checkable-checked {
+			color: #c9a45a;
+			background-color: rgba(201, 164, 90, 0.16);
+			border-color: #c9a45a;
+
+			&:hover {
+				color: #d3b26b;
+				background-color: rgba(201, 164, 90, 0.24);
+			}
+		}
+	}
+
 	.ant-space-item>div:not([class^='ant-']) {
 		color: rgba(255, 255, 255, 0.88);
 	}
