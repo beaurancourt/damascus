@@ -677,6 +677,7 @@ export class FactoryLogic {
 		return {
 			id: Utils.guid(),
 			monsterID: monsterID,
+			name: '',
 			count: 1,
 			customization: {
 				addOnIDs: [],
@@ -706,6 +707,7 @@ export class FactoryLogic {
 		return {
 			id: Utils.guid(),
 			monsterID: monster.id,
+			name: '',
 			count: 1,
 			customization: {
 				addOnIDs: [],

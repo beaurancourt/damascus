@@ -4,7 +4,6 @@ import { EncounterLogic } from '@/logic/encounter-logic';
 import { FactoryLogic } from '@/logic/factory-logic';
 import { Hero } from '@/models/hero';
 import { HeroLogic } from '@/logic/hero-logic';
-import { Monster } from '@/models/monster';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { Montage } from '@/models/montage';
@@ -29,34 +28,18 @@ export class SessionLogic {
 				return heroes.length >= minHeroes;
 			})
 			.forEach(g => {
-				const monsterInfo: { monsterID: string, monster: Monster, name: string, count: number }[] = [];
 				g.slots.forEach(slot => {
 					const monster = EncounterLogic.getCustomizedMonster(slot.monsterID, slot.customization, sourcebooks);
 					const monsterGroup = SourcebookLogic.getMonsterGroup(sourcebooks, slot.monsterID);
 					if (monster && monsterGroup) {
 						const count = (slot.count * MonsterLogic.getRoleMultiplier(monster.role.organization)) + slot.customization.minionCountAdjustment;
-						const current = monsterInfo.find(info => info.monsterID === slot.monsterID);
-						if (current) {
-							current.count += count;
-						} else {
-							monsterInfo.push({
-								monsterID: slot.monsterID,
-								monster: monster,
-								name: MonsterLogic.getMonsterName(monster, monsterGroup),
-								count: count
-							});
-						}
-					}
-				});
-
-				g.slots.forEach(slot => {
-					const info = monsterInfo.find(info => info.monsterID === slot.monsterID);
-					if (info) {
-						const count = (slot.count * MonsterLogic.getRoleMultiplier(info.monster.role.organization)) + slot.customization.minionCountAdjustment;
+						// A director can rename a monster after adding it to a group;
+						// otherwise fall back to the sourcebook name.
+						const name = slot.name || MonsterLogic.getMonsterName(monster, monsterGroup);
 						for (let n = 1; n <= count; ++n) {
-							const monsterCopy = Utils.copy(info.monster);
+							const monsterCopy = Utils.copy(monster);
 							monsterCopy.id = Utils.guid();
-							monsterCopy.name = info.name;
+							monsterCopy.name = name;
 							slot.monsters.push(monsterCopy);
 						}
 					}

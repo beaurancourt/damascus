@@ -34,6 +34,9 @@ monster: string             # required, must be a valid id from reference/monste
                             # (e.g. "goblin-3", "orc-elite-2"). Aliases:
                             #   id: <same>
                             #   monsterID: <same>
+name: string                # optional. Display name for this monster. Defaults to
+                            # the stat block's name. Use it to distinguish a renamed
+                            # or bespoke monster ("Sneaky Goblin") from the stock one.
 count: integer              # optional, default 1. Number of this monster.
                             # For Minions this is squads of 4, not individual minions —
                             # count: 1 places one squad (4 individual minions), and EV

@@ -20,6 +20,7 @@ interface SlotInput {
 	monster?: string;
 	id?: string;
 	monsterID?: string;
+	name?: string;
 	count?: number;
 	level?: number;
 	levelAdjustment?: number;
@@ -61,6 +62,7 @@ const KNOWN_SLOT_KEYS = new Set([
 	'monster',
 	'id',
 	'monsterID',
+	'name',
 	'count',
 	'level',
 	'levelAdjustment',
@@ -186,6 +188,7 @@ export class EncounterYamlLogic {
 				}
 
 				const newSlot: EncounterSlot = FactoryLogic.createEncounterSlot(monsterID);
+				newSlot.name = typeof slot.name === 'string' ? slot.name : '';
 				newSlot.count = typeof slot.count === 'number' && slot.count > 0 ? Math.floor(slot.count) : 1;
 
 				const levelAdj = slot.level ?? slot.levelAdjustment;

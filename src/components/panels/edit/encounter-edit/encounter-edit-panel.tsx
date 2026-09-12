@@ -303,6 +303,19 @@ export const EncounterEditPanel = (props: Props) => {
 				props.onChange(copy);
 			};
 
+			const setSlotName = (groupID: string, slotID: string, value: string) => {
+				const copy = Utils.copy(encounter);
+				const group = copy.groups.find(g => g.id === groupID);
+				if (group) {
+					const slot = group.slots.find(s => s.id === slotID);
+					if (slot) {
+						slot.name = value;
+					}
+				}
+				setEncounter(copy);
+				props.onChange(copy);
+			};
+
 			return (
 				<MonsterSlotPanel
 					key={slot.id}
@@ -314,6 +327,7 @@ export const EncounterEditPanel = (props: Props) => {
 					moveSlot={moveSlot}
 					setSlotCount={setSlotCount}
 					setCustomization={setCustomization}
+					setSlotName={setSlotName}
 				/>
 			);
 		};
@@ -865,10 +879,12 @@ interface MonsterSlotPanelProps {
 	moveSlot: (slotID: string, fromGroupID: string, toGroupID: string, remove: boolean) => void;
 	setSlotCount: (groupID: string, slotID: string, value: number) => void;
 	setCustomization: (groupID: string, slotID: string, value: EncounterSlotCustomization) => void;
+	setSlotName: (groupID: string, slotID: string, value: string) => void;
 }
 
 const MonsterSlotPanel = (props: MonsterSlotPanelProps) => {
 	const [ showCustomize, setShowCustomize ] = useState<boolean>(false);
+	const [ editingName, setEditingName ] = useState<boolean>(false);
 
 	const originalMonster = SourcebookLogic.getMonster(props.sourcebooks, props.slot.monsterID);
 	const monster = EncounterLogic.getCustomizedMonster(props.slot.monsterID, props.slot.customization, props.sourcebooks);
@@ -881,6 +897,10 @@ const MonsterSlotPanel = (props: MonsterSlotPanelProps) => {
 			</div>
 		);
 	}
+
+	// The slot carries an optional rename; the display name defaults to the
+	// sourcebook name when the director hasn't set one.
+	const displayName = props.slot.name || monster.name;
 
 	const getCustomizePanel = () => {
 		const getLevelAdjust = () => {
@@ -1056,9 +1076,22 @@ const MonsterSlotPanel = (props: MonsterSlotPanelProps) => {
 			<div className={showCustomize ? 'slot-row customizing' : 'slot-row'}>
 				<div className='content'>
 					<Flex align='center' justify='space-between'>
-						<MonsterInfo monster={monster} showEV={true} />
+						{
+							editingName ?
+								<TextInput
+									placeholder={monster.name}
+									value={props.slot.name}
+									allowClear={true}
+									autoFocus={true}
+									style={{ flex: '1 1 0', minWidth: 0 }}
+									onChange={value => props.setSlotName(props.groupID, props.slot.id, value)}
+								/>
+								:
+								<MonsterInfo monster={{ ...monster, name: displayName }} showEV={true} />
+						}
 						<ButtonGroup
 							buttons={[
+								{ type: 'button', icon: editingName ? <EditFilled style={{ color: 'rgb(22, 119, 255)' }} /> : <EditOutlined />, tooltip: 'Rename', onClick: () => setEditingName(!editingName) },
 								{ type: 'button', icon: <InfoCircleOutlined />, tooltip: 'Show stat block', onClick: () => props.showMonster(monster, monsterGroup) },
 								{ type: 'button', icon: showCustomize ? <ToolFilled style={{ color: 'rgb(64, 150, 255)' }} /> : <ToolOutlined />, tooltip: 'Customize', onClick: () => setShowCustomize(!showCustomize) },
 								{ type: 'dropdown', icon: <EllipsisOutlined />, popover: getMenu() }

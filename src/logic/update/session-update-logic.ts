@@ -21,6 +21,10 @@ export class SessionUpdateLogic {
 				}
 
 				g.slots.forEach(s => {
+					if (s.name === undefined) {
+						s.name = '';
+					}
+
 					if (s.customization === undefined) {
 						s.customization = {
 							addOnIDs: [],

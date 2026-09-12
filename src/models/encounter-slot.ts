@@ -12,6 +12,7 @@ export interface EncounterSlotCustomization {
 export interface EncounterSlot {
 	id: string;
 	monsterID: string;
+	name: string;
 	count: number;
 	customization: EncounterSlotCustomization;
 	monsters: Monster[];

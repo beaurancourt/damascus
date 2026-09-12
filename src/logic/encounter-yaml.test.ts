@@ -78,6 +78,14 @@ describe('EncounterYamlLogic.parse', () => {
 		expect(slot.customization.minionCountAdjustment).toBe(4);
 	});
 
+	test('parses a slot display name', () => {
+		mockMonsters();
+		const yaml = 'name: T\ngroups:\n  - name: g\n    slots:\n      - monster: goblin-9\n        name: Sneaky Goblin\n';
+		const result = EncounterYamlLogic.parse(yaml, fakeSourcebooks);
+		expect(result.encounter).not.toBeNull();
+		expect(result.encounter!.groups[0].slots[0].name).toBe('Sneaky Goblin');
+	});
+
 	test('applies tactics, ending, and extra sections to notes', () => {
 		mockMonsters();
 		const yaml = [

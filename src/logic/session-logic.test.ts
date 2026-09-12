@@ -90,4 +90,18 @@ describe('startEncounter monster numbering', () => {
 		expect(namesIn(result, 0)).toEqual([ '[1] Goblin Warrior', '[2] Goblin Warrior' ]);
 		expect(namesIn(result, 1)).toEqual([ '[1] Goblin Assassin', '[2] Goblin Assassin' ]);
 	});
+
+	test('a renamed slot keeps its name and still gets numbered', () => {
+		const encounter = FactoryLogic.createEncounter();
+		const group = FactoryLogic.createEncounterGroup();
+		const slot = FactoryLogic.createEncounterSlot('goblin-9');
+		slot.count = 2;
+		slot.name = 'Sneaky Goblin';
+		group.slots = [ slot ];
+		encounter.groups = [ group ];
+
+		const result = SessionLogic.startEncounter(encounter, sourcebooks, [] as Hero[], options);
+
+		expect(namesIn(result, 0)).toEqual([ '[1] Sneaky Goblin', '[2] Sneaky Goblin' ]);
+	});
 });
