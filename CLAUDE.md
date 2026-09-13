@@ -84,3 +84,7 @@ Production builds set Vite `base` to `/damascus/` or `/damascus-gm/` while dev s
 ## Encounter builder skill
 
 `skills/encounter-builder/` is a Claude skill that emits encounter YAML for the app's import flow. `reference/schema.md` is the authoritative format spec and has to stay in sync with the parser in `src/logic/encounter-yaml.ts` — note that a slot's `count` is *squads* (4 for minions), not individual creatures. `node scripts/verify-skill-examples.mjs` checks the shipped example encounters still parse.
+
+## Monster importer skill
+
+`skills/monster-importer/` turns a stat block (usually a screenshot) into `.ds-monster` / `.ds-monster-group` files for the app's import flow. `reference/monster-schema.md` is the authoritative field spec and has to stay in sync with `src/models/monster.ts` and the read paths in `monster-panel.tsx` / `monster-logic.ts`; `reference/stat-block-mapping.md` covers reading a card. Run it with `node scripts/monster-tools.mjs run <script>.ts --out .` (copy `tools/author-monster.ts`), and check the shipped examples with `node scripts/monster-tools.mjs verify` — that bundles the skill's TypeScript through esbuild, because the checks import the app's own logic and render the real panels. A malice ability only reaches the GM from the group's `malice` array; one stored in `monster.features` renders in the builder only.

@@ -1,0 +1,260 @@
+{
+	"id": "water-wolf",
+	"name": "Water Wolf",
+	"description": "",
+	"picture": null,
+	"information": [],
+	"malice": [
+		{
+			"id": "water-wolf-malice-1",
+			"name": "See Through",
+			"description": "",
+			"type": "Malice Ability",
+			"data": {
+				"ability": {
+					"id": "water-wolf-malice-1",
+					"name": "See Through",
+					"description": "",
+					"type": {
+						"usage": "Maneuver",
+						"free": false,
+						"trigger": "",
+						"time": "",
+						"qualifiers": [],
+						"freeStrike": false
+					},
+					"keywords": [],
+					"distance": [
+						{
+							"type": "Self",
+							"value": 0,
+							"value2": 0,
+							"within": 0,
+							"special": "",
+							"qualifier": ""
+						}
+					],
+					"target": "Self",
+					"cost": 1,
+					"repeatable": false,
+					"minLevel": 1,
+					"sections": [
+						{
+							"type": "text",
+							"text": "The downpour turns invisible until the end of their turn. This effect ends early if the downpour takes damage or uses an ability."
+						}
+					]
+				},
+				"echelon": 1
+			}
+		}
+	],
+	"monsters": [
+		{
+			"id": "water-wolf-sudden-downpour",
+			"name": "Sudden Downpour",
+			"description": "",
+			"picture": null,
+			"level": 1,
+			"role": {
+				"type": "Ambusher",
+				"organization": "Horde"
+			},
+			"keywords": [
+				"Elemental",
+				"Water Wolf"
+			],
+			"encounterValue": 3,
+			"size": {
+				"value": 1,
+				"mod": "M"
+			},
+			"speed": {
+				"value": 8,
+				"modes": [
+					"swim"
+				]
+			},
+			"stamina": 15,
+			"stability": 2,
+			"freeStrikeDamage": 2,
+			"freeStrikeType": "Damage",
+			"characteristics": [
+				{
+					"characteristic": "Might",
+					"value": 2
+				},
+				{
+					"characteristic": "Agility",
+					"value": -2
+				},
+				{
+					"characteristic": "Reason",
+					"value": -3
+				},
+				{
+					"characteristic": "Intuition",
+					"value": 0
+				},
+				{
+					"characteristic": "Presence",
+					"value": -2
+				}
+			],
+			"features": [
+				{
+					"id": "water-wolf-sudden-downpour-ability-1",
+					"name": "Leap Upon",
+					"description": "",
+					"type": "Ability",
+					"data": {
+						"ability": {
+							"id": "water-wolf-sudden-downpour-ability-1",
+							"name": "Leap Upon",
+							"description": "",
+							"type": {
+								"usage": "Main Action",
+								"free": false,
+								"trigger": "",
+								"time": "",
+								"qualifiers": [],
+								"freeStrike": false
+							},
+							"keywords": [
+								"Melee",
+								"Strike",
+								"Weapon"
+							],
+							"distance": [
+								{
+									"type": "Melee",
+									"value": 1,
+									"value2": 0,
+									"within": 0,
+									"special": "",
+									"qualifier": ""
+								}
+							],
+							"target": "One creature or object",
+							"cost": "signature",
+							"repeatable": false,
+							"minLevel": 1,
+							"sections": [
+								{
+									"type": "roll",
+									"roll": {
+										"characteristic": [],
+										"bonus": 2,
+										"tier1": "4 damage; A < 0 bleeding (save ends)",
+										"tier2": "6 damage; A < 1 bleeding (save ends)",
+										"tier3": "7 damage; A < 2 bleeding (save ends)"
+									}
+								},
+								{
+									"type": "text",
+									"text": "Effect: The downpour can jump up to 3 squares before making the strike."
+								}
+							]
+						}
+					}
+				},
+				{
+					"id": "water-wolf-sudden-downpour-malice-1",
+					"name": "See Through",
+					"description": "",
+					"type": "Malice Ability",
+					"data": {
+						"ability": {
+							"id": "water-wolf-sudden-downpour-malice-1",
+							"name": "See Through",
+							"description": "",
+							"type": {
+								"usage": "Maneuver",
+								"free": false,
+								"trigger": "",
+								"time": "",
+								"qualifiers": [],
+								"freeStrike": false
+							},
+							"keywords": [],
+							"distance": [
+								{
+									"type": "Self",
+									"value": 0,
+									"value2": 0,
+									"within": 0,
+									"special": "",
+									"qualifier": ""
+								}
+							],
+							"target": "Self",
+							"cost": 1,
+							"repeatable": false,
+							"minLevel": 1,
+							"sections": [
+								{
+									"type": "text",
+									"text": "The downpour turns invisible until the end of their turn. This effect ends early if the downpour takes damage or uses an ability."
+								}
+							]
+						},
+						"echelon": 1
+					}
+				},
+				{
+					"id": "water-wolf-sudden-downpour-feature-2",
+					"name": "Aquavuken",
+					"description": "The downpour ignores difficult terrain and can move on top of water as if it were solid ground.",
+					"type": "Text",
+					"data": null
+				},
+				{
+					"id": "water-wolf-sudden-downpour-feature-3",
+					"name": "Pack Strong",
+					"description": "While adjacent to any ally, the downpour can’t be flanked or made frightened.",
+					"type": "Text",
+					"data": null
+				},
+				{
+					"id": "water-wolf-sudden-downpour-feature-4",
+					"name": "Water Weird",
+					"description": "Once on their turn as a free maneuver, the downpour can enter an adjacent body of water and reappear in an unoccupied space adjacent to another body of water within 5 squares. Any other water elemental can be treated as a body of water for the purpose of using this ability.",
+					"type": "Text",
+					"data": null
+				},
+				{
+					"id": "water-wolf-sudden-downpour-feature-5",
+					"name": "Damage Modifier",
+					"description": "",
+					"type": "Damage Modifier",
+					"data": {
+						"modifiers": [
+							{
+								"damageType": "Fire",
+								"type": "Immunity",
+								"value": 2,
+								"valueFromController": null,
+								"valueCharacteristics": [],
+								"valueCharacteristicMultiplier": 1,
+								"valuePerLevel": 0,
+								"valuePerEchelon": 0
+							}
+						]
+					}
+				}
+			],
+			"withCaptain": "",
+			"retainer": null,
+			"state": {
+				"staminaDamage": 0,
+				"staminaTemp": 0,
+				"recoveriesUsed": 0,
+				"conditions": [],
+				"reactionUsed": false,
+				"hidden": false,
+				"defeated": false
+			}
+		}
+	],
+	"addOns": []
+}

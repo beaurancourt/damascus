@@ -60,3 +60,22 @@ SMOKE_BASE=http://localhost:4173/damascus-gm/ node scripts/smoke-wide-encounter-
   the others, this one asserts — it exits non-zero if a check fails.
 - `verify-skill-examples.mjs` — Validates that the example YAML encounters
   shipped in `skills/encounter-builder/` parse cleanly.
+
+## Skill tools
+
+- `monster-tools.mjs` — Runs the monster importer skill's TypeScript tools,
+  which import the app's own logic and panels and therefore have to be bundled
+  with esbuild before node can run them.
+
+  ```
+  node scripts/monster-tools.mjs verify
+  node scripts/monster-tools.mjs run tmp/my-monster.ts --out .
+  ```
+
+  `verify` checks every example in
+  `skills/monster-importer/reference/examples/` — model checks plus real
+  `MonsterPanel`, `MonsterGroupPanel` and `EncounterRunPanel` renders. `run`
+  builds the files an authoring script describes (copy
+  `skills/monster-importer/tools/author-monster.ts`) and then checks the bytes
+  it wrote. Both exit non-zero on failure, so they are safe to wire into CI.
+  See `skills/monster-importer/SKILL.md`.

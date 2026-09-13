@@ -1,0 +1,181 @@
+# Damascus Monster File Schema
+
+The authoritative format for monster files the Damascus importer accepts. Two
+kinds of file, both plain JSON with tab indentation:
+
+| Extension | Contents | Imported from | Adds |
+| --- | --- | --- | --- |
+| `.ds-monster` (alias `.drawsteel-monster`) | one `Monster` object | Library → homebrew sourcebook → monster group → **+** → **Import a monster** | one monster to that group |
+| `.ds-monster-group` (alias `.drawsteel-monster-group`) | one `MonsterGroup` object | Library → Monster Groups tab → **Add** → **Import** | a whole group, monsters included |
+
+Both extensions are accepted because `Utils.saveFile` writes `.ds-<type>` while
+the two importers list both spellings in their `accept` attribute. The library's
+**Add → Import** button accepts `.ds-<category>` for every category, so
+`.ds-monster-group` is the only way to import malice that actually renders (see
+*Malice ownership* below).
+
+**Unlike the encounter YAML format, these files are a full model dump**, not a
+curated subset: `Utils.exportData` stringifies the whole object, runtime fields
+and all. So a file that mirrors what the app itself would export is always
+valid, and `state` / `retainer` / `picture` being present is expected rather
+than rejected.
+
+## Does anything read this file strictly?
+
+No. Both importers are `JSON.parse(...) as Monster` and then hand the object to
+the reducers, so nothing validates the shape on the way in. What saves you is
+the migration pass — `MonsterUpdateLogic.updateMonster` and
+`MonsterUpdateLogic.updateMonsterGroup` run on every sourcebook load
+(`SourcebookUpdateLogic.updateSourcebook`) and backfill:
+
+- `picture` → `null`
+- `role.organization` → `Platoon` if missing (`Band` → `Horde`, `Troop` → `Elite`)
+- `freeStrikeType` → `Damage`
+- `speed.modes` given as a string → split into an array
+- `state` → a fresh `MonsterState`
+- every feature through `FeatureUpdateLogic.updateFeature`, and every ability
+  through `AbilityUpdateLogic.updateAbility`
+- inside a group's `malice`: a feature typed `Ability` is re-typed
+  `Malice Ability`, and `echelon` defaults to 1
+- `monsterGroup.addOns` → `[]`
+
+Backfill is a safety net, not a licence: write the current shape so the file
+reads correctly in the builder and survives being re-exported.
+
+## Monster
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `id` | string | Any string. The importer re-ids on the way in (`copyMonster` gives a new guid). Keep it readable — `water-wolf-sudden-downpour` — because feature ids are built from it. |
+| `name` | string | The stat block title. `MonsterLogic.getMonsterName` falls back to `"<group name> <role>"` then `Unnamed Monster` when empty. |
+| `description` | string | Rarely used by monsters; the stat block header comes from `level` + `role`, not this. `''` is normal. |
+| `picture` | string \| null | `null`. |
+| `level` | number | `1`–`10`. `CreatureLogic.getEchelon`: 1–3 → echelon 1, 4–6 → 2, 7–9 → 3, 10 → 4. Drives malice echelon filtering. |
+| `role.type` | `MonsterRoleType` | `Ambusher`, `Artillery`, `Brute`, `Controller`, `Defender`, `Harrier`, `Hexer`, `Mount`, `Support`, `No Role`. |
+| `role.organization` | `MonsterOrganizationType` | `Minion`, `Horde`, `Platoon`, `Elite`, `Leader`, `Solo`, `Retainer`, `Champion`, `Companion`, `No Organization`. |
+| `keywords` | string[] | Free strings, printed comma-joined. Conventions in the official data: creature kind first, species/group second (`[ 'Humanoid', 'Time Raider' ]`, `[ 'Elemental' ]`). Multi-word keywords are normal. |
+| `encounterValue` | number | The EV on the card. For `Minion`, this is per squad of 4 — the panel prints `EV n for 4 minions`; every other organization prints `EV n`. |
+| `size.value` + `size.mod` | number + `'T' \| 'S' \| 'M' \| 'L' \| ''` | `{ value: 1, mod: 'M' }` → `1M`; `value > 1` ignores `mod` (`{ value: 4 }` → `4`). |
+| `speed.value` | number | The Speed number on the card. |
+| `speed.modes` | string[] | `[]`, or lowercase mode names: `[ 'swim' ]`, `[ 'climb', 'swim' ]`, `[ 'burrow' ]`, `[ 'fly' ]`. The stat block prints a separate `Movement: Swim` line (capitalised, comma-joined). |
+| `stamina` | number | |
+| `stability` | number | |
+| `freeStrikeDamage` | number | The Free Strike number. |
+| `freeStrikeType` | `DamageType` | `Damage` unless the card names a type, in which case the stat block prints a `Free Strike Type` line. |
+| `characteristics` | array of 5 | `{ characteristic, value }` for `Might`, `Agility`, `Reason`, `Intuition`, `Presence` — always all five, in that order. Build with `FactoryLogic.createCharacteristics(m, a, r, i, p)`. |
+| `withCaptain` | string | Minion-only text, printed under `With Captain`. `''` otherwise. |
+| `features` | `Feature[]` | See *Features*. |
+| `retainer` | `RetainerInfo` \| null | `null` for everything except `Retainer` organization. Build retainers through `FactoryLogic.createMonster` with a `retainer` argument so `featuresByLevel` is generated by `RetainerLogic`; don't hand-write it. |
+| `state` | `MonsterState` | Runtime damage/conditions. Export it as zeros; the app resets it per encounter. |
+
+## MonsterGroup
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `id` | string | Re-idded on import. |
+| `name` | string | Printed in the group entry and in the malice sentence: *"At the start of any **Water Wolf**'s turn…"*. |
+| `description` | string | Markdown, shown at the top of the group entry. |
+| `picture` | string \| null | `null`. |
+| `information` | `Element[]` | Lore blocks — each `{ id, name, description }` renders as a heading plus markdown. Use them for "Encountered in Groups"-style notes. |
+| `malice` | `Feature[]` | **The only malice that renders in play.** See below. |
+| `monsters` | `Monster[]` | The stat blocks. |
+| `addOns` | `FeatureAddOn[]` | Group-level customization; `[]` is fine. |
+
+## Malice ownership
+
+A malice ability can be stored two ways, and they are not equivalent:
+
+| Where | Shape | Renders in |
+| --- | --- | --- |
+| `monsterGroup.malice` | `FeatureType.MaliceAbility` (`FactoryLogic.feature.createMaliceAbility`) or `FeatureType.Malice` (`createMalice`, prose-only) | The library group entry's Malice section, the encounter builder's malice toggles, the encounter runner's spendable malice list (`EncounterLogic.getAllMaliceFeatures`), and the monster modal's Malice tab (`MonsterLogic.getMaliceOptions`) — all group-scoped. |
+| `monster.features` | `FeatureType.MaliceAbility` | **Only the builder**: the monster editor's feature list renders and edits any feature in the array regardless of `allowedTypes`, so it is visible and editable there. `MonsterPanel` filters features to `Ability`, `Text` and `Add-On`, and `getMaliceOptions` reads `MonsterData.malice` + `group.malice`, so a monster-owned malice ability appears nowhere in the stat block, the Malice tab, or the runner. |
+
+Verified by rendering both shapes through `MonsterPanel`, `MonsterGroupPanel`
+and `EncounterRunPanel`: the runner's output is byte-identical whether or not a
+monster owns a malice feature, and the group's copy is what puts the ability on
+screen. `echelon` on the group feature must be ≤ the echelon of the monster's
+level for the app to list it.
+
+Practical rule: **if the GM should be able to spend malice on it, it goes in the
+group's `malice`.** Write the monster-owned copy only when the intent is to
+record that this monster is the source of the ability (it is kept, editable and
+re-exportable, just not displayed in play), and give the two copies distinct ids
+so they can never collide.
+
+## Features
+
+Every feature is `{ id, name, description, type, data }` — `data` is `null` for
+`Text`. Build them with `FactoryLogic.feature.*` so the shape and defaults are
+right.
+
+| Stat block element | Feature | Factory |
+| --- | --- | --- |
+| Trait / passive | `Text` | `FactoryLogic.feature.create({ id, name, description })` |
+| Action, maneuver, trigger, villain action, signature | `Ability` | `FactoryLogic.feature.createAbility({ ability: FactoryLogic.createAbility({...}) })` |
+| Malice ability | `Malice Ability` | `FactoryLogic.feature.createMaliceAbility({ ability, echelon })` |
+| Malice (prose, no stat block) | `Malice` | `FactoryLogic.feature.createMalice({ id, name, cost, sections, echelon, icon })` |
+| Immunity / weakness | `Damage Modifier` | `FactoryLogic.feature.createDamageModifier({ id, modifiers: [ FactoryLogic.damageModifier.create({ damageType, modifierType, value }) ] })` |
+| Cannot-be / condition immunity | `Condition Immunity` | `FactoryLogic.feature.createConditionImmunity({ id, name, conditions })` |
+| Minion / group add-on | `Add-On` | `FactoryLogic.feature.createAddOn({...})` |
+
+`FactoryLogic.damageModifier.create` fills the `Modifier` fields
+(`valueFromController: null`, `valueCharacteristics: []`,
+`valueCharacteristicMultiplier: 1`, `valuePerLevel: 0`, `valuePerEchelon: 0`);
+there are siblings — `createPerLevel`, `createPerEchelon`,
+`createValuePlusPerLevel`, `createFirstLevelHigherLevel`,
+`createCharacteristic` — for damage that scales.
+
+## Ability
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `type` | `AbilityType` | `FactoryLogic.type.createMain()` / `createManeuver()` / `createMove()` / `createTrigger(trigger)` / `createFreeStrike()` / `createVillainAction()` / `createNoAction()`. Fills `usage`, `free`, `trigger`, `time`, `qualifiers`, `freeStrike`. |
+| `keywords` | `AbilityKeyword[]` | `Melee`, `Ranged`, `Strike`, `Weapon`, `Magic`, `Area`, `Charge`, `Psionic`, `Water`, … |
+| `distance` | `AbilityDistance[]` | `FactoryLogic.distance.createMelee(1)`, `createRanged(10)`, `createSelf()`, or `create({ type: AbilityDistanceType.Burst, value: 1, within: 10 })`. |
+| `target` | string | `One creature or object`, `Each enemy in the area`, `Self`, … |
+| `cost` | `number \| 'signature'` | `'signature'` prints a **Signature** pill; otherwise the app prints the usage (`Main Action`, `Maneuver`, …). For malice abilities the number is the malice cost. |
+| `repeatable` | boolean | |
+| `minLevel` | number | `1` unless the ability is level-gated. |
+| `sections` | array | In reading order: `FactoryLogic.createAbilitySectionRoll(powerRoll)`, `createAbilitySectionText('Effect: …')`, `createAbilitySectionField({ name, effect })`, `createAbilitySectionPackage(tag)`. |
+
+`PowerRoll` is `{ characteristic: Characteristic[], bonus: number, tier1, tier2,
+tier3 }` built with `FactoryLogic.createPowerRoll({...})`.
+
+- **Monster attacks are bonus-only**: `bonus: 2` with `characteristic: []`. That
+  is how every official monster strike is stored, and the app prints it as
+  `Power Roll + 2` — not `2d10 + 2`, which is the printed-book form.
+- Tests and anything the target resists with a characteristic go the other way:
+  `characteristic: [ Characteristic.Agility ]` with no bonus, printing
+  `Power Roll + Agility` (or `Highest Characteristic Test` when all five are
+  listed).
+- Write one roll section per ability; `AbilityLogic` warns to the console when
+  it finds more than one.
+
+## Text encoding in descriptions and tier text
+
+- Markdown is rendered (`<Markdown>`): `**bold**`, `*italic*`, `<code>…</code>`.
+- Potency is plain text in the form `A < 1`, `M < 2`, `R < 3`, `I < 4`, `P < 5`
+  (characteristic initial, spaces around `<`, number with sign). The app's regex
+  is `/[MARIP]\s*<\s*\[?(-?\d+|weak|average|avg|strong)\]?,?/gi`; the
+  `weak`/`average`/`strong` spellings are hero-sheet potency substitution and
+  should not appear in monster data.
+- Conditions are plain prose in the tier text — `4 damage; A < 0 bleeding (save
+  ends)`. `ConditionType` is only for condition-immunity features.
+- Sections that are not rolls are prefixed in prose when the printed card does:
+  `'Effect: The downpour can jump up to 3 squares before making the strike.'`
+
+## Import-time id handling
+
+`importLibraryElement` (library **Add → Import**) gives the group a new guid,
+re-ids `malice` and every monster's `features` through
+`FeatureLogic.changeFeatureIDs`, and re-ids each monster. Note that
+`changeFeatureIDs` handles `Ability` but not `Malice Ability`, so a malice
+feature's `data.ability.id` goes stale — pre-existing app behaviour for
+official group malice too, and harmless because every lookup keys off
+`feature.id`. The monster-group editor's **Import a monster** instead keeps the
+monster's features as they are and only replaces the monster's `id`.
+
+Keep ids unique within a file. A `Malice Ability` feature deliberately shares
+its id with the ability it wraps (that is what `createMaliceAbility` does), so
+when two copies of the same ability exist, give the ability objects different
+ids.
