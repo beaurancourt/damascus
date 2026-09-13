@@ -119,11 +119,14 @@ is the template's output, so they can never drift), the second checks it. If a
 change to the app breaks an example, that is the checker doing its job — fix the
 example or the checker, and record what you learned in a reference doc.
 
-**Known gap to revisit:** a monster-owned `Malice Ability` feature renders
-nowhere in play (`MonsterPanel` filters to `Ability`/`Text`/`Add-On`;
-`getMaliceOptions` reads global + group malice). If the app ever renders
-monster-owned malice in the stat block or offers it in the Malice tab, update
-*Malice ownership* in `monster-schema.md`, the ownership warning in
-`tools/monster-checks.ts`, and the "absent from the stat block (expected)" check
-in `tools/render-checks.ts` — that last one is an inverted assertion that will
-start failing, which is the point.
+**Known gap to revisit:** a monster-owned malice feature — `Malice Ability` or
+prose `Malice` — renders nowhere in play (`MonsterPanel` filters to
+`Ability`/`Text`/`Add-On`; `getMaliceOptions` reads global + group malice). If
+the app ever renders monster-owned malice in the stat block or offers it in the
+Malice tab, update *Malice ownership* in `monster-schema.md` and the ownership
+warning in `tools/monster-checks.ts`. `tools/render-checks.ts` guards the same
+claim behaviourally: it re-renders the stat block with the owned malice stripped
+and asserts the text is unchanged, so it fails — with a message pointing here —
+the moment the app starts rendering it. (It compares renders rather than names
+because a malice entry may legitimately share a name with an ability, as the
+gummy ball's "Bowl" augment does.)

@@ -106,9 +106,18 @@ const checkAbility = (report: Report, label: string, ability: Record<string, unk
 		const roll = section.roll!;
 		const hasCharacteristics = roll.characteristic.length > 0;
 		const hasBonus = roll.bonus !== 0;
-		report.check(`${label}: "${name}" roll ${i + 1} is bonus-only or characteristic-only`, !(hasCharacteristics && hasBonus), 'has both a characteristic list and a bonus');
+		const tierText = [ roll.tier1, roll.tier2, roll.tier3 ].join('\n');
+		// A maneuver whose tiers are nothing but potency ("A < 1 grabbed") is
+		// deliberately built with no bonus and no characteristic - official data
+		// does this too (Valok's Sputter, the wardog's Portal to the Void).
+		const potencyOnly = POTENCY.test(tierText);
+		report.check(`${label}: "${name}" roll ${i + 1} is bonus-only, characteristic-only, or potency-only`, !(hasCharacteristics && hasBonus), 'has both a characteristic list and a bonus');
 		if (!hasCharacteristics && !hasBonus) {
-			report.warn(`${label}: "${name}" roll ${i + 1} has neither a characteristic nor a bonus (the app will print "Power Roll + 0")`);
+			if (potencyOnly) {
+				report.ok(`${label}: "${name}" roll ${i + 1} is potency-only, with no attack bonus`);
+			} else {
+				report.warn(`${label}: "${name}" roll ${i + 1} has no characteristic, no bonus and no potency (the app will print "Power Roll + 0")`);
+			}
 		}
 		report.check(`${label}: "${name}" roll ${i + 1} has three tiers`, [ roll.tier1, roll.tier2, roll.tier3 ].every(t => typeof t === 'string' && t.trim().length > 0));
 	});

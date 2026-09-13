@@ -148,6 +148,11 @@ tier3 }` built with `FactoryLogic.createPowerRoll({...})`.
   `characteristic: [ Characteristic.Agility ]` with no bonus, printing
   `Power Roll + Agility` (or `Highest Characteristic Test` when all five are
   listed).
+- **Potency-only effects carry neither**: a maneuver whose tiers are nothing but
+  potency — `'A < 1 grabbed'` — is built as `createPowerRoll({ tier1, tier2,
+  tier3 })`, with no bonus and no characteristic. Valok's Sputter and the
+  wardog's Portal to the Void are written that way, and the app prints
+  `Power Roll + 0` for them just as it does for official content.
 - Write one roll section per ability; `AbilityLogic` warns to the console when
   it finds more than one.
 

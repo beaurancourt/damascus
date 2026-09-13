@@ -9,6 +9,7 @@ import { FeatureType } from '@/enums/feature-type';
 import { Format } from '@/utils/format';
 import { FormatLogic } from '@/logic/format-logic';
 import { MonsterGroupPanel } from '@/components/panels/elements/monster-group-panel/monster-group-panel';
+import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { MonsterPanel } from '@/components/panels/elements/monster-panel/monster-panel';
 import { Monster } from '@/models/monster';
 import { MonsterGroup } from '@/models/monster-group';
@@ -89,11 +90,28 @@ export const checkStatBlockRenders = (report: Report, monster: Monster, group: M
 		});
 	});
 
-	// A monster-owned malice ability is deliberately absent from the stat block;
-	// say so rather than letting it look like a bug in the file.
-	monster.features.filter(f => f.type === FeatureType.MaliceAbility || f.type === FeatureType.Malice).forEach(f => {
-		report.check(`${label}: monster-owned malice "${f.name}" is absent from the stat block (expected)`, !text.includes(f.name));
-	});
+	if (monster.withCaptain) {
+		report.check(`${label}: stat block shows the With Captain line`, text.includes(monster.withCaptain));
+	}
+
+	if (monster.role.organization === MonsterOrganizationType.Minion) {
+		// Minions are priced per squad of four, whatever the card's EV line says.
+		report.check(`${label}: stat block prices the minion squad`, text.includes('for 4 minions'));
+	}
+
+	// A monster-owned malice feature is deliberately absent from the stat block.
+	// Compare against a render with those features stripped rather than searching
+	// for their names: a malice entry called "Bowl" sitting beside a signature
+	// ability called "Bowl" would fool a name search. If the app ever renders
+	// monster-owned malice, the two renders diverge and this fails - which is the
+	// signal to update the malice ownership notes in the reference docs.
+	const ownedMalice = monster.features.filter(f => f.type === FeatureType.MaliceAbility || f.type === FeatureType.Malice);
+	if (ownedMalice.length > 0) {
+		const stripped = Utils.copy(monster);
+		stripped.features = stripped.features.filter(f => f.type !== FeatureType.MaliceAbility && f.type !== FeatureType.Malice);
+		const strippedText = renderText(React.createElement(MonsterPanel, { monster: stripped, monsterGroup: group, sourcebooks, mode: PanelMode.Full }), `${label}: stat block without its owned malice`, report);
+		report.check(`${label}: monster-owned malice (${ownedMalice.map(f => f.name).join(', ')}) renders nowhere in the stat block (expected)`, strippedText !== '' && strippedText === text, 'stripping the monster-owned malice changed the stat block, so the app renders it now');
+	}
 };
 
 export const checkGroupEntryRenders = (report: Report, group: MonsterGroup, label: string) => {

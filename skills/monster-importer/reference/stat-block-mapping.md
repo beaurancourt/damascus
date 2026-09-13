@@ -63,6 +63,13 @@ put the bonus in `characteristic`.
 There is a `Movement Mode` feature type in the model, but monsters use speed
 modes; official data always does.
 
+**An attack with no printed `2d10 + N` has no bonus.** Cards print
+`Corrode 2d10 + 2` for strikes, but a maneuver like `Oozen Grasp` shows only
+potency tiers (`≤11 A < 0 grabbed`). Encode that as a power roll with neither a
+bonus nor a characteristic — the same shape as Valok's Sputter and the wardog's
+Portal to the Void. The app prints `Power Roll + 0` for it, exactly as it does
+for those official abilities.
+
 **Malice belongs to the group.** The only malice that renders or can be spent is
 `monsterGroup.malice`. Put a card's malice abilities there as
 `Malice Ability` features with `echelon` ≤ the echelon of the monster's level.
