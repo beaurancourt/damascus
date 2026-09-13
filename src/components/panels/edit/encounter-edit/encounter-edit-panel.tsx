@@ -1084,6 +1084,10 @@ const MonsterSlotPanel = (props: MonsterSlotPanelProps) => {
 									allowClear={true}
 									autoFocus={true}
 									style={{ flex: '1 1 0', minWidth: 0 }}
+									// Committed per keystroke, not debounced: closing the
+									// editor or saving inside the debounce window dropped
+									// the name that was just typed.
+									debounceMs={0}
 									onChange={value => props.setSlotName(props.groupID, props.slot.id, value)}
 								/>
 								:

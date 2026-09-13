@@ -13,12 +13,14 @@ interface Props {
 	autoFocus?: boolean;
 	suffix?: ReactNode;
 	style?: CSSProperties;
+	/** Milliseconds to coalesce keystrokes for. Defaults to 500; 0 commits every keystroke. */
+	debounceMs?: number;
 	onChange: (value: string) => void;
 }
 
 export const TextInput = (props: Props) => {
 	const [ value, setValue ] = useState(props.value);
-	const debouncedValue = useDebounce(value);
+	const debouncedValue = useDebounce(value, props.debounceMs);
 
 	useEffect(
 		() => setValue(props.value),

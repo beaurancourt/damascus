@@ -101,6 +101,20 @@ console.log(`cleared query: echelons=${browse.echelons} monsterGroups=${browse.e
 if (browse.echelons === 0) fail.push('clearing the search left the picker empty');
 if (browse.expanders === 0) fail.push('browse mode has no monster groups to open');
 
+// 7. renaming a monster sticks when the editor is closed straight away - which
+// is what happens when you type a name and immediately click the pencil again.
+const renameRow = page.locator('.slot-row').first();
+const stockName = (await renameRow.innerText()).split('\n')[0].trim();
+await renameRow.locator('button[title="Rename"]').first().click();
+await page.waitForTimeout(400);
+await renameRow.locator('input').first().click();
+await page.keyboard.type('Smoke Rename', { delay: 40 });
+await renameRow.locator('button[title="Rename"]').first().click();
+await page.waitForTimeout(700);
+const renamed = (await renameRow.innerText()).split('\n')[0].trim();
+console.log(`rename: "${stockName}" -> "${renamed}"`);
+if (renamed !== 'Smoke Rename') fail.push(`rename did not stick (row reads "${renamed}")`);
+
 await page.screenshot({ path: 'tmp/audit/builder-workflow.png' });
 if (errors.length) fail.push(`page errors ${JSON.stringify(errors)}`);
 await ctx.close();
