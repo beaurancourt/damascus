@@ -40,6 +40,10 @@ type Row =
 	| { kind: 'terrain'; rowID: string; terrain: Terrain; name: string; statBlockKey: string };
 
 const monsterBlockKey = (monsterID: string) => `monster-${monsterID}`;
+// A slot renamed in the builder ("Vurkor") is its own character and gets its own
+// reference block, titled with the name the table uses. Unrenamed slots share
+// one block per species, so a squad of identical goblins stays one stat block.
+const slotBlockKey = (slot: EncounterSlot) => slot.name ? `monster-slot-${slot.id}` : monsterBlockKey(slot.monsterID);
 const terrainBlockKey = (terrainID: string) => `terrain-${terrainID}`;
 
 export const EncounterRunPanel = (props: Props) => {
@@ -227,7 +231,7 @@ export const EncounterRunPanel = (props: Props) => {
 					slot,
 					monster: m,
 					name: m.name,
-					statBlockKey: monsterBlockKey(slot.monsterID)
+					statBlockKey: slotBlockKey(slot)
 				});
 			});
 		});
@@ -250,14 +254,16 @@ export const EncounterRunPanel = (props: Props) => {
 	encounter.groups.forEach(g => {
 		g.slots.forEach(slot => {
 			if (slot.monsters.length === 0) { return; }
-			const key = monsterBlockKey(slot.monsterID);
+			const key = slotBlockKey(slot);
 			if (!statBlockMap.has(key)) {
 				// Reference block reads as the species, not "Abyssal Hyena 1".
 				// Prefer the source monster (sourcebook entry) so the title and
-				// stats reflect the un-numbered template.
+				// stats reflect the un-numbered template - except that a renamed
+				// slot keeps the name the table actually calls it.
 				const source = SourcebookLogic.getMonster(props.sourcebooks, slot.monsterID);
 				const monster = source || slot.monsters[0];
-				statBlockMap.set(key, { key, kind: 'monster', monster, name: monster.name });
+				const renamed = slot.name ? { ...monster, name: slot.name } : monster;
+				statBlockMap.set(key, { key, kind: 'monster', monster: renamed, name: renamed.name });
 			}
 		});
 	});

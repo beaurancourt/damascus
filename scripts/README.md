@@ -58,6 +58,10 @@ SMOKE_BASE=http://localhost:4173/damascus-gm/ node scripts/smoke-wide-encounter-
   paste bad YAML and expect the error, paste a shipped example and expect an
   EV preview, then save and expect to land on the encounter edit page. Unlike
   the others, this one asserts — it exits non-zero if a check fails.
+- `smoke-encounter-rename.mjs` — Renames a monster in the builder and follows
+  the name into play: the builder row, the builder's "Show stat block" popup,
+  and the runner's tracker rows and reference stat block all have to read the
+  new name. Asserts — exits non-zero. Needs the GM site (port 5174).
 - `verify-skill-examples.mjs` — Validates that the example YAML encounters
   shipped in `skills/encounter-builder/` parse cleanly.
 

@@ -1096,7 +1096,7 @@ const MonsterSlotPanel = (props: MonsterSlotPanelProps) => {
 						<ButtonGroup
 							buttons={[
 								{ type: 'button', icon: editingName ? <EditFilled style={{ color: 'rgb(22, 119, 255)' }} /> : <EditOutlined />, tooltip: 'Rename', onClick: () => setEditingName(!editingName) },
-								{ type: 'button', icon: <InfoCircleOutlined />, tooltip: 'Show stat block', onClick: () => props.showMonster(monster, monsterGroup) },
+								{ type: 'button', icon: <InfoCircleOutlined />, tooltip: 'Show stat block', onClick: () => props.showMonster({ ...monster, name: displayName }, monsterGroup) },
 								{ type: 'button', icon: showCustomize ? <ToolFilled style={{ color: 'rgb(64, 150, 255)' }} /> : <ToolOutlined />, tooltip: 'Customize', onClick: () => setShowCustomize(!showCustomize) },
 								{ type: 'dropdown', icon: <EllipsisOutlined />, popover: getMenu() }
 							]}
