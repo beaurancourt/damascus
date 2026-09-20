@@ -5,11 +5,8 @@ import { HashRouter } from 'react-router';
 import { Main } from '@/components/main/main.tsx';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { initializeTheme } from '@/utils/initialize-theme';
 
 import './index.scss';
-
-initializeTheme();
 
 // Register Service Worker for PWA functionality. import.meta.env.BASE_URL
 // is the Vite-injected base path so we work at both '/' (dev) and

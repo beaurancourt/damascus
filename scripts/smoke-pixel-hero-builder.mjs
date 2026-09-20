@@ -21,7 +21,6 @@ const log = msg => console.log(`>>> ${msg}`);
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
-await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 
 // The site lands on the hero list; "Create a New Hero" lives in its Add menu.
 await page.locator('.app-header button:has([aria-label="plus"])').first().click();

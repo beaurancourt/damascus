@@ -59,7 +59,7 @@
 // AntD (e.g. the Retinue squad's Expander, a Collapse) sets its own content
 // color, which otherwise leaves the stat block text black-on-dark. Pin it to a
 // bright value so the stats read on the dark background.
-html[data-theme="dark"] {
+html {
 	.monster-panel {
 		color: rgba(255, 255, 255, 0.92);
 

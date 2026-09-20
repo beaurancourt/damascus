@@ -25,7 +25,6 @@ const log = msg => console.log(`>>> ${msg}`);
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
-await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 
 // Navigate to encounters library
 await page.evaluate(() => location.hash = '#/library/encounter');

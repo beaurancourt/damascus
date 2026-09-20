@@ -1,5 +1,4 @@
 import { Button, Drawer, Segmented, Select, Space } from 'antd';
-import { MoonOutlined, SettingOutlined, SunOutlined } from '@ant-design/icons';
 import { useDataManager, useHeroes, useOptions } from '@/contexts/data-context';
 import { AbilityData } from '@/data/ability-data';
 import { AppMode } from '@/utils/app-mode';
@@ -14,7 +13,6 @@ import { StandardAbilitySelectModal } from '@/components/modals/select/standard-
 import { Toggle } from '@/components/controls/toggle/toggle';
 import { Utils } from '@/utils/utils';
 import { useState } from 'react';
-import { useTheme } from '@/hooks/use-theme';
 
 import pbds from '@/assets/powered-by-draw-steel.png';
 import pkg from '../../../../package.json';
@@ -26,7 +24,6 @@ interface Props {
 }
 
 export const SettingsModal = (props: Props) => {
-	const { themeMode, setTheme } = useTheme();
 	const [ options, setOptions ] = useState<Options>(Utils.copy(useOptions()));
 	const [ standardAbilitiesMode, setStandardAbilitiesMode ] = useState<string>(() => {
 		if (options.shownStandardAbilities.length === 0) { return 'none'; }
@@ -50,22 +47,6 @@ export const SettingsModal = (props: Props) => {
 	// Sections are headings with their contents under them, not collapsibles.
 	// There are few enough settings that hiding them behind a click only made
 	// people hunt for the one they wanted.
-	const getAppearance = () => (
-		<div className='settings-section'>
-			<HeaderText level={2}>Appearance</HeaderText>
-			<Segmented
-				block={true}
-				value={themeMode}
-				onChange={setTheme}
-				options={[
-					{ label: 'Light', value: 'light', icon: <SunOutlined /> },
-					{ label: 'System', value: 'system', icon: <SettingOutlined /> },
-					{ label: 'Dark', value: 'dark', icon: <MoonOutlined /> }
-				]}
-			/>
-		</div>
-	);
-
 	const getHeroesSection = () => {
 		const setShownStandardAbilities = (value: string | string[]) => {
 			updateOption('shownStandardAbilities', [ value ].flat(1));
@@ -272,7 +253,6 @@ export const SettingsModal = (props: Props) => {
 			content={
 				<div className='settings-modal'>
 					<Space orientation='vertical' style={{ width: '100%' }}>
-						{getAppearance()}
 						{getHeroesSection()}
 						{
 							// Both of these configure running an encounter, which is

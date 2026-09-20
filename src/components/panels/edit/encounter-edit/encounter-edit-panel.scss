@@ -874,35 +874,6 @@ $bronze-dim: rgba(201, 164, 90, 0.4);
 	}
 }
 
-html:not([data-theme="dark"]) {
-	.encounter-edit-stream .monster-filter-panel,
-	.encounter-edit-stream .terrain-filter-panel {
-		background: rgba(0, 0, 0, 0.03);
-
-		.ant-tag-checkable {
-			color: rgba(0, 0, 0, 0.7);
-
-			&:hover {
-				color: rgba(0, 0, 0, 0.88);
-			}
-
-			&.ant-tag-checkable-checked {
-				color: darken($bronze, 18%);
-			}
-		}
-
-		.ant-input-affix-wrapper,
-		.ant-select .ant-select-selector {
-			background: rgba(255, 255, 255, 0.7) !important;
-
-			.ant-input,
-			.ant-select-selection-placeholder {
-				color: rgba(0, 0, 0, 0.85) !important;
-			}
-		}
-	}
-}
-
 // ----- Inner monster-group expanders inside an echelon section --------------
 // The Expanders for each monster band ("Demon", "Dragon, Crucible") inside an
 // echelon. Bronze-tinted; no overpowering shadow.
@@ -941,53 +912,6 @@ html:not([data-theme="dark"]) {
 // =============================================================================
 // LIGHT THEME — softer surface treatments, same bronze accents
 // =============================================================================
-html:not([data-theme="dark"]) {
-	.encounter-edit-panel {
-		.encounter-edit-stream {
-			.encounter-warning {
-				background: rgba(252, 240, 240, 0.96);
-				color: rgba(120, 30, 30, 0.9);
-			}
-
-			.encounter-section > .header-text-panel.level-2 .header-text { color: rgba(0, 0, 0, 0.85); }
-			.encounter-section > .header-text-panel.level-3 .header-text { color: rgba(0, 0, 0, 0.55); }
-			.encounter-section input[type="text"] {
-				color: rgba(0, 0, 0, 0.88);
-				&::placeholder { color: rgba(0, 0, 0, 0.3); }
-			}
-
-			.encounter-group-panel,
-			.encounter-terrain-panel {
-				.slot-row,
-				.terrain-row,
-				.customize-panel,
-				.group-edit-row {
-					background: rgba(255, 255, 255, 0.7);
-					color: rgba(0, 0, 0, 0.85);
-				}
-			}
-
-			.ant-space .dimmed-text.centered-text {
-				color: rgba(0, 0, 0, 0.45);
-				background: rgba(0, 0, 0, 0.03);
-			}
-		}
-	}
-
-	.monster-list-item,
-	.terrain-list-item {
-		background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.4));
-		border-color: rgba(201, 164, 90, 0.35);
-		color: rgba(0, 0, 0, 0.85);
-
-		@media (hover: hover) {
-			&:hover {
-				background: linear-gradient(180deg, rgba(201, 164, 90, 0.14), rgba(201, 164, 90, 0.04));
-			}
-		}
-	}
-}
-
 // =============================================================================
 // LEGACY desktop two-column layout (unused but kept for safety)
 // =============================================================================

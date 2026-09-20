@@ -663,13 +663,3 @@
 }
 
 // --- Light theme ------------------------------------------------------------
-html:not([data-theme="dark"]) {
-	.encounter-run-panel {
-		.encounter-run-tracker > .header-text-panel .header-text { color: rgba(0, 0, 0, 0.88); }
-		.tracker-row {
-			background: rgba(0, 0, 0, 0.03);
-			.row-name { color: rgba(0, 0, 0, 0.88); }
-			.row-sub { color: rgba(0, 0, 0, 0.5); }
-		}
-	}
-}

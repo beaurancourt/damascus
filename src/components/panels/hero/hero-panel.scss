@@ -212,27 +212,3 @@
 // =============================================================================
 // LIGHT THEME — softer surfaces, same bronze accents
 // =============================================================================
-html:not([data-theme="dark"]) {
-	.hero-panel {
-		> .header-text-panel .header-text { color: rgba(0, 0, 0, 0.88); }
-		.center-content {
-			> .header-text-panel .header-text,
-			> .abilities-section > .header-text-panel .header-text,
-			> .hero-skills-section > .header-text-panel .header-text,
-			> .hero-languages-section > .header-text-panel .header-text {
-				color: rgba(0, 0, 0, 0.88);
-			}
-		}
-
-		.selectable-row {
-			background: linear-gradient(rgb(255, 255, 255), rgb(250, 250, 250));
-			border-color: rgba(201, 164, 90, 0.35);
-		}
-
-		.hero-skills-section,
-		.hero-languages-section {
-			.ds-text { color: rgba(0, 0, 0, 0.85); }
-			.ant-tag { color: darken($bronze, 22%); }
-		}
-	}
-}

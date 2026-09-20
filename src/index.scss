@@ -189,15 +189,6 @@ b {
 	}
 }
 
-html:not([data-theme="dark"]) {
-	.feature-done-badge {
-		color: #2d6b54;
-		background: rgba(74, 153, 120, 0.1);
-
-		.anticon { color: #2d6b54; }
-	}
-}
-
 ul {
 	padding-inline-start: 15px;
 	margin-block-start: 5px;
@@ -393,7 +384,10 @@ td {
 	color: rgb(140, 200, 250);
 }
 
-html[data-theme="dark"] {
+html {
+	// Dark is the only theme: this tells the browser to draw scrollbars, form
+	// controls and the like dark too. It replaced a runtime style assignment.
+	color-scheme: dark;
 	color: rgba(255, 255, 255, 0.88);
 	background-color: rgb(55, 55, 55);
 

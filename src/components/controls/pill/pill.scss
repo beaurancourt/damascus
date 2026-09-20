@@ -22,14 +22,3 @@
 	}
 }
 
-html:not([data-theme="dark"]) {
-	.pill {
-		background-color: rgba(201, 164, 90, 0.12);
-		color: darken($bronze, 22%);
-
-		&.satisfied {
-			background-color: rgba(74, 153, 120, 0.12);
-			color: darken(#4a9978, 8%);
-		}
-	}
-}

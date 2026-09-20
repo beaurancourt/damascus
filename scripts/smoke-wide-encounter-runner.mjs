@@ -18,7 +18,6 @@ const log = msg => console.log(`>>> ${msg}`);
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
-await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 
 // 1. Build a hero, if this site has hero tools. The GM site doesn't - heroes
 // live on the player site - so the runner is exercised without one there.

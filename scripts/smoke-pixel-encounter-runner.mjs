@@ -24,7 +24,6 @@ const log = msg => console.log(`>>> ${msg}`);
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
-await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 
 // 1. If this site has heroes, make one so the session has a player to run with.
 // The GM site doesn't - heroes live on the player site - so this is optional

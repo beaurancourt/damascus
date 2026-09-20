@@ -53,16 +53,9 @@
 	}
 }
 
-html[data-theme="dark"] {
+html {
 	.gauge-info {
 		color: rgba(255, 255, 255, 0.92);
 	}
 }
 
-html:not([data-theme="dark"]) {
-	.health-gauge {
-		.ant-progress-circle-trail {
-			stroke: rgba(0, 0, 0, 0.08) !important;
-		}
-	}
-}

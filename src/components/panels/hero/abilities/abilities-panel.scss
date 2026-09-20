@@ -38,8 +38,3 @@
 	}
 }
 
-html:not([data-theme="dark"]) {
-	.abilities-section .abilities-list > * {
-		background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.45));
-	}
-}

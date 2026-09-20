@@ -27,7 +27,6 @@ const log = msg => console.log(`>>> ${msg}`);
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
-await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
 
 // The site lands on the hero list, whose Add menu holds the pregens behind an
 // expander. Open it and take the first one ("Ashley" or whatever).
