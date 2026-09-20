@@ -35,18 +35,44 @@ export class EncounterLogic {
 
 	// Numbering is per group and runs across the whole group, not per monster
 	// type, so a director can call out "number 3" without first agreeing which
-	// goblin. The single owner of monster numbering: call it after anything
-	// that adds or removes monsters in a group.
+	// goblin. A number is handed out once and then kept: removing a monster must
+	// not renumber the ones left, because the table has been calling them by
+	// number all fight. Call it when monsters are added, never when they leave.
 	static renumberGroup = (group: EncounterGroup) => {
 		const monsters = group.slots.flatMap(s => s.monsters);
 
-		// Strip any number this monster already carries, in either the current
-		// '[1] Goblin' form or the older 'Goblin 1' suffix, so repeated
-		// renumbering doesn't stack prefixes.
+		// The number a monster already carries, in either the current '[1] Goblin'
+		// form or the older 'Goblin 1' suffix.
+		const numberOf = (name: string) => {
+			const match = name.match(/^\[(\d+)\]\s*/) ?? name.match(/\s+(\d+)$/);
+			return match ? Number.parseInt(match[1], 10) : undefined;
+		};
+
 		const baseName = (name: string) => name.replace(/^\[\d+\]\s*/, '').replace(/\s+\d+$/, '');
 
-		monsters.forEach((monster, n) => {
-			monster.name = monsters.length === 1 ? baseName(monster.name) : `[${n + 1}] ${baseName(monster.name)}`;
+		// A lone monster needs no number; drop any it inherited.
+		if (monsters.length < 2) {
+			monsters.forEach(monster => {
+				monster.name = baseName(monster.name);
+			});
+			return;
+		}
+
+		// Every monster in a group of two or more is numbered, whatever its type.
+		// A monster that already has a number keeps it; only the ones without one
+		// take the next free number, so this is safe to call again after an add.
+		const claimed = new Set<number>();
+		monsters.forEach(monster => {
+			const existing = numberOf(monster.name);
+			let number = existing !== undefined && !claimed.has(existing) ? existing : undefined;
+			if (number === undefined) {
+				number = 1;
+				while (claimed.has(number)) {
+					number += 1;
+				}
+			}
+			claimed.add(number);
+			monster.name = `[${number}] ${baseName(monster.name)}`;
 		});
 	};
 

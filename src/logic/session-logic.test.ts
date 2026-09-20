@@ -46,7 +46,7 @@ describe('startEncounter monster numbering', () => {
 		expect(namesIn(result, 0)).toEqual([ 'Goblin Warrior' ]);
 	});
 
-	test('renumbering a group closes the gap when a monster is removed', () => {
+	test('removing a monster leaves the survivors on the numbers they had', () => {
 		const group = FactoryLogic.createEncounterGroup();
 		const slot = FactoryLogic.createEncounterSlot('goblin-9');
 		slot.monsters = [
@@ -59,10 +59,26 @@ describe('startEncounter monster numbering', () => {
 		EncounterLogic.renumberGroup(group);
 		expect(slot.monsters.map(m => m.name)).toEqual([ '[1] Goblin Warrior', '[2] Goblin Warrior', '[3] Goblin Warrior' ]);
 
-		// Drop the middle one; the survivors renumber 1, 2 rather than 1, 3.
+		// Drop the middle one. The gap stays: [1] and [3] are the names the table
+		// has been using, so renumbering them would rename monsters mid-fight.
 		slot.monsters = slot.monsters.filter(m => m.id !== 'b');
 		EncounterLogic.renumberGroup(group);
-		expect(slot.monsters.map(m => m.name)).toEqual([ '[1] Goblin Warrior', '[2] Goblin Warrior' ]);
+		expect(slot.monsters.map(m => m.name)).toEqual([ '[1] Goblin Warrior', '[3] Goblin Warrior' ]);
+	});
+
+	test('a monster added to a numbered group takes the next free number', () => {
+		const group = FactoryLogic.createEncounterGroup();
+		const slot = FactoryLogic.createEncounterSlot('goblin-9');
+		slot.monsters = [
+			{ id: 'a', name: '[1] Goblin Warrior' } as Monster,
+			{ id: 'c', name: '[3] Goblin Warrior' } as Monster,
+			{ id: 'd', name: 'Goblin Warrior' } as Monster
+		];
+		group.slots = [ slot ];
+
+		EncounterLogic.renumberGroup(group);
+
+		expect(slot.monsters.map(m => m.name)).toEqual([ '[1] Goblin Warrior', '[3] Goblin Warrior', '[2] Goblin Warrior' ]);
 	});
 
 	test('renumbering strips the older "Goblin 1" suffix instead of stacking', () => {

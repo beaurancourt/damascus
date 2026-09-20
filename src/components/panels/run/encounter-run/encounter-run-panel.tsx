@@ -164,8 +164,8 @@ export const EncounterRunPanel = (props: Props) => {
 		copy.groups.forEach(g => {
 			g.slots.forEach(s => { s.monsters = s.monsters.filter(m => m.id !== monsterID); });
 			g.slots = g.slots.filter(s => s.monsters.length > 0);
-			// Close the gap the removed monster left rather than skipping a number.
-			EncounterLogic.renumberGroup(g);
+			// The survivors keep their numbers: the gap they leave is deliberate,
+			// so a monster stays the number the table has been calling it.
 		});
 		copy.groups = copy.groups.filter(g => g.slots.length > 0);
 		commit(copy);

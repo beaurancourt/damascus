@@ -62,12 +62,29 @@ if (await play.count() === 0) {
 	await page.waitForTimeout(2200);
 }
 
+const rowNames = async (groupIndex = 0) =>
+	(await page.locator('.tracker-group').nth(groupIndex).locator('.tracker-row .row-name').allInnerTexts()).map(t => t.trim());
+
 const before = await runnerGroups();
 console.log(`runner groups before removal: ${JSON.stringify(before)}`);
 if (before.length !== 2) fail.push(`the runner shows ${before.length} groups, expected 2`);
 if (JSON.stringify(before) !== JSON.stringify(built)) fail.push(`the runner renamed the builder's groups: ${JSON.stringify(built)} -> ${JSON.stringify(before)}`);
 
-// 3. Clear the first squad and check the survivors kept their names. The check
+// 3. Monsters keep their numbers too: removing one must not renumber the rest,
+// since the table has been calling them "[2]" and "[3]" all fight.
+const numberedBefore = await rowNames(0);
+console.log(`group 1 monsters:             ${JSON.stringify(numberedBefore)}`);
+if (numberedBefore.length < 3) fail.push(`expected a squad of 3+ monsters to number, saw ${JSON.stringify(numberedBefore)}`);
+if (!numberedBefore.every(n => /^\[\d+\] /.test(n))) fail.push(`monsters are not numbered: ${JSON.stringify(numberedBefore)}`);
+const removedMonster = numberedBefore[1];
+await page.locator('.tracker-group').first().locator('.tracker-row .row-delete').nth(1).click({ force: true });
+await page.waitForTimeout(900);
+const numberedAfter = await rowNames(0);
+const expectedRows = numberedBefore.filter((_, n) => n !== 1);
+console.log(`removed ${JSON.stringify(removedMonster)}; the rest should stay ${JSON.stringify(expectedRows)}, saw ${JSON.stringify(numberedAfter)}`);
+if (JSON.stringify(numberedAfter) !== JSON.stringify(expectedRows)) fail.push(`monsters were renumbered: expected ${JSON.stringify(expectedRows)}, saw ${JSON.stringify(numberedAfter)}`);
+
+// 4. Clear the first squad and check the survivors kept their names. The check
 // is set-minus-the-removed-name, not "the old names still appear somewhere": a
 // survivor renumbered onto the deleted group's name would satisfy the weaker
 // version, which is exactly the bug.

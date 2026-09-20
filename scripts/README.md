@@ -63,10 +63,11 @@ SMOKE_BASE=http://localhost:4173/damascus-gm/ node scripts/smoke-wide-encounter-
   and the runner's tracker rows and reference stat block all have to read the
   new name. Asserts — exits non-zero. Needs the GM site (port 5174).
 - `smoke-encounter-run-groups.mjs` — Builds a two-group encounter, starts it,
-  then removes one group: the survivor has to keep the name it had. Group names
-  are pinned when a group is created (and when an older encounter loads), so
-  they no longer shift with a group's position. Asserts — exits non-zero. Needs
-  the GM site (port 5174).
+  then removes a monster and a whole group: whatever is left has to keep the
+  names and numbers it had. A group's name is pinned when the group is created
+  (and when an older encounter loads), and a monster's number is handed out once
+  and kept, so neither shifts with a group's position or with a removal.
+  Asserts — exits non-zero. Needs the GM site (port 5174).
 - `verify-skill-examples.mjs` — Validates that the example YAML encounters
   shipped in `skills/encounter-builder/` parse cleanly.
 
