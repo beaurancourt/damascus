@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { AbilityUsage } from '@/enums/ability-usage';
 import { FactoryLogic } from '@/logic/factory-logic';
+import { FeatureAbility } from '@/models/feature';
+import { FeatureType } from '@/enums/feature-type';
 import { HeroLogic } from '@/logic/hero-logic';
 import { MonsterOrganizationType } from '@/enums/monster-organization-type';
 import { MonsterRoleType } from '@/enums/monster-role-type';
+import { SourcebookLogic } from '@/logic/sourcebook-logic';
 import { SummonLogic } from '@/logic/summon-logic';
+import { Utils } from '@/utils/utils';
+import { circleOfGraves } from '@/data/classes/summoner/graves';
 
 const createMinionSummon = () => {
 	return FactoryLogic.createSummon({
@@ -85,5 +91,34 @@ describe('SummonLogic formation bonuses', () => {
 
 		expect(monster.stamina).toBe(2);
 		expect(monster.stability).toBe(0);
+	});
+});
+
+describe('Circle of Graves', () => {
+	it('offers Rise! as a triggered action rather than a block of prose', () => {
+		const features = circleOfGraves.featuresByLevel.flatMap(level => level.features);
+		const rise = features.find(f => f.name === 'Rise!');
+
+		expect(rise).toBeDefined();
+		expect(rise!.type).toBe(FeatureType.Ability);
+
+		const ability = (rise as FeatureAbility).data.ability;
+		// This is what puts it in the sheet's Triggered Actions section.
+		expect(ability.type.usage).toBe(AbilityUsage.Trigger);
+		expect(ability.type.trigger).toContain('dies unwillingly');
+		expect(ability.sections.length).toBeGreaterThan(0);
+	});
+
+	it('reaches the ability list the sheet groups into Triggered Actions', () => {
+		const sourcebooks = SourcebookLogic.getSourcebooks([]);
+		const hero = FactoryLogic.createHero([]);
+		hero.class = Utils.copy(sourcebooks.flatMap(sb => sb.classes).find(c => c.id === 'class-summoner')!);
+		hero.class.subclasses.forEach(sc => sc.selected = (sc.id === circleOfGraves.id));
+
+		const abilities = HeroLogic.getAbilities(hero, sourcebooks, []).map(entry => entry.ability);
+		const rise = abilities.find(a => a.name === 'Rise!');
+
+		expect(rise).toBeDefined();
+		expect(rise!.type.usage).toBe(AbilityUsage.Trigger);
 	});
 });

@@ -31,13 +31,17 @@ You can touch the corpse of a creature who died within the past week and ask the
 
 The corpse can also choose to refuse to answer or lie, especially if you were the one to kill them in the first place.`
 				}),
-				FactoryLogic.feature.create({
-					id: 'summoner-4-1-3',
-					name: 'Rise!',
-					description: `
-Once per round, when a creature dies unwillingly within your Summoner’s Range, you can use a triggered action to summon a signature undead minion in their space at no cost, even if you’re at your minion maximum, but only if they can be organized into one of your squads. The new minion can’t act until the start of your next turn.
-
-This ability becomes a free triggered action if the target was a minion (either yours or an enemy).`
+				FactoryLogic.feature.createAbility({
+					ability: FactoryLogic.createAbility({
+						id: 'summoner-4-1-3',
+						name: 'Rise!',
+						type: FactoryLogic.type.createTrigger('A creature dies unwillingly within your Summoner’s Range.'),
+						distance: [ FactoryLogic.distance.createSummoner() ],
+						target: 'One dead creature',
+						sections: [
+							FactoryLogic.createAbilitySectionText('Once per round, you can summon a signature undead minion in their space at no cost, even if you’re at your minion maximum, but only if they can be organized into one of your squads. The new minion can’t act until the start of your next turn.\n\nThis ability becomes a free triggered action if the target was a minion (either yours or an enemy).')
+						]
+					})
 				}),
 				FactoryLogic.feature.createSummonChoice({
 					id: 'summoner-4-1-4',
