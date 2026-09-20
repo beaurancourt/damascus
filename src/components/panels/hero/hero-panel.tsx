@@ -23,6 +23,7 @@ import { HeroClass } from '@/models/class';
 import { HeroHealthPanel } from '@/components/panels/health/health-panel';
 import { HeroLogic } from '@/logic/hero-logic';
 import { HeroModalType } from '@/enums/hero-modal-type';
+import { HeroicResourcePanel } from '@/components/panels/hero/heroic-resource/heroic-resource-panel';
 import { InventoryPanel } from '@/components/panels/hero/inventory/inventory-panel';
 import { Kit } from '@/models/kit';
 import { Monster } from '@/models/monster';
@@ -124,12 +125,19 @@ export const HeroPanel = (props: Props) => {
 				<div className='hero-main-section'>
 					<div className='hero-center-column'>
 						<div className='center-content'>
-							{/* 1. Stats + 2. Resources (handled inside StatsPanel) */}
+							{/* 1. Stats + 2. Resources (the counters are inside StatsPanel) */}
 							<StatsPanel
 								hero={props.hero}
 								onSelectCharacteristic={props.onSelectCharacteristic}
 								onShowState={props.onShowState}
 								updateHero={props.updateHero}
+							/>
+
+							{/* How the resource above is generated, ahead of the abilities
+							    that spend it rather than alphabetized among the feats. */}
+							<HeroicResourcePanel
+								hero={props.hero}
+								sourcebooks={props.sourcebooks}
 							/>
 
 							{/* 3. Conditions */}

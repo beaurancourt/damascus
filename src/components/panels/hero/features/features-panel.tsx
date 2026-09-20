@@ -19,10 +19,11 @@ interface Props {
 export const FeaturesPanel = (props: Props) => {
 	const options = useOptions();
 
-	// Features worth surfacing on the hero sheet — Text/HeroicResource/Package and explicit
-	// per-feature opt-ins. Skip Ability features (those have their own Abilities tab) and
-	// Companion/Follower/Retainer (those render via the Retinue section).
-	const interestingTypes = [ FeatureType.Text, FeatureType.HeroicResource, FeatureType.Package, FeatureType.SummonFormation ];
+	// Features worth surfacing on the hero sheet — Text/Package and explicit
+	// per-feature opt-ins. Skip Ability features (those have their own Abilities
+	// tab), Companion/Follower/Retainer (those render via the Retinue section) and
+	// HeroicResource, which has its own section near the top of the sheet.
+	const interestingTypes = [ FeatureType.Text, FeatureType.Package, FeatureType.SummonFormation ];
 	// Items surface through the same feature pipeline but belong in their own
 	// Inventory section, not intermingled with feats.
 	const itemNames = new Set(HeroLogic.getInventoryItems(props.hero).map(i => i.name));
