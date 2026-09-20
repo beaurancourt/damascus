@@ -2,6 +2,7 @@ import { AbilityUpdateLogic } from '@/logic/update/ability-update-logic';
 import { AttitudeType } from '@/enums/attitude-type';
 import { Collections } from '@/utils/collections';
 import { EncounterDifficulty } from '@/enums/encounter-difficulty';
+import { EncounterLogic } from '@/logic/encounter-logic';
 import { FactoryLogic } from '@/logic/factory-logic';
 import { FeatureUpdateLogic } from '@/logic/update/feature-update-logic';
 import { Format } from '@/utils/format';
@@ -163,11 +164,11 @@ export class SourcebookUpdateLogic {
 		});
 
 		sourcebook.encounters.forEach(e => {
-			e.groups.forEach(g => {
-				if (g.name === undefined) {
-					g.name = '';
-				}
+			// Pin names before anything else reads them: a group used to be labelled
+			// by its position, so removing one mid-run renamed the survivors.
+			EncounterLogic.pinGroupNames(e);
 
+			e.groups.forEach(g => {
 				if (g.encounterState === undefined) {
 					g.encounterState = 'ready';
 				}

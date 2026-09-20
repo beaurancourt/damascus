@@ -1,5 +1,6 @@
 import { AttitudeType } from '@/enums/attitude-type';
 import { EncounterDifficulty } from '@/enums/encounter-difficulty';
+import { EncounterLogic } from '@/logic/encounter-logic';
 import { MonsterUpdateLogic } from '@/logic/update/monster-update-logic';
 import { Session } from '@/models/session';
 import { Utils } from '@/utils/utils';
@@ -11,11 +12,11 @@ export class SessionUpdateLogic {
 		}
 
 		session.encounters.forEach(e => {
-			e.groups.forEach(g => {
-				if (g.name === undefined) {
-					g.name = '';
-				}
+			// Pin names before anything else reads them: a group used to be labelled
+			// by its position, so removing one mid-run renamed the survivors.
+			EncounterLogic.pinGroupNames(e);
 
+			e.groups.forEach(g => {
 				if (g.encounterState === undefined) {
 					g.encounterState = 'ready';
 				}

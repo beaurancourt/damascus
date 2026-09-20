@@ -22,6 +22,7 @@ import { Element } from '@/models/element';
 import { ElementModal } from '@/components/modals/element/element-modal';
 import { Encounter } from '@/models/encounter';
 import { EncounterImportModal } from '@/components/modals/encounter-import/encounter-import-modal';
+import { EncounterLogic } from '@/logic/encounter-logic';
 import { EncounterSlot } from '@/models/encounter-slot';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
 import { ErrorsModal } from '../modals/errors/errors-modal';
@@ -486,8 +487,12 @@ export const Main = () => {
 				encounter = FactoryLogic.createEncounter();
 				// One group to start - Red. The builder adds the next one on
 				// Shift+A, when you've finished filling this one, rather than
-				// opening with a column of empty groups to scroll past.
-				encounter.groups.push(FactoryLogic.createEncounterGroup());
+				// opening with a column of empty groups to scroll past. The name is
+				// pinned here and not left to the group's position, so removing a
+				// group later cannot renumber the rest.
+				const firstGroup = FactoryLogic.createEncounterGroup();
+				firstGroup.name = EncounterLogic.getUnusedGroupName(encounter.groups.map(g => g.name));
+				encounter.groups.push(firstGroup);
 			}
 
 			sourcebook.encounters.push(encounter);

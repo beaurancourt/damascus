@@ -56,16 +56,38 @@ export class EncounterLogic {
 		return EncounterLogic.defaultGroupNames[index] ?? `Group ${index + 1}`;
 	};
 
+	/** The first colour no group is using, so a name pinned now stays unique as groups come and go. */
+	static getUnusedGroupName = (used: string[]) => {
+		const taken = new Set(used);
+		const colour = EncounterLogic.defaultGroupNames.find(name => !taken.has(name));
+		if (colour) {
+			return colour;
+		}
+
+		let n = taken.size + 1;
+		while (taken.has(`Group ${n}`)) {
+			n += 1;
+		}
+		return `Group ${n}`;
+	};
+
+	/**
+	 * Pin a name onto every unnamed group. A group's name is a label the table
+	 * reads out loud, so it is fixed rather than derived from the group's position
+	 * in the encounter: removing a squad mid-run must not rename the survivors.
+	 */
+	static pinGroupNames = (encounter: Encounter) => {
+		const used = encounter.groups.map(g => g.name).filter(name => !!name);
+		encounter.groups.filter(g => !g.name).forEach(g => {
+			g.name = EncounterLogic.getUnusedGroupName(used);
+			used.push(g.name);
+		});
+	};
+
 	static getGroupName = (group: EncounterGroup, encounter: Encounter) => {
-		const names = group.slots.flatMap(s => s.monsters).map(m => m.name);
-		if (names.length === 0) {
-			const index = encounter.groups.findIndex(g => g.id === group.id);
-			return EncounterLogic.getDefaultGroupName(index);
-		}
-		if (names.length === 1) {
-			return names[0];
-		}
-		return `${names[0]} (and ${names.length > 2 ? `${names.length - 1} others` : '1 other'})`;
+		// Never derived from the group's monsters, or the label changes every time
+		// one of them is removed.
+		return group.name || EncounterLogic.getDefaultGroupName(encounter.groups.findIndex(g => g.id === group.id));
 	};
 
 	static getSlotName = (slot: EncounterSlot) => {
@@ -345,6 +367,7 @@ export class EncounterLogic {
 			}
 
 			const group = FactoryLogic.createEncounterGroup();
+			group.name = EncounterLogic.getUnusedGroupName(encounter.groups.map(g => g.name));
 			group.slots.push(slot);
 
 			encounter.groups.push(group);

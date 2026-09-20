@@ -144,6 +144,7 @@ export const EncounterRunPanel = (props: Props) => {
 			}
 		} else {
 			const group = FactoryLogic.createEncounterGroup();
+			group.name = EncounterLogic.getUnusedGroupName(copy.groups.map(g => g.name));
 			group.slots.push(slot);
 			EncounterLogic.renumberGroup(group);
 			copy.groups.push(group);
@@ -211,6 +212,7 @@ export const EncounterRunPanel = (props: Props) => {
 	const addGroup = () => {
 		const copy = Utils.copy(encounter);
 		const group = FactoryLogic.createEncounterGroup();
+		group.name = EncounterLogic.getUnusedGroupName(copy.groups.map(g => g.name));
 		copy.groups.push(group);
 		setAddTargetGroupID(group.id);
 		commit(copy);

@@ -104,6 +104,7 @@ export const EncounterEditPanel = (props: Props) => {
 			group.slots.push(FactoryLogic.createEncounterSlot(monster.id));
 		} else {
 			const created = FactoryLogic.createEncounterGroup();
+			created.name = EncounterLogic.getUnusedGroupName(copy.groups.map(g => g.name));
 			created.slots.push(FactoryLogic.createEncounterSlot(monster.id));
 			copy.groups.push(created);
 			setActiveGroupID(created.id);
@@ -117,6 +118,7 @@ export const EncounterEditPanel = (props: Props) => {
 	const addGroup = () => {
 		const copy = Utils.copy(encounter);
 		const created = FactoryLogic.createEncounterGroup();
+		created.name = EncounterLogic.getUnusedGroupName(copy.groups.map(g => g.name));
 		copy.groups.push(created);
 		setEncounter(copy);
 		setActiveGroupID(created.id);
@@ -252,6 +254,7 @@ export const EncounterEditPanel = (props: Props) => {
 				let toGroup = copy.groups.find(g => g.id === toGroupID);
 				if (!toGroup) {
 					toGroup = FactoryLogic.createEncounterGroup();
+					toGroup.name = EncounterLogic.getUnusedGroupName(copy.groups.map(g => g.name));
 					copy.groups.push(toGroup);
 				}
 				if (fromGroup && toGroup) {
