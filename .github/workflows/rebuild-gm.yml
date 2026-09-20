@@ -1,0 +1,43 @@
+name: Rebuild GM site
+
+# The GM site is published from beaurancourt/damascus-gm, which builds this
+# repo's GM variant. A push here writes a marker commit there naming the
+# revision to build, and that repo's Deploy GM site workflow does the rest - so
+# the GM site follows damascus/main within a minute or two instead of waiting
+# for a nightly cron.
+#
+# The marker is pushed with the SSH deploy key in GM_DEPLOY_KEY, which has write
+# access to damascus-gm and nothing else.
+
+on:
+  push:
+    branches:
+      - damascus/main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the GM site repo
+        uses: actions/checkout@v7
+        with:
+          repository: beaurancourt/damascus-gm
+          ref: main
+          ssh-key: ${{ secrets.GM_DEPLOY_KEY }}
+
+      - name: Record the revision to build
+        run: |
+          echo "$GITHUB_SHA" > .damascus-ref
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .damascus-ref
+          if git diff --staged --quiet; then
+            echo "damascus-gm already points at $GITHUB_SHA; nothing to rebuild"
+            exit 0
+          fi
+          git commit -m "Rebuild for damascus@${GITHUB_SHA:0:7}"
+          git push

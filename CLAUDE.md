@@ -77,7 +77,7 @@ Adding a screen that only one audience needs means: gate its `<Route>` in `main.
 
 ## Deploy
 
-Pushing to `damascus/main` triggers the `Deploy to GitHub Pages` workflow, publishing the player build to https://beaurancourt.github.io/damascus/. The GM site lives in the separate `beaurancourt/damascus-gm` repo, whose workflow checks *this* repo out, runs `npm run build:gm`, and publishes `dist-gm` to https://beaurancourt.github.io/damascus-gm/ — so a change here needs that workflow re-run (or its schedule) to reach the GM site. `check.yml` runs lint, typecheck, tests and build on PRs.
+Pushing to `damascus/main` triggers the `Deploy to GitHub Pages` workflow, publishing the player build to https://beaurancourt.github.io/damascus/. The GM site lives in the separate `beaurancourt/damascus-gm` repo, whose workflow checks *this* repo out, runs `npm run build:gm`, and publishes `dist-gm` to https://beaurancourt.github.io/damascus-gm/. `rebuild-gm.yml` here triggers that build on every push to `damascus/main` by writing a marker commit to the GM repo (pushed with the `GM_DEPLOY_KEY` deploy key, which has write access to that repo only), so both sites now follow a push. `check.yml` runs lint, typecheck, tests and build on PRs.
 
 Production builds set Vite `base` to `/damascus/` or `/damascus-gm/` while dev serves at `/`, so verify deployed asset paths against the built bundle, not the dev server.
 
