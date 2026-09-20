@@ -1,6 +1,7 @@
 import { Ability, AbilityDistance } from '@/models/ability';
 import { AbilityDistanceType } from '@/enums/ability-distance-type';
 import { AbilityKeyword } from '@/enums/ability-keyword';
+import { AbilityUsage } from '@/enums/ability-usage';
 import { Characteristic } from '@/enums/characteristic';
 import { Collections } from '@/utils/collections';
 import { CreatureLogic } from '@/logic/creature-logic';
@@ -207,6 +208,15 @@ export class AbilityLogic {
 		};
 
 		return [ powerRoll.tier1, powerRoll.tier2, powerRoll.tier3 ].some(tier => match(tier));
+	};
+
+	/**
+	 * Whether using this ability costs a bleeding (or dying) creature 1d6 + level
+	 * Stamina. The condition names main actions and triggered actions, and a free
+	 * strike is the same deal: an ability roll made on someone else's turn.
+	 */
+	static costsStaminaWhileBleeding = (ability: Ability) => {
+		return [ AbilityUsage.MainAction, AbilityUsage.Trigger, AbilityUsage.FreeStrike ].includes(ability.type.usage);
 	};
 
 	static getPowerRollBonusValue = (ability: Ability, creature: Hero | Monster | undefined): number => {

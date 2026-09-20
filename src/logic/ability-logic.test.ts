@@ -140,3 +140,23 @@ describe('getTextEffect', () => {
 		expect(AbilityLogic.getTextEffect(text, hero)).toBe(expected);
 	});
 });
+
+describe('costsStaminaWhileBleeding', () => {
+	const usageOf = (type: ReturnType<typeof FactoryLogic.type.createMain>) => ({ type } as Ability);
+
+	test.each([
+		[ 'a main action', FactoryLogic.type.createMain() ],
+		[ 'a triggered action', FactoryLogic.type.createTrigger('something happens') ],
+		[ 'a free strike', FactoryLogic.type.createFreeStrike() ]
+	])('counts %s', (_label: string, type: ReturnType<typeof FactoryLogic.type.createMain>) => {
+		expect(AbilityLogic.costsStaminaWhileBleeding(usageOf(type))).toBe(true);
+	});
+
+	test.each([
+		[ 'a maneuver', FactoryLogic.type.createManeuver() ],
+		[ 'a move action', FactoryLogic.type.createMove() ],
+		[ 'a villain action', FactoryLogic.type.createVillainAction(1) ]
+	])('does not count %s', (_label: string, type: ReturnType<typeof FactoryLogic.type.createMain>) => {
+		expect(AbilityLogic.costsStaminaWhileBleeding(usageOf(type))).toBe(false);
+	});
+});
