@@ -17,16 +17,19 @@ export class RemoteService {
 		return this.token ? { Authorization: `Bearer ${this.token}` } : {};
 	}
 
-	async getHeroes(): Promise<Hero[]> {
+	async getHeroes(): Promise<{ hero: Hero, updatedAt: string }[]> {
 		const res = await fetch(`${this.baseURL}/heroes`, { headers: this.authHeaders() });
 		if (!res.ok) {
 			throw new Error(`remote getHeroes failed: ${res.status}`);
 		}
 		const rows: { id: string, data: Hero, updatedAt: string }[] = await res.json();
-		return rows.map(row => row.data);
+		return rows.map(row => ({ hero: row.data, updatedAt: row.updatedAt }));
 	}
 
-	async putHero(hero: Hero): Promise<void> {
+	// Resolves with the stored version, so the caller can remember what it last
+	// pushed. Servers older than that field answer `{ ok: true }` alone, and the
+	// version comes back undefined.
+	async putHero(hero: Hero): Promise<string | undefined> {
 		const res = await fetch(`${this.baseURL}/heroes/${encodeURIComponent(hero.id)}`, {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json', ...this.authHeaders() },
@@ -35,6 +38,8 @@ export class RemoteService {
 		if (!res.ok) {
 			throw new Error(`remote putHero failed: ${res.status}`);
 		}
+		const body = await res.json().catch(() => undefined) as { updatedAt?: string } | undefined;
+		return body?.updatedAt;
 	}
 
 	async deleteHero(id: string): Promise<void> {

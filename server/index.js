@@ -72,13 +72,16 @@ app.get('/heroes/:id', requireAuth, async (req, res) => {
 app.put('/heroes/:id', requireAuth, async (req, res) => {
 	try {
 		const data = JSON.stringify(req.body);
-		await pool.query(
+		// Hand back the version just stored: clients record it so they can tell
+		// "the server moved on" from "this is still the copy I pushed".
+		const result = await pool.query(
 			`INSERT INTO heroes (id, data, updated_at)
 			 VALUES ($1, $2::jsonb, now())
-			 ON CONFLICT (id) DO UPDATE SET data = $2::jsonb, updated_at = now()`,
+			 ON CONFLICT (id) DO UPDATE SET data = $2::jsonb, updated_at = now()
+			 RETURNING updated_at`,
 			[ req.params.id, data ]
 		);
-		res.json({ ok: true });
+		res.json({ ok: true, updatedAt: result.rows[0].updated_at });
 	} catch (err) {
 		handleError(res, err);
 	}

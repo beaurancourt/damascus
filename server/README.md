@@ -11,7 +11,7 @@ stores each hero's full JSON under its GUID.
 | GET    | `/health`       | Health check                                  |
 | GET    | `/heroes`       | List heroes (`id`, `data`, `updatedAt`)       |
 | GET    | `/heroes/:id`   | One hero's JSON, or `404`                     |
-| PUT    | `/heroes/:id`   | Upsert a hero's full JSON                     |
+| PUT    | `/heroes/:id`   | Upsert a hero's full JSON; returns `updatedAt` |
 | DELETE | `/heroes/:id`   | Delete a hero                                 |
 
 ## Auth
