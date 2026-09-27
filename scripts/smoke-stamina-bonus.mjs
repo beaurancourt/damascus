@@ -25,15 +25,15 @@ await page.waitForTimeout(700);
 await page.locator('.ant-popover .container-button').first().click();
 await page.waitForTimeout(2500);
 
-// The gauge prints max stamina (a fresh hero has taken no damage), and the
+// The readout prints max stamina (a fresh hero has taken no damage), and the
 // "Spend a Recovery" button prints the recovery value derived from it.
 const sheet = async () => {
-	const gauge = (await page.locator('.health-gauge .gauge-info').first().innerText()).replace(/\s+/g, ' ');
-	const panel = (await page.locator('.health-panel').first().innerText()).replace(/\s+/g, ' ');
-	const stamina = gauge.match(/Sta (\d+)/);
+	const bars = (await page.locator('.health-bars').first().innerText()).replace(/\s+/g, ' ');
+	const panel = (await page.locator('.health-panel:has(.health-bars)').first().innerText()).replace(/\s+/g, ' ');
+	const stamina = bars.match(/STAMINA (\d+)(?: \/ (\d+))?/);
 	const recoveryValue = panel.match(/Regain up to (\d+) Stamina/);
 	return {
-		stamina: stamina ? Number.parseInt(stamina[1], 10) : null,
+		stamina: stamina ? Number.parseInt(stamina[2] || stamina[1], 10) : null,
 		recoveryValue: recoveryValue ? Number.parseInt(recoveryValue[1], 10) : null
 	};
 };

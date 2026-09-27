@@ -1,0 +1,104 @@
+@import '@/colors.scss';
+
+// The stamina readout. It is dark-only like the rest of the app, so the colors
+// are written once rather than in a base block with an html override on top.
+.health-bars {
+	display: flex;
+	flex-direction: column;
+	gap: 11px;
+	width: 100%;
+
+	.health-bar-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 8px;
+		margin-bottom: 4px;
+	}
+
+	.health-bar-label {
+		font-family: 'Merriweather', serif;
+		font-size: 11px;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.health-bar-value {
+		font-family: 'Merriweather', serif;
+		font-size: 15px;
+		color: $bronze;
+		white-space: nowrap;
+
+		.health-bar-chip {
+			margin-left: 6px;
+			padding: 1px 5px;
+			border: 1px solid $bronze-dim;
+			border-radius: 3px;
+			font-family: 'PT Sans', sans-serif;
+			font-size: 10px;
+			letter-spacing: 1px;
+			text-transform: uppercase;
+			color: $bronze;
+			vertical-align: 1px;
+
+			&.danger {
+				border-color: rgba(181, 74, 74, 0.6);
+				color: #d98b8b;
+			}
+		}
+	}
+
+	.health-bar-track {
+		display: flex;
+		height: 14px;
+		border-radius: 3px;
+		background: rgba(255, 255, 255, 0.08);
+		overflow: hidden;
+	}
+
+	// Temporary stamina hangs off the end of the bar rather than becoming a second
+	// track: it is stamina, and it is the first thing damage eats.
+	.health-bar-temp {
+		height: 100%;
+		background: repeating-linear-gradient(45deg, rgba(201, 164, 90, 0.55) 0 4px, rgba(201, 164, 90, 0.18) 4px 8px);
+	}
+
+	.health-bar-fill {
+		height: 100%;
+		background: $bronze;
+
+		&.danger {
+			background: #b54a4a;
+		}
+	}
+
+	.health-pips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 3px;
+	}
+
+	.health-pip {
+		width: 14px;
+		height: 14px;
+		border-radius: 2px;
+		border: 1px solid rgba(201, 164, 90, 0.45);
+		background: $bronze;
+
+		// A spent recovery keeps its outline so the row does not change size and the
+		// total stays countable.
+		&.spent {
+			background: transparent;
+		}
+	}
+
+	.health-bar-stat {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 8px;
+		padding-top: 8px;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+	}
+}
