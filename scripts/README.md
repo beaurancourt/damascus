@@ -66,6 +66,10 @@ SMOKE_BASE=http://localhost:4173/damascus-gm/ node scripts/smoke-wide-encounter-
   checks it stays empty (rather than snapping to 0), that typing a value enables
   Take Damage, and that the +/- buttons still work from empty. Asserts — exits
   non-zero. Needs the player site (port 5173).
+- `smoke-stamina-bonus.mjs` — Opens a pregen hero, reaches the customize screen
+  through the tools menu and adds the default Stat Bonus, then checks the gauge's
+  max stamina went up by 6 and the recovery value followed it. Asserts — exits
+  non-zero. Needs the player site (port 5173).
 - `smoke-hero-resource-section.mjs` — Opens a pregen hero and checks the
   heroic-resource description sits above the abilities with a header the
   jump-to-section menu offers, and that it is not also listed among the feats.
