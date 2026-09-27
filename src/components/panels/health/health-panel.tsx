@@ -587,9 +587,10 @@ interface Props {
 }
 
 const HealthPanel = (props: Props) => {
-	// null while the field is empty, so backspacing clears it instead of snapping
-	// back to 0. An empty field simply has nothing to apply.
-	const [ damageValue, setDamageValue ] = useState<number | null>(0);
+	// null while the field is empty, which is where it starts and where it returns
+	// after each action: backspacing clears it instead of snapping back to 0, and
+	// nothing is entered by default. An empty field has nothing to apply.
+	const [ damageValue, setDamageValue ] = useState<number | null>(null);
 	const amount = damageValue ?? 0;
 	const [ addConditionOpen, setAddConditionOpen ] = useState<boolean>(false);
 
@@ -597,21 +598,21 @@ const HealthPanel = (props: Props) => {
 		if (props.stamina) {
 			props.stamina.takeDamage(amount);
 		}
-		setDamageValue(0);
+		setDamageValue(null);
 	};
 
 	const heal = () => {
 		if (props.stamina) {
 			props.stamina.heal(amount);
 		}
-		setDamageValue(0);
+		setDamageValue(null);
 	};
 
 	const addTemp = () => {
 		if (props.staminaTemp) {
 			props.staminaTemp.addTemp(amount);
 		}
-		setDamageValue(0);
+		setDamageValue(null);
 	};
 
 	const addCondition = (type: ConditionType) => {

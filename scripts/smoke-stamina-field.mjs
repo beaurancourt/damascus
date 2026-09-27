@@ -31,41 +31,46 @@ if (await input.count() === 0) {
 const value = () => input.inputValue();
 const takeDamageEnabled = () => page.locator('.health-panel button', { hasText: 'Take Damage' }).first().isEnabled();
 
+// It starts empty: nothing is entered by default, not even a 0.
 console.log(`initial: "${await value()}"  takeDamage enabled=${await takeDamageEnabled()}`);
-
-// Select all and erase.
-await input.click();
-await page.keyboard.press('Meta+A');
-await page.keyboard.press('Backspace');
-await page.waitForTimeout(400);
-const cleared = await value();
-console.log(`after backspace: "${cleared}"  takeDamage enabled=${await takeDamageEnabled()}`);
-if (cleared !== '') {
-	fail.push(`clearing left "${cleared}" in the field instead of empty`);
+if (await value() !== '') {
+	fail.push(`the field starts with "${await value()}" in it instead of empty`);
+}
+if (await takeDamageEnabled()) {
+	fail.push('Take Damage is enabled before anything is entered');
 }
 
-// Type a fresh number into the empty field.
+// Type a number, then clear it by backspacing: it has to stay empty.
+await input.click();
 await page.keyboard.type('7', { delay: 40 });
-await page.waitForTimeout(400);
-const typed = await value();
-console.log(`after typing 7: "${typed}"  takeDamage enabled=${await takeDamageEnabled()}`);
-if (typed !== '7') {
-	fail.push(`typing into the empty field produced "${typed}"`);
+await page.waitForTimeout(300);
+if (await value() !== '7') {
+	fail.push(`typing 7 produced "${await value()}"`);
 }
 if (!(await takeDamageEnabled())) {
 	fail.push('Take Damage stayed disabled with a value in the field');
 }
 
-// Clearing again leaves it empty and disables the buttons, rather than showing 0.
-await page.keyboard.press('Meta+A');
 await page.keyboard.press('Backspace');
 await page.waitForTimeout(400);
-console.log(`cleared again: "${await value()}"  takeDamage enabled=${await takeDamageEnabled()}`);
-if (await value() !== '') {
-	fail.push('the field would not stay empty');
+const cleared = await value();
+console.log(`after backspace: "${cleared}"  takeDamage enabled=${await takeDamageEnabled()}`);
+if (cleared !== '') {
+	fail.push(`backspacing left "${cleared}" in the field instead of empty`);
+}
+
+// Applying damage empties the field again rather than parking it on 0.
+await page.keyboard.type('3', { delay: 40 });
+await page.waitForTimeout(300);
+await page.locator('.health-panel button', { hasText: 'Take Damage' }).first().click();
+await page.waitForTimeout(700);
+const afterAction = await value();
+console.log(`after Take Damage: "${afterAction}"  takeDamage enabled=${await takeDamageEnabled()}`);
+if (afterAction !== '') {
+	fail.push(`the field shows "${afterAction}" after an action instead of empty`);
 }
 if (await takeDamageEnabled()) {
-	fail.push('Take Damage is enabled with an empty field');
+	fail.push('Take Damage is still enabled after being used');
 }
 
 // The +/- buttons still work from empty (they treat it as 0).
