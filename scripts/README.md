@@ -64,16 +64,13 @@ SMOKE_BASE=http://localhost:4173/damascus-gm/ node scripts/smoke-wide-encounter-
   new name. Asserts — exits non-zero. Needs the GM site (port 5174).
 - `smoke-stamina-field.mjs` — Opens a pregen hero, empties the amount field and
   checks it stays empty (rather than snapping to 0), that typing a value enables
-  Take Damage / Regain Stamina, that the field empties after an action, and that
-  Enter applies a typed amount as damage. Asserts — exits non-zero. Needs the
-  player site (port 5173).
-- `smoke-stamina-steps.mjs` — Checks the bar readout (bar width against the
-  numbers, one pip per recovery) and the quick steps, which apply immediately:
-  `-` takes damage and `+` regains it, each leaving a receipt that undoes the
-  move exactly — including damage that ate temporary stamina, which a reversed
-  step alone would get wrong. Also covers the keyboard undo and the disabled
-  regain at full stamina. Asserts — exits non-zero. Needs the player site
-  (port 5173).
+  Take Damage / Regain Stamina, that the +/- buttons beside it edit the field
+  without touching the sheet, and that the field empties after an action. Asserts
+  — exits non-zero. Needs the player site (port 5173).
+- `smoke-stamina-readout.mjs` — Checks the bar readout: the fill is the current
+  stamina over the max, one pip per recovery, temporary stamina rides on the end
+  of the bar as a hatched segment, and a winded hero draws a red bar and a chip.
+  Asserts — exits non-zero. Needs the player site (port 5173).
 - `smoke-stamina-bonus.mjs` — Opens a pregen hero, reaches the customize screen
   through the tools menu and adds the default Stat Bonus, then checks the gauge's
   max stamina went up by 6 and the recovery value followed it. Asserts — exits

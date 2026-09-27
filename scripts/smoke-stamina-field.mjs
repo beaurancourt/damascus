@@ -1,7 +1,6 @@
 // The amount field on the health panel: it starts empty, backspacing clears it
-// instead of snapping to 0, and what you type is applied by pressing a button (or
-// Enter, which takes damage - the common case). The quick +/- buttons beside it
-// are a separate smoke, since they apply immediately.
+// instead of snapping to 0, the +/- buttons beside it edit it rather than the
+// sheet, and what it holds is applied by Take Damage / Regain Stamina.
 // Asserts - exits non-zero. Needs the player site (npm start, port 5173).
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -28,6 +27,10 @@ const panel = page.locator('.health-panel:has(.health-bars)').first();
 const input = panel.locator('.stamina-amount input');
 const field = () => input.inputValue();
 const enabled = (label) => panel.locator('button', { hasText: label }).first().isEnabled();
+const spin = (label) => panel.locator('.number-spin button', { hasText: label }).first();
+// The spins mark "nothing left to step" with a class, not the disabled attribute.
+const spent = (label) => spin(label).evaluate(el => el.className.includes('disabled'));
+
 // The readout prints just the max until something has been taken off it, so the
 // first number is the current stamina either way.
 const readout = async () => {
@@ -43,11 +46,11 @@ if (await input.count() === 0) {
 }
 
 // It starts empty: nothing is entered by default, not even a 0.
-console.log(`initial: "${await field()}"  take damage enabled=${await enabled('TAKE DAMAGE')}`);
+console.log(`initial: "${await field()}"  take damage enabled=${await enabled('Take Damage')}`);
 if (await field() !== '') {
 	fail.push(`the field starts with "${await field()}" in it instead of empty`);
 }
-if (await enabled('TAKE DAMAGE')) {
+if (await enabled('Take Damage')) {
 	fail.push('Take Damage is enabled before anything is entered');
 }
 
@@ -58,27 +61,64 @@ await page.waitForTimeout(300);
 if (await field() !== '7') {
 	fail.push(`typing 7 produced "${await field()}"`);
 }
-if (!(await enabled('TAKE DAMAGE'))) {
+if (!(await enabled('Take Damage'))) {
 	fail.push('Take Damage stayed disabled with a value in the field');
 }
 
 await page.keyboard.press('Backspace');
 await page.waitForTimeout(400);
 const cleared = await field();
-console.log(`after backspace: "${cleared}"  take damage enabled=${await enabled('TAKE DAMAGE')}`);
+console.log(`after backspace: "${cleared}"  take damage enabled=${await enabled('Take Damage')}`);
 if (cleared !== '') {
 	fail.push(`backspacing left "${cleared}" in the field instead of empty`);
 }
-if (await enabled('TAKE DAMAGE')) {
+if (await enabled('Take Damage')) {
 	fail.push('Take Damage is still enabled with an empty field');
 }
 
-// A typed amount is applied by the button, and the field empties again rather
+// The +/- buttons edit the field and nothing else. There is nothing to step down
+// from while it is empty, and stepping down to 0 leaves 0 to clear.
+const steady = await current();
+if (!(await spent('-5')) || !(await spent('-1'))) {
+	fail.push('the down steps are live while the field is empty');
+}
+await spin('+5').click();
+await page.waitForTimeout(300);
+if (await field() !== '5') {
+	fail.push(`+5 from empty left "${await field()}" in the field`);
+}
+await spin('+1').click();
+await page.waitForTimeout(300);
+if (await field() !== '6') {
+	fail.push(`+1 on 5 left "${await field()}" in the field`);
+}
+if (await current() !== steady) {
+	fail.push(`the +/- buttons moved the sheet: ${steady} -> ${await current()}`);
+}
+await spin('-1').click();
+await page.waitForTimeout(300);
+if (await field() !== '5') {
+	fail.push(`-1 on 6 left "${await field()}" in the field`);
+}
+await spin('-5').click();
+await page.waitForTimeout(300);
+console.log(`after +5 +1 -1 -5: "${await field()}"  spent(-5)=${await spent('-5')}`);
+if (await field() !== '0') {
+	fail.push(`-5 on 5 left "${await field()}" in the field`);
+}
+if (!(await spent('-5'))) {
+	fail.push('the down steps are live with 0 in the field');
+}
+if (await enabled('Take Damage')) {
+	fail.push('a 0 in the field enables Take Damage');
+}
+
+// A staged amount is applied by the button, and the field empties again rather
 // than parking on 0.
 const start = await current();
-await page.keyboard.type('3', { delay: 40 });
+await input.fill('3');
 await page.waitForTimeout(300);
-await panel.locator('button', { hasText: 'TAKE DAMAGE' }).first().click();
+await panel.locator('button', { hasText: 'Take Damage' }).first().click();
 await page.waitForTimeout(700);
 const afterDamage = await current();
 const afterAction = await field();
@@ -89,15 +129,14 @@ if (afterDamage !== start - 3) {
 if (afterAction !== '') {
 	fail.push(`the field shows "${afterAction}" after an action instead of empty`);
 }
-if (await enabled('TAKE DAMAGE')) {
+if (await enabled('Take Damage')) {
 	fail.push('Take Damage is still enabled after being used');
 }
 
 // The same amount can be handed back.
-await input.click();
-await page.keyboard.type('4', { delay: 40 });
+await input.fill('4');
 await page.waitForTimeout(300);
-await panel.locator('button', { hasText: 'REGAIN STAMINA' }).first().click();
+await panel.locator('button', { hasText: 'Regain Stamina' }).first().click();
 await page.waitForTimeout(700);
 const afterHeal = await current();
 const healedBack = Math.min(4, (await max()) - afterDamage);
@@ -106,29 +145,13 @@ if (afterHeal !== afterDamage + healedBack) {
 	fail.push(`Regain Stamina 4 moved stamina ${afterDamage} -> ${afterHeal}, expected ${afterDamage + healedBack}`);
 }
 
-// Enter applies a typed amount as damage, so the common case does not need a
-// second click.
-await input.click();
-await page.keyboard.type('2', { delay: 40 });
-await page.waitForTimeout(300);
-await page.keyboard.press('Enter');
-await page.waitForTimeout(700);
-const afterEnter = await current();
-console.log(`typed 2 + Enter: ${afterHeal} -> ${afterEnter}`);
-if (afterEnter !== afterHeal - 2) {
-	fail.push(`Enter with 2 in the field moved stamina ${afterHeal} -> ${afterEnter}`);
-}
-if (await field() !== '') {
-	fail.push(`Enter left "${await field()}" in the field`);
-}
-
 // It cannot be driven past the ends of the bar.
 await input.fill('999');
 await page.waitForTimeout(200);
-await panel.locator('button', { hasText: 'REGAIN STAMINA' }).first().click();
+await panel.locator('button', { hasText: 'Regain Stamina' }).first().click();
 await page.waitForTimeout(700);
 const healed = await current();
-console.log(`regain 999: ${afterEnter} -> ${healed} of ${await max()}`);
+console.log(`regain 999: ${afterHeal} -> ${healed} of ${await max()}`);
 if (healed !== await max()) {
 	fail.push(`regaining more than was missing left stamina at ${healed} of ${await max()}`);
 }

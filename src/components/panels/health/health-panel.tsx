@@ -23,6 +23,7 @@ import { Monster } from '@/models/monster';
 import { MonsterInfo } from '@/components/panels/token/token';
 import { MonsterLogic } from '@/logic/monster-logic';
 import { MonsterOrganizationType } from '@/enums/monster-organization-type';
+import { NumberSpin } from '@/components/controls/number-spin/number-spin';
 import { PanelMode } from '@/enums/panel-mode';
 import { Utils } from '@/utils/utils';
 
@@ -43,14 +44,18 @@ export const HeroHealthPanel = (props: HeroProps) => {
 		setHero(Utils.copy(props.hero));
 	}, [ props.hero ]);
 
-	// Stamina damage and temporary stamina move together. Taking damage eats
-	// temporary stamina first, so putting the creature back the way it was is a
-	// single write: two setters would each rebuild it from the numbers the other
-	// has not written yet, and the second call would undo the first.
-	const restoreStamina = (damage: number, temp: number) => {
+	const setStaminaDamage = (value: number) => {
 		const copy = Utils.copy(hero);
-		copy.state.staminaDamage = damage;
-		copy.state.staminaTemp = temp;
+		copy.state.staminaDamage = value;
+		setHero(copy);
+		if (props.onChange) {
+			props.onChange(copy);
+		}
+	};
+
+	const setStaminaTemp = (value: number) => {
+		const copy = Utils.copy(hero);
+		copy.state.staminaTemp = value;
 		setHero(copy);
 		if (props.onChange) {
 			props.onChange(copy);
@@ -171,7 +176,7 @@ export const HeroHealthPanel = (props: HeroProps) => {
 							state: HeroLogic.getCombatState(hero),
 							immunities: HeroLogic.getDamageModifiers(hero).filter(dm => dm.modifierType === DamageModifierType.Immunity),
 							weaknesses: HeroLogic.getDamageModifiers(hero).filter(dm => dm.modifierType === DamageModifierType.Weakness),
-							restore: restoreStamina,
+							setValue: setStaminaDamage,
 							takeDamage: takeDamage,
 							heal: heal
 						}
@@ -179,6 +184,7 @@ export const HeroHealthPanel = (props: HeroProps) => {
 				}
 				staminaTemp={{
 					staminaTemp: hero.state.staminaTemp,
+					setValue: setStaminaTemp,
 					addTemp: addTemp
 				}}
 				recoveries={{
@@ -216,14 +222,18 @@ interface MonsterProps {
 export const MonsterHealthPanel = (props: MonsterProps) => {
 	const [ monster, setMonster ] = useState<Monster>(Utils.copy(props.monster));
 
-	// Stamina damage and temporary stamina move together. Taking damage eats
-	// temporary stamina first, so putting the creature back the way it was is a
-	// single write: two setters would each rebuild it from the numbers the other
-	// has not written yet, and the second call would undo the first.
-	const restoreStamina = (damage: number, temp: number) => {
+	const setStaminaDamage = (value: number) => {
 		const copy = Utils.copy(monster);
-		copy.state.staminaDamage = damage;
-		copy.state.staminaTemp = temp;
+		copy.state.staminaDamage = value;
+		setMonster(copy);
+		if (props.onChange) {
+			props.onChange(copy);
+		}
+	};
+
+	const setStaminaTemp = (value: number) => {
+		const copy = Utils.copy(monster);
+		copy.state.staminaTemp = value;
 		setMonster(copy);
 		if (props.onChange) {
 			props.onChange(copy);
@@ -346,7 +356,7 @@ export const MonsterHealthPanel = (props: MonsterProps) => {
 							state: MonsterLogic.getCombatState(monster),
 							immunities: MonsterLogic.getDamageModifiers(monster).filter(dm => dm.modifierType === DamageModifierType.Immunity),
 							weaknesses: MonsterLogic.getDamageModifiers(monster).filter(dm => dm.modifierType === DamageModifierType.Weakness),
-							restore: restoreStamina,
+							setValue: setStaminaDamage,
 							takeDamage: takeDamage,
 							heal: heal
 						}
@@ -356,6 +366,7 @@ export const MonsterHealthPanel = (props: MonsterProps) => {
 					monster.role.organization !== MonsterOrganizationType.Minion ?
 						{
 							staminaTemp: monster.state.staminaTemp,
+							setValue: setStaminaTemp,
 							addTemp: addTemp
 						}
 						: undefined
@@ -400,14 +411,9 @@ interface MinionGroupProps {
 export const MinionGroupHealthPanel = (props: MinionGroupProps) => {
 	const [ slot, setSlot ] = useState<EncounterSlot>(Utils.copy(props.slot));
 
-	// Stamina damage and temporary stamina move together. Taking damage eats
-	// temporary stamina first, so putting the creature back the way it was is a
-	// single write: two setters would each rebuild it from the numbers the other
-	// has not written yet, and the second call would undo the first.
-	const restoreStamina = (damage: number, temp: number) => {
+	const setStaminaDamage = (value: number) => {
 		const copy = Utils.copy(slot);
-		copy.state.staminaDamage = damage;
-		copy.state.staminaTemp = temp;
+		copy.state.staminaDamage = value;
 		setSlot(copy);
 		if (props.onChange) {
 			props.onChange(copy);
@@ -499,7 +505,7 @@ export const MinionGroupHealthPanel = (props: MinionGroupProps) => {
 					state: 'healthy',
 					immunities: [],
 					weaknesses: [],
-					restore: restoreStamina,
+					setValue: setStaminaDamage,
 					takeDamage: takeDamage,
 					heal: heal
 				}}
@@ -542,12 +548,13 @@ interface Props {
 		state: string;
 		immunities: { damageType: string, value: number }[];
 		weaknesses: { damageType: string, value: number }[];
-		restore: (staminaDamage: number, staminaTemp: number) => void;
+		setValue: (value: number) => void;
 		takeDamage: (value: number) => void;
 		heal: (value: number) => void;
 	};
 	staminaTemp?: {
 		staminaTemp: number;
+		setValue: (value: number) => void;
 		addTemp: (value: number) => void;
 	}
 	recoveries?: {
@@ -587,69 +594,11 @@ const HealthPanel = (props: Props) => {
 	const amount = damageValue ?? 0;
 	const [ addConditionOpen, setAddConditionOpen ] = useState<boolean>(false);
 
-	// What the last quick step undid, and the numbers to put back. Taking damage
-	// eats temporary stamina first, and healing floors at 0, so an undo cannot be
-	// the same step in reverse - it restores the numbers that were there before.
-	const [ undo, setUndo ] = useState<{ label: string, staminaDamage: number, staminaTemp: number } | null>(null);
-
-	const step = (value: number) => {
-		if (!props.stamina || (value === 0)) {
-			return;
-		}
-
-		const before = {
-			staminaDamage: props.stamina.staminaDamage,
-			staminaTemp: props.staminaTemp ? props.staminaTemp.staminaTemp : 0
-		};
-
-		if (value > 0) {
-			const healed = Math.min(value, before.staminaDamage);
-			if (healed === 0) {
-				return;
-			}
-			props.stamina.heal(healed);
-			setUndo({ label: `Regained ${healed} Stamina`, ...before });
-		} else {
-			props.stamina.takeDamage(-value);
-			setUndo({ label: `Took ${-value} damage`, ...before });
-		}
-		setDamageValue(null);
-	};
-
-	const undoStep = () => {
-		if (!undo) {
-			return;
-		}
-		props.stamina?.restore(undo.staminaDamage, undo.staminaTemp);
-		setUndo(null);
-	};
-
-	useEffect(() => {
-		// No dependency list on purpose: the handler closes over the props and the
-		// undo record, so it is rebuilt on every render rather than holding a stale
-		// copy of the creature's numbers.
-		const onKeyDown = (e: KeyboardEvent) => {
-			if (!undo || !(e.metaKey || e.ctrlKey) || (e.key.toLowerCase() !== 'z')) {
-				return;
-			}
-			const target = e.target as HTMLElement | null;
-			if (target && ((target.tagName === 'INPUT') || (target.tagName === 'TEXTAREA') || target.isContentEditable)) {
-				// Somewhere else is doing its own undo.
-				return;
-			}
-			e.preventDefault();
-			undoStep();
-		};
-		window.addEventListener('keydown', onKeyDown);
-		return () => window.removeEventListener('keydown', onKeyDown);
-	});
-
 	const takeDamage = () => {
 		if (props.stamina) {
 			props.stamina.takeDamage(amount);
 		}
 		setDamageValue(null);
-		setUndo(null);
 	};
 
 	const heal = () => {
@@ -657,7 +606,6 @@ const HealthPanel = (props: Props) => {
 			props.stamina.heal(amount);
 		}
 		setDamageValue(null);
-		setUndo(null);
 	};
 
 	const addTemp = () => {
@@ -665,7 +613,6 @@ const HealthPanel = (props: Props) => {
 			props.staminaTemp.addTemp(amount);
 		}
 		setDamageValue(null);
-		setUndo(null);
 	};
 
 	const addCondition = (type: ConditionType) => {
@@ -706,50 +653,21 @@ const HealthPanel = (props: Props) => {
 				{
 					props.stamina ?
 						<>
-							<div className='stamina-steps'>
-								<Button className='quick-step' title='Take 5 damage' onClick={() => step(-5)}>
-									<div>−5</div>
-									<div className='step-label'>Take</div>
-								</Button>
-								<Button className='quick-step' title='Take 1 damage' onClick={() => step(-1)}>
-									<div>−1</div>
-									<div className='step-label'>Take</div>
-								</Button>
+							<NumberSpin
+								style={{ flex: '1 1 0' }}
+								min={0}
+								steps={[ 1, 5 ]}
+								value={amount}
+								onChange={setDamageValue}
+							>
 								<InputNumber
 									className='stamina-amount'
 									min={0}
 									controls={false}
 									value={damageValue}
 									onChange={value => setDamageValue(value === null ? null : Math.round(value))}
-									onPressEnter={() => takeDamage()}
 								/>
-								<Button
-									className='quick-step'
-									title={props.stamina.staminaDamage > 0 ? 'Regain 1 Stamina' : 'Nothing to regain'}
-									disabled={props.stamina.staminaDamage === 0}
-									onClick={() => step(1)}
-								>
-									<div>+1</div>
-									<div className='step-label'>Regain</div>
-								</Button>
-								<Button
-									className='quick-step'
-									title={props.stamina.staminaDamage > 0 ? 'Regain 5 Stamina' : 'Nothing to regain'}
-									disabled={props.stamina.staminaDamage === 0}
-									onClick={() => step(5)}
-								>
-									<div>+5</div>
-									<div className='step-label'>Regain</div>
-								</Button>
-							</div>
-							{
-								undo ?
-									<Button block={true} className='undo-button' title='Undo (Cmd+Z or Ctrl+Z)' onClick={undoStep}>
-										<span>{undo.label}</span>
-										<span className='undo-action'>Undo</span>
-									</Button>
-									: null
-							}
+							</NumberSpin>
 							<Button block={true} disabled={amount === 0} onClick={takeDamage}>Take Damage</Button>
 							<Button block={true} disabled={amount === 0} onClick={heal}>Regain Stamina</Button>
 							{props.staminaTemp ? <Button block={true} disabled={amount === 0} onClick={addTemp}>Add Temporary Stamina</Button> : null}
@@ -763,7 +681,7 @@ const HealthPanel = (props: Props) => {
 								block={true}
 								className='tall-button'
 								disabled={!props.stamina || (props.stamina.staminaDamage === 0) || (props.recoveries.recoveriesUsed >= props.recoveries.recoveriesMax)}
-								onClick={() => { setUndo(null); props.recoveries!.spendRecovery(); }}
+								onClick={props.recoveries.spendRecovery}
 							>
 								<div>
 									<div>Spend a Recovery</div>
@@ -776,7 +694,7 @@ const HealthPanel = (props: Props) => {
 								block={true}
 								className='tall-button'
 								disabled={props.recoveries.recoveriesUsed >= props.recoveries.recoveriesMax}
-								onClick={() => { setUndo(null); props.recoveries!.setValue(props.recoveries!.recoveriesUsed + 1); }}
+								onClick={() => props.recoveries!.setValue(props.recoveries!.recoveriesUsed + 1)}
 							>
 								<div>
 									<div>Spend a Recovery</div>
@@ -788,7 +706,7 @@ const HealthPanel = (props: Props) => {
 							<Button
 								block={true}
 								disabled={props.recoveries.recoveriesUsed === 0}
-								onClick={() => { setUndo(null); props.recoveries!.setValue(props.recoveries!.recoveriesUsed - 1); }}
+								onClick={() => props.recoveries!.setValue(props.recoveries!.recoveriesUsed - 1)}
 							>
 								Regain a Recovery
 							</Button>

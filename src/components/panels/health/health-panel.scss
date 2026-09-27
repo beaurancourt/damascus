@@ -56,79 +56,33 @@
 		max-width: 600px;
 	}
 
-	// The quick steps apply immediately: - takes damage, + regains stamina. The
-	// sign is spelled out under each one, because nothing else on the row says
-	// which way it goes. The field between them is for an exact amount and keeps
-	// its two buttons below.
-	.stamina-steps {
-		display: flex;
-		align-items: stretch;
-		gap: 5px;
+	// The amount field drives the three buttons below it, so it is drawn like the
+	// rest of the panel rather than as the light control AntD ships.
+	.ant-input-number.stamina-amount {
+		width: 100%;
+		background: transparent !important;
+		border: 1px solid $bronze-dim !important;
+		border-radius: 3px !important;
+		box-shadow: none !important;
 
-		.ant-btn.quick-step {
-			flex: 0 0 auto;
-			padding: 3px 7px;
-			line-height: 1.15;
-
-			.step-label {
-				font-family: 'PT Sans', sans-serif;
-				font-size: 8.5px;
-				letter-spacing: 0.5px;
-				opacity: 0.7;
-			}
+		&:hover,
+		&:focus-within {
+			border-color: $bronze !important;
+			background: rgba(201, 164, 90, 0.08) !important;
 		}
 
-		// AntD ships this input light, like every other input in the app; the panel
-		// draws its own controls, so it draws this one too.
-		.ant-input-number.stamina-amount {
-			flex: 1 1 60px;
-			min-width: 60px;
+		.ant-input-number-input {
+			height: 100%;
+			padding: 0 6px !important;
 			background: transparent !important;
-			border: 1px solid $bronze-dim !important;
-			border-radius: 3px !important;
-			box-shadow: none !important;
-
-			&:hover,
-			&:focus-within {
-				border-color: $bronze !important;
-				background: rgba(201, 164, 90, 0.08) !important;
-			}
-
-			.ant-input-number-input {
-				height: 100%;
-				padding: 0 6px !important;
-				background: transparent !important;
-				color: rgba(255, 255, 255, 0.92) !important;
-				font-family: 'Merriweather', serif;
-				font-size: 15px;
-				text-align: center;
-
-				&::placeholder {
-					color: $bronze-dim;
-				}
-			}
-		}
-	}
-
-	.ant-btn.undo-button {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		border-style: dashed;
-		border-color: rgba(250, 250, 250, 0.28);
-		color: rgba(255, 255, 255, 0.88);
-		font-family: 'PT Sans', sans-serif;
-		font-size: 12px;
-		letter-spacing: 0.3px;
-		text-transform: none;
-
-		.undo-action {
-			margin-left: 10px;
+			color: rgba(255, 255, 255, 0.92) !important;
 			font-family: 'Merriweather', serif;
-			font-size: 10px;
-			letter-spacing: 1.2px;
-			text-transform: uppercase;
-			color: $bronze;
+			font-size: 15px;
+			text-align: center;
+
+			&::placeholder {
+				color: $bronze-dim;
+			}
 		}
 	}
 
