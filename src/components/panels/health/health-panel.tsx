@@ -587,26 +587,29 @@ interface Props {
 }
 
 const HealthPanel = (props: Props) => {
-	const [ damageValue, setDamageValue ] = useState<number>(0);
+	// null while the field is empty, so backspacing clears it instead of snapping
+	// back to 0. An empty field simply has nothing to apply.
+	const [ damageValue, setDamageValue ] = useState<number | null>(0);
+	const amount = damageValue ?? 0;
 	const [ addConditionOpen, setAddConditionOpen ] = useState<boolean>(false);
 
 	const takeDamage = () => {
 		if (props.stamina) {
-			props.stamina.takeDamage(damageValue);
+			props.stamina.takeDamage(amount);
 		}
 		setDamageValue(0);
 	};
 
 	const heal = () => {
 		if (props.stamina) {
-			props.stamina.heal(damageValue);
+			props.stamina.heal(amount);
 		}
 		setDamageValue(0);
 	};
 
 	const addTemp = () => {
 		if (props.staminaTemp) {
-			props.staminaTemp.addTemp(damageValue);
+			props.staminaTemp.addTemp(amount);
 		}
 		setDamageValue(0);
 	};
@@ -653,14 +656,14 @@ const HealthPanel = (props: Props) => {
 								style={{ flex: '1 1 0' }}
 								min={0}
 								steps={[ 1, 10 ]}
-								value={damageValue}
+								value={amount}
 								onChange={setDamageValue}
 							>
-								<InputNumber min={0} controls={false} value={damageValue} onChange={value => setDamageValue(Math.round(value || 0))} />
+								<InputNumber min={0} controls={false} value={damageValue} onChange={value => setDamageValue(value === null ? null : Math.round(value))} />
 							</NumberSpin>
-							<Button block={true} disabled={damageValue === 0} onClick={takeDamage}>Take Damage</Button>
-							<Button block={true} disabled={damageValue === 0} onClick={heal}>Regain Stamina</Button>
-							{props.staminaTemp ? <Button block={true} disabled={damageValue === 0} onClick={addTemp}>Add Temporary Stamina</Button> : null}
+							<Button block={true} disabled={amount === 0} onClick={takeDamage}>Take Damage</Button>
+							<Button block={true} disabled={amount === 0} onClick={heal}>Regain Stamina</Button>
+							{props.staminaTemp ? <Button block={true} disabled={amount === 0} onClick={addTemp}>Add Temporary Stamina</Button> : null}
 						</>
 						: null
 				}

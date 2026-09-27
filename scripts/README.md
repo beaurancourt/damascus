@@ -62,6 +62,10 @@ SMOKE_BASE=http://localhost:4173/damascus-gm/ node scripts/smoke-wide-encounter-
   the name into play: the builder row, the builder's "Show stat block" popup,
   and the runner's tracker rows and reference stat block all have to read the
   new name. Asserts — exits non-zero. Needs the GM site (port 5174).
+- `smoke-stamina-field.mjs` — Opens a pregen hero, empties the stamina field and
+  checks it stays empty (rather than snapping to 0), that typing a value enables
+  Take Damage, and that the +/- buttons still work from empty. Asserts — exits
+  non-zero. Needs the player site (port 5173).
 - `smoke-hero-resource-section.mjs` — Opens a pregen hero and checks the
   heroic-resource description sits above the abilities with a header the
   jump-to-section menu offers, and that it is not also listed among the feats.
