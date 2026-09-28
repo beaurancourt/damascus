@@ -171,6 +171,55 @@ describe('DataService', () => {
 			expect(result).toEqual([ heroA ]);
 		});
 
+		test('getHeroes drops a hero the server no longer lists when this device has nothing unsynced', async () => {
+			const ds = build();
+
+			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
+			mockStorage.deleteHeroes = vi.fn().mockResolvedValue(undefined);
+			mockRemote.getHeroes = vi.fn().mockResolvedValue([]);
+			mockSyncStore.getAll = vi.fn().mockResolvedValue({ a: { updatedAt: 'v1', dirty: false } });
+
+			const result = await ds.getHeroes();
+
+			// Deleted on another device, so it goes here too - and the sync record with
+			// it, so a later load does not consider it a hero this device has never seen.
+			expect(result).toEqual([]);
+			expect(mockStorage.deleteHeroes).toHaveBeenCalledWith([ 'a' ]);
+			expect(mockSyncStore.setAll).toHaveBeenCalledWith({});
+		});
+
+		test('getHeroes keeps a hero the server no longer lists if it has unsynced edits', async () => {
+			const ds = build();
+
+			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
+			mockStorage.deleteHeroes = vi.fn().mockResolvedValue(undefined);
+			mockRemote.getHeroes = vi.fn().mockResolvedValue([]);
+			mockSyncStore.getAll = vi.fn().mockResolvedValue({ a: { updatedAt: 'v1', dirty: true } });
+
+			const result = await ds.getHeroes();
+
+			// An edit made offline outranks the server's silence: it is pushed on its
+			// next save rather than thrown away.
+			expect(result).toEqual([ heroA ]);
+			expect(mockStorage.deleteHeroes).not.toHaveBeenCalled();
+			expect(mockSyncStore.setAll).not.toHaveBeenCalled();
+		});
+
+		test('getHeroes leaves a hero the server has never heard of alone', async () => {
+			const ds = build();
+
+			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
+			mockStorage.deleteHeroes = vi.fn().mockResolvedValue(undefined);
+			mockRemote.getHeroes = vi.fn().mockResolvedValue([]);
+
+			const result = await ds.getHeroes();
+
+			// No record means this device does not know whether the server ever had it,
+			// and a hero created while offline looks exactly like this.
+			expect(result).toEqual([ heroA ]);
+			expect(mockStorage.deleteHeroes).not.toHaveBeenCalled();
+		});
+
 		test('saveHero persists locally and backs up to the remote', async () => {
 			const ds = build();
 

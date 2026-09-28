@@ -60,6 +60,18 @@ export class LocalService implements StorageService {
 		}
 	}
 
+	// Batch delete, for the same reason as putHeroes: dropping a run of heroes one
+	// deleteHero at a time is a read and a write per hero, and those writes race.
+	async deleteHeroes(ids: string[]): Promise<void> {
+		if (ids.length === 0) {
+			return;
+		}
+		const heroes = await localforage.getItem<Hero[]>(DataStorageKeys.Heroes) || [];
+		const drop = new Set(ids);
+		const list = heroes.filter(h => !drop.has(h.id));
+		await localforage.setItem<Hero[]>(DataStorageKeys.Heroes, list);
+	}
+
 	// Batch upsert: merges heroes by id in one read + one write, so restoring a
 	// batch of remote heroes doesn't race itself with overlapping putHero calls.
 	async putHeroes(heroes: Hero[]): Promise<Hero[]> {

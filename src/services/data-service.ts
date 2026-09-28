@@ -50,7 +50,29 @@ export class DataService {
 			const remoteHeroes = await this.remote.getHeroes();
 			const records = await this.syncStore.getAll();
 			const localIDs = new Set(heroes.map(h => h.id));
+			const remoteIDs = new Set(remoteHeroes.map(r => r.hero.id));
 			let recordsChanged = false;
+
+			// A hero this device has already seen from the server, which the server no
+			// longer lists, was deleted somewhere else and goes here too. Without this a
+			// deletion only ever reached the device that made it, and every other device
+			// kept showing the hero for good - the app would not even offer to remove it.
+			//
+			// Two guards, both erring towards keeping the hero: an unsynced local edit
+			// outranks the server's silence (it is pushed on its next save, so nothing is
+			// lost), and a hero this device has no record of is left alone, because it may
+			// simply not have reached the server yet.
+			const deleted = heroes.filter(h => !remoteIDs.has(h.id) && records[h.id] && (records[h.id].dirty !== true));
+			deleted.forEach(h => {
+				delete records[h.id];
+				recordsChanged = true;
+			});
+			const deletedIDs = new Set(deleted.map(h => h.id));
+			if (deleted.length > 0) {
+				this.storageService.deleteHeroes([ ...deletedIDs ])
+					.catch(err => console.warn('Failed to drop heroes deleted elsewhere', err));
+			}
+			const survivors = heroes.filter(h => !deletedIDs.has(h.id));
 
 			// A device takes the server's copy of a hero whenever it has nothing of
 			// its own left to upload, which is how stamina, recoveries, victories
@@ -58,7 +80,7 @@ export class DataService {
 			// unsynced local edits is left alone and pushed on its next save, so an
 			// edit made offline is never silently overwritten.
 			const pulled: Hero[] = [];
-			const merged = heroes.map(hero => {
+			const merged = survivors.map(hero => {
 				const remote = remoteHeroes.find(r => r.hero.id === hero.id);
 				if (!remote) {
 					return hero;

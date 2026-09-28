@@ -11,6 +11,7 @@ export interface StorageService {
 	putHero(hero: Hero): Promise<Hero>;
 	putHeroes(heroes: Hero[]): Promise<Hero[]>;
 	deleteHero(id: string): Promise<void>;
+	deleteHeroes(ids: string[]): Promise<void>;
 
 	// Homebrew storage
 	getSourcebooks(): Promise<Sourcebook[]>;
