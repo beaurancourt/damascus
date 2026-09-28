@@ -6,6 +6,16 @@ saves screenshots to `tmp/audit/` so the change can be eyeballed.
 
 Run with `node scripts/<name>.mjs` while the dev server is running.
 
+Every smoke that loads the app stubs the remote hero API first — see
+`stub-remote-api.mjs`. The dev server reads `VITE_REMOTE_API_URL` out of
+`.env.local`, so without that stub a smoke which clicks "use a premade example"
+pushes its hero to the deployed store, and every later run pulls it back down: 46
+heroes named Ashley piled up on the server in one afternoon of stamina work
+before anyone noticed. The stub answers an empty list rather than failing the
+request, because a failed request makes the app log a warning and
+`smoke-console` fails on those. A smoke therefore only ever sees the state it
+seeded itself.
+
 The app builds as two sites, and the dev server serves one at a time, so
 which server a smoke needs depends on what it drives:
 

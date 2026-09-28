@@ -11,6 +11,7 @@
 //   SMOKE_BASE=https://beaurancourt.github.io/damascus/ \
 //   SMOKE_BASE_GM=https://beaurancourt.github.io/damascus-gm/ node scripts/smoke-console.mjs
 import { chromium } from 'playwright';
+import { stubRemoteApi } from './stub-remote-api.mjs';
 
 const PLAYER = process.env.SMOKE_BASE || 'http://localhost:5173/';
 const GM = process.env.SMOKE_BASE_GM || 'http://localhost:5174/';
@@ -27,6 +28,7 @@ const problems = [];
 
 const watch = async (label, url, drive) => {
 	const ctx = await browser.newContext({ viewport: { width: 1024, height: 900 } });
+	await stubRemoteApi(ctx);
 	const page = await ctx.newPage();
 	const noise = [];
 	page.on('console', m => {

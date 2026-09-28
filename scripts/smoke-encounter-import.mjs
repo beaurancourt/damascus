@@ -5,6 +5,7 @@
 import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 import { mkdirSync } from 'node:fs';
+import { stubRemoteApi } from './stub-remote-api.mjs';
 
 // Base URL override, so this can be pointed at either dev server or a built
 // site. Defaults to the GM dev server (npm run start:gm), since encounters
@@ -16,6 +17,7 @@ mkdirSync(SCREEN_DIR, { recursive: true });
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+await stubRemoteApi(ctx);
 const page = await ctx.newPage();
 
 page.on('console', msg => {

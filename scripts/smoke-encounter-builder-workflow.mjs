@@ -4,6 +4,7 @@
 // smokes this one exits non-zero if anything is wrong.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { stubRemoteApi } from './stub-remote-api.mjs';
 mkdirSync('tmp/audit', { recursive: true });
 
 const BASE = process.env.SMOKE_BASE || 'http://localhost:5174/';
@@ -11,6 +12,7 @@ const browser = await chromium.launch();
 const fail = [];
 
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+await stubRemoteApi(ctx);
 const page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', e => errors.push(e.message));

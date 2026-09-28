@@ -1,6 +1,7 @@
 // Create a new encounter and capture screenshots of the builder on Pixel 10.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { stubRemoteApi } from './stub-remote-api.mjs';
 
 // Base URL override, so this can be pointed at either dev server or a built
 // site. Defaults to the GM dev server (npm run start:gm), since encounters
@@ -19,6 +20,7 @@ const pixel10 = {
 };
 
 const ctx = await browser.newContext(pixel10);
+await stubRemoteApi(ctx);
 const page = await ctx.newPage();
 page.on('pageerror', err => console.error('[pageerror]', err.message));
 const log = msg => console.log(`>>> ${msg}`);

@@ -1,6 +1,7 @@
 // Capture the YAML import modal on Pixel 10.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { stubRemoteApi } from './stub-remote-api.mjs';
 
 // Base URL override, so this can be pointed at either dev server or a built
 // site. Defaults to the GM dev server (npm run start:gm), since encounters
@@ -16,6 +17,7 @@ const ctx = await browser.newContext({
 	hasTouch: true,
 	userAgent: 'Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36'
 });
+await stubRemoteApi(ctx);
 const page = await ctx.newPage();
 page.on('pageerror', err => console.error('[pageerror]', err.message));
 const log = msg => console.log(`>>> ${msg}`);

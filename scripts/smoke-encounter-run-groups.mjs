@@ -4,12 +4,14 @@
 // Asserts - exits non-zero. Needs the GM site (port 5174).
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { stubRemoteApi } from './stub-remote-api.mjs';
 
 const BASE = process.env.SMOKE_BASE || 'http://localhost:5174/';
 mkdirSync('tmp/audit', { recursive: true });
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+await stubRemoteApi(ctx);
 const page = await ctx.newPage();
 const fail = [];
 const errors = [];

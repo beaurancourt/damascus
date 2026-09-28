@@ -5,12 +5,14 @@
 // Asserts - exits non-zero. Needs the player site (npm start, port 5173).
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { stubRemoteApi } from './stub-remote-api.mjs';
 
 const BASE = process.env.SMOKE_BASE || 'http://localhost:5173/';
 mkdirSync('tmp/audit', { recursive: true });
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 412, height: 915 } });
+await stubRemoteApi(ctx);
 const page = await ctx.newPage();
 const fail = [];
 page.on('pageerror', e => fail.push(`page error: ${e.message}`));
