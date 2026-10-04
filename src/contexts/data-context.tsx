@@ -129,6 +129,16 @@ export function DataManagerProvider(props: PropsWithChildren<DataManagerProps>) 
 		sourcebooks: sourcebookDispatch
 	});
 
+	// A push that had to merge someone else's changes in produces a hero neither
+	// device held, and the screen has to show it - otherwise the next edit made
+	// from the stale copy would save that copy back over the merged fields.
+	dataService.setHeroMergedHandler(hero => {
+		heroDispatch({
+			type: ReducerActionKind.UPDATE,
+			payload: hero
+		});
+	});
+
 	function UpdateOnlyReducer<T>(_oldState: T, action: ReducerAction<T>) {
 		switch (action.type) {
 			case ReducerActionKind.UPDATE: {

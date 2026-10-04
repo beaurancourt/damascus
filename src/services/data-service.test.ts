@@ -85,58 +85,57 @@ describe('DataService', () => {
 
 		const mockSyncStore = {
 			getAll: vi.fn(),
-			setAll: vi.fn()
+			setAll: vi.fn(),
+			getBase: vi.fn(),
+			setBase: vi.fn(),
+			clearBase: vi.fn()
 		};
 
 		const heroA = { id: 'a', name: 'A', state: { staminaDamage: 4, xp: 1 } } as unknown as Hero;
-		const heroAPlayed = { id: 'a', name: 'A', state: { staminaDamage: 11, xp: 2 } } as unknown as Hero;
+		const heroAPlayed = { id: 'a', name: 'A', state: { staminaDamage: 11, xp: 1 } } as unknown as Hero;
+		const heroAElsewhere = { id: 'a', name: 'A', state: { staminaDamage: 4, xp: 9 } } as unknown as Hero;
 		const heroB = { id: 'b', name: 'B', state: { staminaDamage: 0, xp: 0 } } as unknown as Hero;
+
+		const record = (version: number, dirty?: boolean) => ({ a: { version: version, dirty: dirty } });
 
 		const build = () => {
 			// A fresh object per read: the real store deserializes each time, and a
 			// shared one would make every recorded call show the final state.
 			mockSyncStore.getAll = vi.fn().mockImplementation(() => Promise.resolve({}));
 			mockSyncStore.setAll = vi.fn().mockResolvedValue(undefined);
+			mockSyncStore.getBase = vi.fn().mockResolvedValue(null);
+			mockSyncStore.setBase = vi.fn().mockResolvedValue(undefined);
+			mockSyncStore.clearBase = vi.fn().mockResolvedValue(undefined);
 			return new DataService(mockStorage, mockRemote, mockSyncStore);
 		};
 
-		test('getHeroes takes the server copy of a hero this device has nothing unsynced for', async () => {
+		// The push happens off the back of the load, so give it a turn to run.
+		const settle = () => new Promise(resolve => setTimeout(resolve, 0));
+
+		test('getHeroes takes the server copy when the server is a version ahead', async () => {
 			const ds = build();
 
 			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
 			mockStorage.putHeroes = vi.fn().mockResolvedValue([ heroAPlayed ]);
-			mockRemote.getHeroes = vi.fn().mockResolvedValue([ { hero: heroAPlayed, updatedAt: 'v2' } ]);
+			mockRemote.getHeroes = vi.fn().mockResolvedValue([ { hero: heroAPlayed, version: 2 } ]);
+			mockSyncStore.getAll = vi.fn().mockResolvedValue(record(1));
 
 			const result = await ds.getHeroes();
 
 			// The numbers played on the other device arrive here.
 			expect(result).toHaveLength(1);
 			expect(result[0].state.staminaDamage).toBe(11);
-			expect(result[0].state.xp).toBe(2);
 			expect(mockStorage.putHeroes).toHaveBeenCalledWith([ heroAPlayed ]);
+			expect(mockSyncStore.setAll).toHaveBeenCalledWith(record(2, false));
 		});
 
-		test('getHeroes leaves a hero with unsynced edits alone', async () => {
+		test('getHeroes keeps the local copy when it is the version the server holds', async () => {
 			const ds = build();
 
 			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
 			mockStorage.putHeroes = vi.fn().mockResolvedValue([ heroA ]);
-			mockRemote.getHeroes = vi.fn().mockResolvedValue([ { hero: heroAPlayed, updatedAt: 'v2' } ]);
-			mockSyncStore.getAll = vi.fn().mockResolvedValue({ a: { updatedAt: 'v1', dirty: true } });
-
-			const result = await ds.getHeroes();
-
-			expect(result[0]).toBe(heroA);
-			expect(mockStorage.putHeroes).not.toHaveBeenCalled();
-		});
-
-		test('getHeroes does nothing when it already has the version the server holds', async () => {
-			const ds = build();
-
-			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
-			mockStorage.putHeroes = vi.fn().mockResolvedValue([ heroA ]);
-			mockRemote.getHeroes = vi.fn().mockResolvedValue([ { hero: heroA, updatedAt: 'v1' } ]);
-			mockSyncStore.getAll = vi.fn().mockResolvedValue({ a: { updatedAt: 'v1', dirty: false } });
+			mockRemote.getHeroes = vi.fn().mockResolvedValue([ { hero: heroA, version: 1 } ]);
+			mockSyncStore.getAll = vi.fn().mockResolvedValue(record(1));
 
 			const result = await ds.getHeroes();
 
@@ -144,20 +143,38 @@ describe('DataService', () => {
 			expect(mockSyncStore.setAll).not.toHaveBeenCalled();
 		});
 
+		test('getHeroes keeps a hero with unsynced edits and retries its upload', async () => {
+			const ds = build();
+
+			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
+			mockRemote.getHeroes = vi.fn().mockResolvedValue([ { hero: heroAPlayed, version: 2 } ]);
+			mockRemote.putHero = vi.fn().mockResolvedValue({ ok: true, version: 3 });
+			mockSyncStore.getAll = vi.fn().mockResolvedValue(record(1, true));
+
+			const result = await ds.getHeroes();
+			await settle();
+
+			// Not adopted over, and not forgotten either: this is where an edit made
+			// offline finally reaches the server.
+			expect(result[0]).toBe(heroA);
+			expect(mockRemote.putHero).toHaveBeenCalledWith(heroA, 1);
+			expect(mockSyncStore.setAll).toHaveBeenCalledWith(record(3, false));
+		});
+
 		test('getHeroes adds remote-only heroes and remembers their version', async () => {
 			const ds = build();
 
 			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
 			mockStorage.putHeroes = vi.fn().mockResolvedValue([ heroA, heroB ]);
-			mockRemote.getHeroes = vi.fn().mockResolvedValue([ { hero: heroA, updatedAt: 'v1' }, { hero: heroB, updatedAt: 'v1' } ]);
-			mockSyncStore.getAll = vi.fn().mockResolvedValue({ a: { updatedAt: 'v1', dirty: false } });
+			mockRemote.getHeroes = vi.fn().mockResolvedValue([ { hero: heroA, version: 1 }, { hero: heroB, version: 1 } ]);
+			mockSyncStore.getAll = vi.fn().mockResolvedValue(record(1));
 
 			const result = await ds.getHeroes();
 
 			expect(result).toHaveLength(2);
 			expect(result.find(h => h.id === 'b')).toBe(heroB);
 			expect(mockStorage.putHeroes).toHaveBeenCalledWith([ heroB ]);
-			expect(mockSyncStore.setAll).toHaveBeenCalledWith({ a: { updatedAt: 'v1', dirty: false }, b: { updatedAt: 'v1', dirty: false } });
+			expect(mockSyncStore.setAll).toHaveBeenCalledWith({ a: { version: 1 }, b: { version: 1, dirty: false } });
 		});
 
 		test('getHeroes falls back to local only when the remote fails', async () => {
@@ -177,7 +194,7 @@ describe('DataService', () => {
 			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
 			mockStorage.deleteHeroes = vi.fn().mockResolvedValue(undefined);
 			mockRemote.getHeroes = vi.fn().mockResolvedValue([]);
-			mockSyncStore.getAll = vi.fn().mockResolvedValue({ a: { updatedAt: 'v1', dirty: false } });
+			mockSyncStore.getAll = vi.fn().mockResolvedValue(record(1));
 
 			const result = await ds.getHeroes();
 
@@ -194,15 +211,17 @@ describe('DataService', () => {
 			mockStorage.getHeroes = vi.fn().mockResolvedValue([ heroA ]);
 			mockStorage.deleteHeroes = vi.fn().mockResolvedValue(undefined);
 			mockRemote.getHeroes = vi.fn().mockResolvedValue([]);
-			mockSyncStore.getAll = vi.fn().mockResolvedValue({ a: { updatedAt: 'v1', dirty: true } });
+			mockRemote.putHero = vi.fn().mockResolvedValue({ ok: true, version: 2 });
+			mockSyncStore.getAll = vi.fn().mockResolvedValue(record(1, true));
 
 			const result = await ds.getHeroes();
+			await settle();
 
-			// An edit made offline outranks the server's silence: it is pushed on its
-			// next save rather than thrown away.
+			// An edit made on this device outranks the server's silence, so the hero is
+			// put back rather than dropped.
 			expect(result).toEqual([ heroA ]);
 			expect(mockStorage.deleteHeroes).not.toHaveBeenCalled();
-			expect(mockSyncStore.setAll).not.toHaveBeenCalled();
+			expect(mockRemote.putHero).toHaveBeenCalledWith(heroA, 1);
 		});
 
 		test('getHeroes leaves a hero the server has never heard of alone', async () => {
@@ -223,36 +242,78 @@ describe('DataService', () => {
 		test('saveHero persists locally and backs up to the remote', async () => {
 			const ds = build();
 
+			mockStorage.getHero = vi.fn().mockResolvedValue(null);
 			mockStorage.putHero = vi.fn().mockResolvedValue(heroA);
-			mockRemote.putHero = vi.fn().mockResolvedValue('v2');
+			mockRemote.putHero = vi.fn().mockResolvedValue({ ok: true, version: 2 });
 
 			const result = await ds.saveHero(heroA);
 
 			expect(result).toBe(heroA);
-			expect(mockRemote.putHero).toHaveBeenCalledWith(heroA);
+			expect(mockRemote.putHero).toHaveBeenCalledWith(heroA, 0);
+		});
+
+		test('saveHero keeps the copy the edit was based on, for the merge', async () => {
+			const ds = build();
+
+			mockStorage.getHero = vi.fn().mockResolvedValue(heroA);
+			mockStorage.putHero = vi.fn().mockResolvedValue(heroAPlayed);
+			mockRemote.putHero = vi.fn().mockResolvedValue({ ok: true, version: 3 });
+			mockSyncStore.getAll = vi.fn().mockResolvedValue(record(2));
+
+			await ds.saveHero(heroAPlayed);
+
+			expect(mockSyncStore.setBase).toHaveBeenCalledWith('a', heroA);
 		});
 
 		test('saveHero records the hero as pending, then as the version the server stored', async () => {
 			const ds = build();
 
+			mockStorage.getHero = vi.fn().mockResolvedValue(null);
 			mockStorage.putHero = vi.fn().mockResolvedValue(heroA);
-			mockRemote.putHero = vi.fn().mockResolvedValue('v2');
+			mockRemote.putHero = vi.fn().mockResolvedValue({ ok: true, version: 3 });
 
 			await ds.saveHero(heroA);
-			await new Promise(resolve => setTimeout(resolve, 0));
+			await settle();
 
 			expect(mockSyncStore.setAll).toHaveBeenNthCalledWith(1, { a: { dirty: true } });
-			expect(mockSyncStore.setAll).toHaveBeenNthCalledWith(2, { a: { dirty: false, updatedAt: 'v2' } });
+			expect(mockSyncStore.setAll).toHaveBeenNthCalledWith(2, { a: { dirty: false, version: 3 } });
+			expect(mockSyncStore.clearBase).toHaveBeenCalledWith('a');
+		});
+
+		test('saveHero replays this device\'s edits on top of a server copy that moved on', async () => {
+			const ds = build();
+
+			// This device changed the damage; the server's copy has an XP change made
+			// somewhere else. Both have to survive the refused push.
+			mockStorage.getHero = vi.fn().mockResolvedValue(heroA);
+			mockStorage.putHero = vi.fn().mockResolvedValue(heroAPlayed);
+			mockSyncStore.getAll = vi.fn().mockResolvedValue(record(1));
+			mockSyncStore.getBase = vi.fn().mockResolvedValue(heroA);
+			const put = vi.fn()
+				.mockResolvedValueOnce({ ok: false, current: { hero: heroAElsewhere, version: 2 } })
+				.mockResolvedValueOnce({ ok: true, version: 3 });
+			mockRemote.putHero = put;
+
+			await ds.saveHero(heroAPlayed);
+			await settle();
+
+			const merged = put.mock.calls[1][0] as Hero;
+			expect(merged.state.staminaDamage).toBe(11);
+			expect(merged.state.xp).toBe(9);
+			expect(put).toHaveBeenNthCalledWith(2, merged, 2);
+			expect(mockSyncStore.setAll).toHaveBeenLastCalledWith({ a: { dirty: false, version: 3 } });
+			expect(mockStorage.putHero).toHaveBeenLastCalledWith(merged);
 		});
 
 		test('saveHero leaves the hero pending when the upload fails', async () => {
 			const ds = build();
 
+			mockStorage.getHero = vi.fn().mockResolvedValue(null);
 			mockStorage.putHero = vi.fn().mockResolvedValue(heroA);
 			mockRemote.putHero = vi.fn().mockRejectedValue(new Error('down'));
 
 			await ds.saveHero(heroA);
-			await new Promise(resolve => setTimeout(resolve, 0));
+			await settle();
 
 			expect(mockSyncStore.setAll).toHaveBeenCalledTimes(1);
 			expect(mockSyncStore.setAll).toHaveBeenCalledWith({ a: { dirty: true } });
@@ -269,6 +330,7 @@ describe('DataService', () => {
 			expect(mockRemote.deleteHero).toHaveBeenCalledWith('a');
 		});
 	});
+
 	// #endregion Heroes
 
 	// #region Homebrew

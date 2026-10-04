@@ -6,12 +6,26 @@ import { RemoteService } from '@/services/storage/remote-service';
 import { Session } from '@/models/session';
 import { Sourcebook } from '@/models/sourcebook';
 import { StorageService } from '@/services/storage/storage-service';
+import { SyncMergeLogic } from '@/logic/sync-merge-logic';
 import localforage from 'localforage';
+
+// How many times a push may be replayed onto a newer server copy before the
+// hero is left dirty for the next load to retry.
+const MAX_PUSH_ATTEMPTS = 3;
+
+/**
+ * Told when a push had to be merged, so the screen can be given the reconciled
+ * hero. The reducer that holds the hero list lives above this service, and a
+ * panel still rendering the pre-merge copy would otherwise save that copy back
+ * over the fields the merge brought in.
+ */
+export type HeroMergedHandler = (hero: Hero) => void;
 
 export class DataService {
 	private readonly storageService: StorageService;
 	private readonly remote: RemoteService | null;
 	private readonly syncStore: HeroSyncStore;
+	private onHeroMerged: HeroMergedHandler | null = null;
 
 	constructor(storage: StorageService, remote?: RemoteService, syncStore?: HeroSyncStore) {
 		this.storageService = storage;
@@ -22,6 +36,11 @@ export class DataService {
 	async initialize(): Promise<boolean> {
 		return this.storageService.initialize();
 	}
+
+	/** Called with the merged hero whenever a conflict had to be resolved. */
+	setHeroMergedHandler = (handler: HeroMergedHandler | null) => {
+		this.onHeroMerged = handler;
+	};
 
 	// #region Options
 	// Always local only
@@ -50,61 +69,63 @@ export class DataService {
 			const remoteHeroes = await this.remote.getHeroes();
 			const records = await this.syncStore.getAll();
 			const localIDs = new Set(heroes.map(h => h.id));
-			const remoteIDs = new Set(remoteHeroes.map(r => r.hero.id));
+			const remoteByID = new Map(remoteHeroes.map(r => [ r.hero.id, r ]));
 			let recordsChanged = false;
 
-			// A hero this device has already seen from the server, which the server no
-			// longer lists, was deleted somewhere else and goes here too. Without this a
-			// deletion only ever reached the device that made it, and every other device
-			// kept showing the hero for good - the app would not even offer to remove it.
-			//
-			// Two guards, both erring towards keeping the hero: an unsynced local edit
-			// outranks the server's silence (it is pushed on its next save, so nothing is
-			// lost), and a hero this device has no record of is left alone, because it may
-			// simply not have reached the server yet.
-			const deleted = heroes.filter(h => !remoteIDs.has(h.id) && records[h.id] && (records[h.id].dirty !== true));
-			deleted.forEach(h => {
-				delete records[h.id];
-				recordsChanged = true;
-			});
-			const deletedIDs = new Set(deleted.map(h => h.id));
-			if (deleted.length > 0) {
-				this.storageService.deleteHeroes([ ...deletedIDs ])
-					.catch(err => console.warn('Failed to drop heroes deleted elsewhere', err));
-			}
-			const survivors = heroes.filter(h => !deletedIDs.has(h.id));
-
-			// A device takes the server's copy of a hero whenever it has nothing of
-			// its own left to upload, which is how stamina, recoveries, victories
-			// and XP follow you from the device you were playing on. A hero with
-			// unsynced local edits is left alone and pushed on its next save, so an
-			// edit made offline is never silently overwritten.
+			const kept: Hero[] = [];
 			const pulled: Hero[] = [];
-			const merged = survivors.map(hero => {
-				const remote = remoteHeroes.find(r => r.hero.id === hero.id);
-				if (!remote) {
-					return hero;
-				}
+			const toPush: Hero[] = [];
+			const toDelete: string[] = [];
 
-				// No record means this device has never tracked this hero, and every
-				// save it made went up before records existed, so the server's copy is
-				// taken as the newer one.
+			heroes.forEach(hero => {
+				const remote = remoteByID.get(hero.id);
 				const record: HeroSyncRecord = records[hero.id] ?? {};
-				if ((record.dirty === true) || (remote.updatedAt === record.updatedAt)) {
-					return hero;
+
+				// A copy with unsynced edits outranks the server's, and this is the
+				// moment its upload is retried: nothing else ever did, so an edit made
+				// offline used to sit in local storage until the hero was edited again.
+				if (record.dirty === true) {
+					kept.push(hero);
+					toPush.push(hero);
+					return;
 				}
 
-				records[hero.id] = { updatedAt: remote.updatedAt, dirty: false };
-				recordsChanged = true;
-				pulled.push(remote.hero);
-				return remote.hero;
+				// The server is ahead of the version this device last saw, which is how
+				// stamina, recoveries, victories and XP follow you from the device you
+				// were playing on.
+				if (remote && (remote.version > (record.version ?? 0))) {
+					records[hero.id] = { version: remote.version, dirty: false };
+					recordsChanged = true;
+					pulled.push(remote.hero);
+					kept.push(remote.hero);
+					return;
+				}
+
+				// A hero this device has already seen from the server, which the server
+				// no longer lists, was deleted somewhere else and goes here too.
+				if (!remote && records[hero.id]) {
+					delete records[hero.id];
+					recordsChanged = true;
+					toDelete.push(hero.id);
+					return;
+				}
+
+				// No record at all: a hero created here that has not been uploaded yet is
+				// indistinguishable from one the server has never had, so it stays.
+				kept.push(hero);
 			});
 
+			// Heroes this device has never had, which the server does.
 			const missing = remoteHeroes.filter(r => !localIDs.has(r.hero.id));
 			missing.forEach(r => {
-				records[r.hero.id] = { updatedAt: r.updatedAt, dirty: false };
+				records[r.hero.id] = { version: r.version, dirty: false };
 				recordsChanged = true;
 			});
+
+			if (toDelete.length > 0) {
+				this.storageService.deleteHeroes(toDelete)
+					.catch(err => console.warn('Failed to drop heroes deleted elsewhere', err));
+			}
 
 			// Cache what came off the server locally too, so a device that pulled it
 			// keeps it even if the server is unreachable next launch. Best-effort: a
@@ -120,7 +141,13 @@ export class DataService {
 					.catch(err => console.warn('Failed to record hero sync state', err));
 			}
 
-			return [ ...merged, ...missing.map(r => r.hero) ];
+			// The outbox. Each one carries the merge-on-conflict handling, so an edit
+			// that could not be uploaded lands here rather than being forgotten.
+			toPush.forEach(hero => {
+				this.pushHero(hero).catch(err => console.warn('Failed to sync hero to remote', err));
+			});
+
+			return [ ...kept, ...missing.map(r => r.hero) ];
 		} catch (err) {
 			console.warn('Failed to load remote heroes; continuing with local only', err);
 			return heroes;
@@ -132,20 +159,64 @@ export class DataService {
 	}
 
 	async saveHero(hero: Hero): Promise<Hero> {
+		// The copy this edit was made from, kept so a refused push can be merged
+		// rather than guessed at, and only while there is something unsynced to
+		// replay.
+		const previous = await this.storageService.getHero(hero.id);
+		const records = await this.syncStore.getAll();
+		if (previous && (records[hero.id]?.dirty !== true)) {
+			await this.syncStore.setBase(hero.id, previous);
+		}
+
 		const saved = await this.storageService.putHero(hero);
 
 		// Back up to the server without blocking the save or failing on a down
-		// server - the app is offline-first.
+		// server - the app is offline-first. Record the edit as pending before the
+		// upload starts: if the upload fails, the next load must not adopt an older
+		// server copy over it.
 		if (this.remote) {
-			// Record the edit as pending before the upload starts: if the upload
-			// fails, the next load must not adopt an older server copy over it.
 			await this.setSyncRecord(hero.id, { dirty: true });
-			this.remote.putHero(hero)
-				.then(updatedAt => this.setSyncRecord(hero.id, { updatedAt, dirty: false }))
-				.catch(err => console.warn('Failed to sync hero to remote', err));
+			this.pushHero(hero).catch(err => console.warn('Failed to sync hero to remote', err));
 		}
 
 		return saved;
+	}
+
+	/**
+	 * Upload a hero, and when the server has moved past the version this copy is
+	 * based on, replay what changed here onto what is there now and try again.
+	 * Without that second step the refusal has nowhere to go, and the edit is the
+	 * user's to redo.
+	 */
+	private async pushHero(hero: Hero): Promise<void> {
+		if (!this.remote) {
+			return;
+		}
+
+		const record = (await this.syncStore.getAll())[hero.id] ?? {};
+		let copy = hero;
+		let base = record.version ?? 0;
+
+		for (let attempt = 0; attempt < MAX_PUSH_ATTEMPTS; attempt++) {
+			const result = await this.remote.putHero(copy, base);
+
+			if (result.ok) {
+				await this.setSyncRecord(hero.id, { version: result.version, dirty: false });
+				await this.syncStore.clearBase(hero.id);
+				return;
+			}
+
+			const starting = await this.syncStore.getBase(hero.id);
+			// No snapshot to replay means this device cannot tell its own edits from
+			// the values it loaded, so the server's copy stands rather than a guess.
+			copy = starting ? SyncMergeLogic.mergeHero(starting, copy, result.current.hero) : result.current.hero;
+			base = result.current.version;
+			await this.storageService.putHero(copy);
+			this.onHeroMerged?.(copy);
+		}
+
+		// Out of attempts. The hero stays dirty, so the next load pushes it again
+		// instead of the edit quietly disappearing.
 	}
 
 	async deleteHero(id: string): Promise<void> {
