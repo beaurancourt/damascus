@@ -207,9 +207,21 @@ export class DataService {
 			}
 
 			const starting = await this.syncStore.getBase(hero.id);
-			// No snapshot to replay means this device cannot tell its own edits from
-			// the values it loaded, so the server's copy stands rather than a guess.
-			copy = starting ? SyncMergeLogic.mergeHero(starting, copy, result.current.hero) : result.current.hero;
+			if (!starting) {
+				// Nothing to replay from. This is an edit a build before the versions
+				// left dirty, or a snapshot that failed to write; either way there is
+				// no basis for a merge, and the alternatives are to upload it outright
+				// (what the old client did) or to drop it in favour of the server's
+				// copy. Losing the edit is the bug being fixed, so it goes up.
+				const forced = await this.remote.putHero(copy);
+				if (forced.ok) {
+					await this.setSyncRecord(hero.id, { version: forced.version, dirty: false });
+					await this.syncStore.clearBase(hero.id);
+				}
+				return;
+			}
+
+			copy = SyncMergeLogic.mergeHero(starting, copy, result.current.hero);
 			base = result.current.version;
 			await this.storageService.putHero(copy);
 			this.onHeroMerged?.(copy);

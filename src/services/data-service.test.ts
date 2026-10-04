@@ -305,6 +305,28 @@ describe('DataService', () => {
 			expect(mockStorage.putHero).toHaveBeenLastCalledWith(merged);
 		});
 
+		test('saveHero uploads outright when there is no copy to replay from', async () => {
+			const ds = build();
+
+			// An edit a build before the versions left dirty: no snapshot, so there is
+			// no basis for a merge and the edit must not be dropped for the server's.
+			mockStorage.getHero = vi.fn().mockResolvedValue(null);
+			mockStorage.putHero = vi.fn().mockResolvedValue(heroAPlayed);
+			mockSyncStore.getAll = vi.fn().mockResolvedValue(record(4, true));
+			mockSyncStore.getBase = vi.fn().mockResolvedValue(null);
+			const put = vi.fn()
+				.mockResolvedValueOnce({ ok: false, current: { hero: heroAElsewhere, version: 5 } })
+				.mockResolvedValueOnce({ ok: true, version: 6 });
+			mockRemote.putHero = put;
+
+			await ds.saveHero(heroAPlayed);
+			await settle();
+
+			expect(put).toHaveBeenNthCalledWith(1, heroAPlayed, 4);
+			expect(put).toHaveBeenNthCalledWith(2, heroAPlayed);
+			expect(mockSyncStore.setAll).toHaveBeenLastCalledWith({ a: { dirty: false, version: 6 } });
+		});
+
 		test('saveHero leaves the hero pending when the upload fails', async () => {
 			const ds = build();
 
