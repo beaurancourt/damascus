@@ -1,7 +1,5 @@
 import { Collections } from '@/utils/collections';
 import { ErrorBoundary } from '@/components/controls/error-boundary/error-boundary';
-import { Fixture } from '@/models/fixture';
-import { FixturePanel } from '@/components/panels/elements/fixture-panel/fixture-panel';
 import { Follower } from '@/models/follower';
 import { FollowerPanel } from '@/components/panels/elements/follower-panel/follower-panel';
 import { HeaderText } from '@/components/controls/header-text/header-text';
@@ -21,7 +19,6 @@ interface Props {
 	sourcebooks: Sourcebook[];
 	onSelectMonster: (hero: Hero, monster: Monster, summon?: SummoningInfo) => void;
 	onSelectFollower: (hero: Hero, follower: Follower) => void;
-	onSelectFixture: (fixture: Fixture) => void;
 }
 
 export const RetinuePanel = (props: Props) => {
@@ -35,7 +32,6 @@ export const RetinuePanel = (props: Props) => {
 	];
 
 	const followers = HeroLogic.getFollowers(props.hero);
-	const fixtures = HeroLogic.getFixtures(props.hero);
 
 	return (
 		<ErrorBoundary>
@@ -74,27 +70,6 @@ export const RetinuePanel = (props: Props) => {
 											:
 											<SelectablePanel key={follower.id} onSelect={() => props.onSelectFollower(props.hero, follower)}>
 												<FollowerPanel follower={follower} />
-											</SelectablePanel>
-									)
-								}
-							</div>
-						</>
-						: null
-				}
-				{
-					fixtures.length > 0 ?
-						<>
-							<HeaderText level={options.compactView ? 3 : 1}>Fixtures</HeaderText>
-							<div className={`retinue-grid ${useRows ? 'compact' : ''} medium`}>
-								{
-									fixtures.map(fixture =>
-										useRows ?
-											<div key={fixture.id} className='selectable-row clickable' onClick={() => props.onSelectFixture(fixture)}>
-												<div>Fixture: <b>{fixture.name}</b></div>
-											</div>
-											:
-											<SelectablePanel key={fixture.id} onSelect={() => props.onSelectFixture(fixture)}>
-												<FixturePanel fixture={fixture} hero={props.hero} sourcebooks={props.sourcebooks} />
 											</SelectablePanel>
 									)
 								}

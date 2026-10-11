@@ -16,6 +16,7 @@ import { ErrorBoundary } from '@/components/controls/error-boundary/error-bounda
 import { Feature } from '@/models/feature';
 import { FeaturesPanel } from '@/components/panels/hero/features/features-panel';
 import { Fixture } from '@/models/fixture';
+import { FixturesPanel } from '@/components/panels/hero/fixtures/fixtures-panel';
 import { Follower } from '@/models/follower';
 import { HeaderText } from '@/components/controls/header-text/header-text';
 import { Hero } from '@/models/hero';
@@ -96,11 +97,12 @@ export const HeroPanel = (props: Props) => {
 	]);
 	const { abilities, mains, maneuvers, moves, triggers } = abilityLists;
 
+	// Fixtures render in their own section up with the combat blocks, so they
+	// don't keep the foot-of-sheet retinue alive on their own.
 	const retinueCount = HeroLogic.getCompanions(props.hero).length
 		+ HeroLogic.getFollowers(props.hero).length
 		+ HeroLogic.getRetainers(props.hero).length
-		+ HeroLogic.getSummons(props.hero).length
-		+ HeroLogic.getFixtures(props.hero).length;
+		+ HeroLogic.getSummons(props.hero).length;
 
 	const skills = HeroLogic.getSkills(props.hero, props.sourcebooks);
 	const languages = HeroLogic.getLanguages(props.hero, props.sourcebooks);
@@ -167,6 +169,14 @@ export const HeroPanel = (props: Props) => {
 								onSelectControlledMonster={props.onSelectControlledMonster}
 								onSelectControlledSquad={props.onSelectControlledSquad}
 								onUpdateSquad={props.onUpdateSquad}
+							/>
+
+							{/* Fixtures the summoner conjures into the fight - tracked with
+							    the other controlled creatures, ahead of the actions. */}
+							<FixturesPanel
+								hero={props.hero}
+								sourcebooks={props.sourcebooks}
+								onSelectFixture={props.onSelectFixture}
 							/>
 
 							{/* 4-8. Abilities by usage */}
@@ -266,7 +276,6 @@ export const HeroPanel = (props: Props) => {
 										sourcebooks={props.sourcebooks}
 										onSelectMonster={props.onSelectMonster}
 										onSelectFollower={props.onSelectFollower}
-										onSelectFixture={props.onSelectFixture}
 									/>
 								)
 								: null}

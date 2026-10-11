@@ -1,0 +1,16 @@
+.fixtures-section {
+	padding: 5px;
+
+	.fixtures-grid {
+		display: grid;
+		gap: 10px;
+
+		&.compact {
+			display: block;
+		}
+
+		&.medium {
+			grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		}
+	}
+}
