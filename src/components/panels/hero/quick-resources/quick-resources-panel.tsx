@@ -16,7 +16,8 @@ interface Props {
 
 // Inline "quick" editor for the values that get tweaked at the table during play
 // (heroic resource, surges, victories, XP). Renown/Wealth are class-derived and
-// rarely manually edited — left in the modal under the "more" link.
+// rarely manually edited — left in the modal under the "more" link. Level rides
+// along as a readout: it isn't edited here, but it is what XP counts against.
 export const QuickResourcesPanel = (props: Props) => {
 	const heroicResources = HeroLogic.getHeroicResources(props.hero);
 
@@ -72,6 +73,14 @@ export const QuickResourcesPanel = (props: Props) => {
 				<NumberSpin label='XP' value={props.hero.state.xp} min={0} onChange={setXP} />
 				<NumberSpin label='Wealth' value={props.hero.state.wealth} format={() => HeroLogic.getWealth(props.hero).toString()} onChange={setWealth} />
 				<div className='quick-resources-display'>
+					{
+						props.hero.class ?
+							<div className='quick-resources-stat'>
+								<div className='label'>Level</div>
+								<div className='value'>{props.hero.class.level}</div>
+							</div>
+							: null
+					}
 					<div className='quick-resources-stat'>
 						<div className='label'>Renown</div>
 						<div className='value'>{HeroLogic.getRenown(props.hero)}</div>
