@@ -2,6 +2,7 @@ import { HeroSyncRecord, HeroSyncStore, LocalHeroSyncStore } from '@/services/st
 import { FactoryLogic } from '@/logic/factory-logic';
 import { Hero } from '@/models/hero';
 import { Options } from '@/models/options';
+import { OptionsUpdateLogic } from '@/logic/update/options-update-logic';
 import { RemoteService } from '@/services/storage/remote-service';
 import { Session } from '@/models/session';
 import { Sourcebook } from '@/models/sourcebook';
@@ -26,6 +27,11 @@ export class DataService {
 	private readonly remote: RemoteService | null;
 	private readonly syncStore: HeroSyncStore;
 	private onHeroMerged: HeroMergedHandler | null = null;
+	// Options are rewritten by whichever screen changed one, and the object a
+	// screen holds can be older than what another tab - or the other site, which
+	// shares this origin in production - last wrote. Serializing the read and
+	// write here keeps those patches from racing each other.
+	private optionsQueue: Promise<void> = Promise.resolve();
 
 	constructor(storage: StorageService, remote?: RemoteService, syncStore?: HeroSyncStore) {
 		this.storageService = storage;
@@ -47,11 +53,27 @@ export class DataService {
 
 	async getOptions(): Promise<Options> {
 		const result = await localforage.getItem<Options>('damascus-options');
-		return result ?? FactoryLogic.createOptions();
+		const options = result ?? FactoryLogic.createOptions();
+		OptionsUpdateLogic.updateOptions(options);
+		return options;
 	}
 
-	async saveOptions(options: Options): Promise<Options> {
-		return localforage.setItem<Options>('damascus-options', options);
+	/**
+	 * Apply one changed setting. Written as a patch rather than the whole object
+	 * the screen is holding: a second tab, or the GM site running beside the
+	 * player site, can have an older copy of the other settings, and saving that
+	 * copy wholesale used to undo whatever had just been changed there.
+	 */
+	async updateOptions(patch: Partial<Options>): Promise<Options> {
+		const run = this.optionsQueue.then(async () => {
+			const current = await this.getOptions();
+			return localforage.setItem<Options>('damascus-options', { ...current, ...patch });
+		});
+
+		// Keep the queue alive after a failed write; the caller still sees the
+		// rejection on `run`.
+		this.optionsQueue = run.then(() => {}, () => {});
+		return run;
 	}
 
 	// #endregion

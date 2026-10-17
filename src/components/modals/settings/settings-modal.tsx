@@ -34,14 +34,13 @@ export const SettingsModal = (props: Props) => {
 
 	const heroes = useHeroes();
 	const dataManager = useDataManager();
-	const saveOptions = (next: Options) => {
-		dataManager.saveOptions(next);
-	};
 	const updateOption = <K extends keyof Options>(key: K, value: Options[K]) => {
 		const copy = Utils.copy(options);
 		copy[key] = value;
 		setOptions(copy);
-		saveOptions(copy);
+		// Send the one setting that changed: the copy here can be missing what
+		// another tab or the other site has saved since this one loaded.
+		dataManager.updateOptions({ [key]: value });
 	};
 
 	// Sections are headings with their contents under them, not collapsibles.

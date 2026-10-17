@@ -30,12 +30,15 @@ export class DataManager {
 		this.sourcebookDispatch = dispatchers.sourcebooks;
 	};
 
-	async saveOptions(options: Options) {
-		return this.dataService.saveOptions(options)
-			.then(options => {
+	async updateOptions(patch: Partial<Options>) {
+		return this.dataService.updateOptions(patch)
+			.then(() => {
+				// Merge the patch into what this screen already holds rather than
+				// replacing it with the stored copy: values the app derives at load
+				// (compact view on a phone) are not in storage and must survive.
 				this.optionsDispatch({
-					type: ReducerActionKind.UPDATE,
-					payload: options
+					type: ReducerActionKind.PATCH,
+					payload: patch
 				});
 			});
 	}
@@ -93,13 +96,14 @@ export class DataManager {
 
 enum ReducerActionKind {
 	UPDATE = 'Update',
+	PATCH = 'Patch',
 	DELETE = 'Delete'
 }
 
-interface ReducerAction<T> {
-	type: ReducerActionKind;
-	payload: T;
-}
+type ReducerAction<T> =
+	| { type: ReducerActionKind.UPDATE; payload: T }
+	| { type: ReducerActionKind.PATCH; payload: Partial<T> }
+	| { type: ReducerActionKind.DELETE; payload: T };
 
 interface DataManagerProps {
 	dataService: DataService;
@@ -139,10 +143,13 @@ export function DataManagerProvider(props: PropsWithChildren<DataManagerProps>) 
 		});
 	});
 
-	function UpdateOnlyReducer<T>(_oldState: T, action: ReducerAction<T>) {
+	function UpdateOnlyReducer<T>(oldState: T, action: ReducerAction<T>) {
 		switch (action.type) {
 			case ReducerActionKind.UPDATE: {
 				return action.payload;
+			}
+			case ReducerActionKind.PATCH: {
+				return { ...oldState, ...action.payload };
 			}
 			default: {
 				throw Error(`Unknown or unsupported action: ${action.type}`);

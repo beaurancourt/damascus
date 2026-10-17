@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { DataService } from '@/services/data-service';
+import { FactoryLogic } from '@/logic/factory-logic';
 import { Hero } from '@/models/hero';
 import { Options } from '@/models/options';
 import { RemoteService } from '@/services/storage/remote-service';
@@ -16,7 +17,7 @@ vi.mock('localforage');
 
 const mockStorage = {} as StorageService;
 
-const mockOptions = {} as Options;
+const mockOptions = FactoryLogic.createOptions();
 const mockHeroes = [] as Hero[];
 const mockHomebrew = [] as Sourcebook[];
 const mockSession = {} as Session;
@@ -40,21 +41,52 @@ describe('DataService', () => {
 			expect(thenFn).toHaveBeenCalledWith(mockOptions);
 			expect(catchFn).not.toHaveBeenCalled();
 		});
-	});
 
-	describe('saveOptions', () => {
-		test('always calls localforage', async () => {
+		test('fills in settings an older copy did not have', async () => {
 			const ds = new DataService(mockStorage);
 
-			localforage.setItem = vi.fn().mockImplementation(() => Promise.resolve(mockOptions));
+			localforage.getItem = vi.fn().mockImplementation(() => Promise.resolve({}));
 
-			await ds.saveOptions(mockOptions)
-				.then(thenFn)
-				.catch(catchFn);
+			const options = await ds.getOptions();
 
-			expect(localforage.setItem).toHaveBeenCalledWith('damascus-options', mockOptions);
-			expect(thenFn).toHaveBeenCalledWith(mockOptions);
-			expect(catchFn).not.toHaveBeenCalled();
+			expect(options.xpPerLevel).toBe(16);
+			expect(options.shownStandardAbilities).toEqual([]);
+		});
+	});
+
+	describe('updateOptions', () => {
+		test('merges the change into what is stored, not the caller\'s copy', async () => {
+			const ds = new DataService(mockStorage);
+
+			localforage.getItem = vi.fn().mockImplementation(() => Promise.resolve({ ...FactoryLogic.createOptions(), xpPerLevel: 20 }));
+			localforage.setItem = vi.fn().mockImplementation((_key: string, value: Options) => Promise.resolve(value));
+
+			const options = await ds.updateOptions({ showSources: false });
+
+			expect(localforage.setItem).toHaveBeenCalledWith(
+				'damascus-options',
+				expect.objectContaining({ xpPerLevel: 20, showSources: false })
+			);
+			expect(options.xpPerLevel).toBe(20);
+		});
+
+		test('applies quick changes in order without dropping either', async () => {
+			const ds = new DataService(mockStorage);
+
+			let stored = FactoryLogic.createOptions();
+			localforage.getItem = vi.fn().mockImplementation(() => Promise.resolve(stored));
+			localforage.setItem = vi.fn().mockImplementation((_key: string, value: Options) => {
+				stored = value;
+				return Promise.resolve(value);
+			});
+
+			await Promise.all([
+				ds.updateOptions({ xpPerLevel: 20 }),
+				ds.updateOptions({ showSources: false })
+			]);
+
+			expect(stored.xpPerLevel).toBe(20);
+			expect(stored.showSources).toBe(false);
 		});
 	});
 	// #endregion Options
