@@ -28,6 +28,10 @@ interface Props {
 	// Rendered after the app-level controls, so a page can keep "get me out of
 	// here" in the corner where the thumb expects it.
 	trailing?: ReactNode;
+	// Sits between the title and the page's actions, centred in the bar. A run
+	// screen uses it for the selector that switches between the session's
+	// encounters, montages, negotiations and counters.
+	center?: ReactNode;
 	children?: ReactNode;
 }
 
@@ -41,6 +45,7 @@ export const AppHeader = (props: Props) => {
 					{props.title ? <div className='app-header-title'>{props.title}</div> : null}
 					{!isSmall && !props.title ? <LogoPanel text={props.subheader} /> : null}
 				</div>
+				<div className='center-section'>{props.center}</div>
 				<div className='right-section'>
 					{props.children}
 					{

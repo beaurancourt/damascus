@@ -2,9 +2,11 @@
 	flex: 0 0 50px;
 	padding: 0 12px;
 	background-color: rgb(200, 200, 200);
-	display: flex;
+	// Three tracks, with equal side tracks, so the centre control is centred on
+	// the bar rather than on the gap left between unequal title/action widths.
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 	align-items: center;
-	justify-content: space-between;
 	gap: 15px;
 
 	.left-section {
@@ -14,6 +16,30 @@
 		// The title has to give way to the buttons on a narrow screen rather than
 		// pushing them off the bar.
 		min-width: 0;
+		justify-self: start;
+
+		.logo-panel {
+			min-width: 0;
+			justify-content: flex-start;
+		}
+
+		.logo-panel-text {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
+	.center-section {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		// A wide selector scrolls inside its track instead of pushing the title
+		// or the actions off the bar.
+		min-width: 0;
+		max-width: 60vw;
+		overflow-x: auto;
+		scrollbar-width: none;
 	}
 
 	.app-header-title {
@@ -38,6 +64,7 @@
 		display: flex;
 		align-items: center;
 		gap: 5px;
+		justify-self: end;
 	}
 }
 

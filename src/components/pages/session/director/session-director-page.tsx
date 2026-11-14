@@ -71,13 +71,11 @@ export const SessionDirectorPage = (props: Props) => {
 		}
 
 		return (
-			<div className='session-page-content-selector'>
-				<Segmented
-					options={options}
-					value={selectedElementID}
-					onChange={setSelectedElementID}
-				/>
-			</div>
+			<Segmented
+				options={options}
+				value={selectedElementID}
+				onChange={setSelectedElementID}
+			/>
 		);
 	};
 
@@ -316,7 +314,7 @@ export const SessionDirectorPage = (props: Props) => {
 	return (
 		<ErrorBoundary>
 			<div className='session-director-page'>
-				<AppHeader subheader='Session'>
+				<AppHeader subheader='Session' center={getSelector()}>
 					<ButtonGroup
 						buttons={[
 							{
@@ -343,7 +341,6 @@ export const SessionDirectorPage = (props: Props) => {
 				</AppHeader>
 				<ErrorBoundary>
 					<div className='session-director-page-content'>
-						{getSelector()}
 						{getSelectedContent()}
 					</div>
 				</ErrorBoundary>
