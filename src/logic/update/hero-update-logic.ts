@@ -15,7 +15,6 @@ import { ItemUpdateLogic } from '@/logic/update/item-update-logic';
 import { Sourcebook } from '@/models/sourcebook';
 import { SourcebookData } from '@/data/sourcebook-data';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
-import { SourcebookType } from '@/enums/sourcebook-type';
 import { Utils } from '@/utils/utils';
 
 export class HeroUpdateLogic {
@@ -86,9 +85,7 @@ export class HeroUpdateLogic {
 		}
 
 		if (hero.sourcebookIDs === undefined) {
-			hero.sourcebookIDs = SourcebookLogic.getSourcebooks()
-				.filter(sb => sb.type === SourcebookType.Official)
-				.map(sb => sb.id);
+			hero.sourcebookIDs = SourcebookLogic.getDefaultSourcebookIDs(SourcebookLogic.getSourcebooks());
 		}
 
 		hero.sourcebookIDs = hero.sourcebookIDs.map(id => id === '' ? SourcebookData.core.id : id);

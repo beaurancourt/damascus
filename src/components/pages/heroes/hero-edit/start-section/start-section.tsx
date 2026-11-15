@@ -1,9 +1,17 @@
 import { HeaderText } from '@/components/controls/header-text/header-text';
+import { HeroSourcebooksPanel } from '@/components/panels/hero-sourcebooks/hero-sourcebooks-panel';
 import { SelectablePanel } from '@/components/controls/selectable-panel/selectable-panel';
+import { Sourcebook } from '@/models/sourcebook';
 
 import './start-section.scss';
 
-export const StartSection = () => {
+interface Props {
+	sourcebooks: Sourcebook[];
+	sourcebookIDs: string[];
+	setSourcebookIDs: (sourcebookIDs: string[]) => void;
+}
+
+export const StartSection = (props: Props) => {
 	return (
 		<div className='hero-edit-content start-section'>
 			<div className='hero-edit-content-column selected'>
@@ -28,6 +36,13 @@ export const StartSection = () => {
 						When you're done, click <code>Save Changes</code> in the toolbar at the top, and you'll see your hero sheet.
 					</div>
 				</SelectablePanel>
+			</div>
+			<div className='hero-edit-content-column choices'>
+				<HeroSourcebooksPanel
+					sourcebooks={props.sourcebooks}
+					sourcebookIDs={props.sourcebookIDs}
+					onChange={props.setSourcebookIDs}
+				/>
 			</div>
 		</div>
 	);

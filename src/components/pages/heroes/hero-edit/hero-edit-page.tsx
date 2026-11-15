@@ -382,6 +382,13 @@ export const HeroEditPage = (props: Props) => {
 		setDirty(true);
 	};
 
+	const setSourcebookIDs = (sourcebookIDs: string[]) => {
+		const heroCopy = Utils.copy(hero);
+		heroCopy.sourcebookIDs = sourcebookIDs;
+		setHero(heroCopy);
+		setDirty(true);
+	};
+
 	const saveChanges = () => {
 		props.saveChanges(hero);
 		setDirty(false);
@@ -497,7 +504,13 @@ export const HeroEditPage = (props: Props) => {
 	const getContent = () => {
 		switch (page) {
 			case 'start':
-				return <StartSection />;
+				return (
+					<StartSection
+						sourcebooks={props.sourcebooks}
+						sourcebookIDs={hero.sourcebookIDs}
+						setSourcebookIDs={setSourcebookIDs}
+					/>
+				);
 			case 'ancestry':
 				return (
 					<AncestrySection

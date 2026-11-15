@@ -74,7 +74,6 @@ import { SessionDirectorPage } from '@/components/pages/session/director/session
 import { SessionLogic } from '@/logic/session-logic';
 import { SettingsModal } from '@/components/modals/settings/settings-modal';
 import { SourcebookLogic } from '@/logic/sourcebook-logic';
-import { SourcebookType } from '@/enums/sourcebook-type';
 import { SourcebookUpdateLogic } from '@/logic/update/sourcebook-update-logic';
 import { SubClass } from '@/models/subclass';
 import { SummoningInfo } from '@/models/summon';
@@ -249,9 +248,7 @@ export const Main = () => {
 	// #region Heroes
 
 	const newHero = (folder: string) => {
-		const sourcebookIDs = SourcebookLogic.getSourcebooks(homebrewSourcebooks)
-			.filter(sb => sb.type === SourcebookType.Official)
-			.map(sb => sb.id);
+		const sourcebookIDs = SourcebookLogic.getDefaultSourcebookIDs(SourcebookLogic.getSourcebooks(homebrewSourcebooks));
 
 		const hero = FactoryLogic.createHero(sourcebookIDs);
 		hero.folder = folder;

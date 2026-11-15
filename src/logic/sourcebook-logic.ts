@@ -28,6 +28,7 @@ import { Random } from '@/utils/random';
 import { Skill } from '@/models/skill';
 import { SkillList } from '@/enums/skill-list';
 import { SourcebookData } from '@/data/sourcebook-data';
+import { SourcebookType } from '@/enums/sourcebook-type';
 import { SourcebookUpdateLogic } from './update/sourcebook-update-logic';
 import { SubClass } from '@/models/subclass';
 import { Terrain } from '@/models/terrain';
@@ -48,6 +49,15 @@ export class SourcebookLogic {
 		list.push(...homebrew);
 
 		return list;
+	};
+
+	// The sourcebooks a new hero uses unless the player turns others on. Official
+	// content is the default; homebrew and imported sourcebooks are opt-in from
+	// the hero builder's Sourcebooks panel.
+	static getDefaultSourcebookIDs = (sourcebooks: Sourcebook[]) => {
+		return sourcebooks
+			.filter(sb => sb.type === SourcebookType.Official)
+			.map(sb => sb.id);
 	};
 
 	static getElements = (sourcebook: Sourcebook): { element: Element, type: SourcebookElementKind }[] => {

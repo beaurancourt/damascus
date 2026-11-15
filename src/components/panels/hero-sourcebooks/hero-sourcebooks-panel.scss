@@ -1,0 +1,23 @@
+.hero-sourcebooks-panel {
+	.sourcebook-type-section {
+		background-color: rgb(255, 255, 255);
+		padding: 0 10px 10px 10px;
+		border-radius: 10px;
+
+		& + .sourcebook-type-section {
+			margin-top: 10px;
+		}
+	}
+
+	.hero-sourcebooks-note {
+		margin-top: 10px;
+	}
+}
+
+html {
+	.hero-sourcebooks-panel {
+		.sourcebook-type-section {
+			background-color: rgb(55, 55, 55);
+		}
+	}
+}
