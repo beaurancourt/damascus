@@ -1,6 +1,6 @@
 import { AppFooter, FooterParams } from '@/components/panels/app-footer/app-footer';
 import { Button, Divider, Space, Tabs, Upload } from 'antd';
-import { DownloadOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { DatabaseOutlined, DownloadOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Hero, HeroOverview } from '@/models/hero';
 import { useHeroes, useOptions } from '@/contexts/data-context';
 import { useMemo, useState } from 'react';
@@ -28,6 +28,7 @@ interface Props {
 	params: FooterParams;
 	addHero: (folder: string) => void;
 	importHero: (hero: Hero, folder: string) => void;
+	importHeroFile: (file: File) => void;
 }
 
 export const HeroListPage = (props: Props) => {
@@ -126,12 +127,7 @@ export const HeroListPage = (props: Props) => {
 											accept='.drawsteel-hero,.ds-hero'
 											showUploadList={false}
 											beforeUpload={file => {
-												file
-													.text()
-													.then(json => {
-														const hero = JSON.parse(json) as Hero;
-														props.importHero(hero, currentTab);
-													});
+												props.importHeroFile(file);
 												return false;
 											}}
 										>
@@ -139,6 +135,9 @@ export const HeroListPage = (props: Props) => {
 												Import a Hero File
 											</Button>
 										</Upload>
+										<Button block={true} icon={<DatabaseOutlined />} onClick={() => navigation.goToBackup()}>
+											Backup &amp; Restore
+										</Button>
 										<Button block={true} icon={<ThunderboltOutlined />} onClick={() => props.importHero(HeroLogic.createRandomHero(), currentTab)}>
 											Generate a Random Hero
 										</Button>

@@ -115,11 +115,19 @@ export class Utils {
 	};
 
 	static saveFile = (data: unknown, name: string, type: string) => {
+		Utils.download(data, `${name}.ds-${type}`, 'application/octet-stream');
+	};
+
+	static saveJson = (data: unknown, name: string) => {
+		Utils.download(data, name.endsWith('.json') ? name : `${name}.json`, 'application/json');
+	};
+
+	private static download = (data: unknown, fileName: string, mimeType: string) => {
 		const json = JSON.stringify(data, null, '\t');
-		const blob = new Blob([ json ], { type: 'application/octet-stream' });
+		const blob = new Blob([ json ], { type: mimeType });
 
 		const a = document.createElement('a');
-		a.download = `${name}.ds-${type}`;
+		a.download = fileName;
 		a.href = window.URL.createObjectURL(blob);
 		document.body.appendChild(a);
 		a.click();

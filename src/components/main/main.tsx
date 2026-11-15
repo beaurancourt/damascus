@@ -1,4 +1,5 @@
 import { Feature, FeatureCompanion, FeatureRetainer } from '@/models/feature';
+import { ImportData, ImportOutcome, parseImportText, selectNewItems } from '@/logic/import-logic';
 import { Navigate, Route, Routes } from 'react-router';
 import { ReactNode, useMemo, useState } from 'react';
 import { Sourcebook, SourcebookElementKind } from '@/models/sourcebook';
@@ -169,6 +170,78 @@ export const Main = () => {
 				// Trigger sync when data changes
 				triggerSyncOnChange();
 			});
+	};
+
+	// #endregion
+
+	// #region Import
+
+	const importHeroFile = (file: File) => {
+		let hero: Hero | null = null;
+		file.text()
+			.then(text => {
+				const parsed = parseImportText(text, file.name);
+				if ((parsed.heroes.length !== 1) || (parsed.sourcebooks.length > 0)) {
+					throw new Error(`${file.name}: choose a single hero file. Use Backup & restore for a whole roster or a sourcebook.`);
+				}
+				hero = parsed.heroes[0];
+				return importData(parsed);
+			})
+			.then(outcome => {
+				if (hero) {
+					if (outcome.importedHeroes === 0) {
+						notify.info({
+							title: 'Hero already on this device',
+							description: `${hero.name || 'This hero'} was already imported; its id was left unchanged.`,
+							placement: 'top'
+						});
+					}
+					navigation.goToHeroView(hero.id);
+				}
+			})
+			.catch(err => {
+				notify.error({
+					title: 'Import failed',
+					description: Utils.getErrorMessage(err),
+					placement: 'top'
+				});
+			});
+	};
+
+	const importData = async (data: ImportData): Promise<ImportOutcome> => {
+		const selection = selectNewItems(
+			data,
+			new Set(heroes.map(hero => hero.id)),
+			new Set(homebrewSourcebooks.map(sourcebook => sourcebook.id))
+		);
+
+		// Sourcebooks first: a hero that uses homebrew elements resolves them
+		// against the sourcebooks this import is about to add.
+		selection.sourcebooks.forEach(sourcebook => SourcebookUpdateLogic.updateSourcebook(sourcebook));
+		const nextHomebrew = [ ...homebrewSourcebooks, ...selection.sourcebooks ];
+		const allSourcebooks = SourcebookLogic.getSourcebooks(nextHomebrew);
+		selection.heroes.forEach(hero => HeroUpdateLogic.updateHero(hero, allSourcebooks));
+
+		// Sequential writes: each storage call reads and replaces the list, so a
+		// parallel batch would race and drop all but the last item.
+		for (const sourcebook of selection.sourcebooks) {
+			await dataManager.saveSourcebook(sourcebook);
+		}
+		for (const hero of selection.heroes) {
+			await dataManager.saveHero(hero);
+		}
+
+		triggerSyncOnChange();
+
+		const availableIDs = new Set(allSourcebooks.map(sourcebook => sourcebook.id));
+		const referencedIDs = new Set(selection.heroes.flatMap(hero => hero.sourcebookIDs ?? []));
+		return {
+			importedHeroes: selection.heroes.length,
+			importedSourcebooks: selection.sourcebooks.length,
+			skippedHeroes: selection.skippedHeroes,
+			skippedSourcebooks: selection.skippedSourcebooks,
+			missingSourcebookIDs: [ ...referencedIDs ].filter(id => !availableIDs.has(id))
+		};
 	};
 
 	// #endregion
@@ -1590,6 +1663,7 @@ export const Main = () => {
 											params={footerParams}
 											addHero={newHero}
 											importHero={importHero}
+											importHeroFile={importHeroFile}
 										/>
 									}
 								/>
@@ -1723,6 +1797,7 @@ export const Main = () => {
 						element={
 							<BackupPage
 								homebrewSourcebooks={homebrewSourcebooks}
+								importData={importData}
 							/>
 						}
 					/>
